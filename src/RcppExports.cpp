@@ -71,19 +71,6 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// FIM_logistic
-Rcpp::NumericMatrix FIM_logistic(const std::vector<double> x, const std::vector<double> w, const std::vector<double> param);
-RcppExport SEXP ICAOD_FIM_logistic(SEXP xSEXP, SEXP wSEXP, SEXP paramSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< const std::vector<double> >::type x(xSEXP);
-    Rcpp::traits::input_parameter< const std::vector<double> >::type w(wSEXP);
-    Rcpp::traits::input_parameter< const std::vector<double> >::type param(paramSEXP);
-    __result = Rcpp::wrap(FIM_logistic(x, w, param));
-    return __result;
-END_RCPP
-}
 // FIM_logisitic_1par
 Rcpp::NumericMatrix FIM_logisitic_1par(const std::vector<double> x, const std::vector<double> w, const std::vector<double> param);
 RcppExport SEXP ICAOD_FIM_logisitic_1par(SEXP xSEXP, SEXP wSEXP, SEXP paramSEXP) {
@@ -107,6 +94,19 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const std::vector<double> >::type w(wSEXP);
     Rcpp::traits::input_parameter< const std::vector<double> >::type param(paramSEXP);
     __result = Rcpp::wrap(FIM_logistic_4par(x, w, param));
+    return __result;
+END_RCPP
+}
+// FIM_logistic
+Rcpp::NumericMatrix FIM_logistic(const std::vector<double> x, const std::vector<double> w, const std::vector<double> param);
+RcppExport SEXP ICAOD_FIM_logistic(SEXP xSEXP, SEXP wSEXP, SEXP paramSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< const std::vector<double> >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const std::vector<double> >::type w(wSEXP);
+    Rcpp::traits::input_parameter< const std::vector<double> >::type param(paramSEXP);
+    __result = Rcpp::wrap(FIM_logistic(x, w, param));
     return __result;
 END_RCPP
 }

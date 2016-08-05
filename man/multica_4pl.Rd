@@ -61,7 +61,10 @@ This function is not suitable for finding the c-optimal designs for estimating '
  The tolerance for finding the general inverse of Fisher information matrix is set to \code{.Machine$double.xmin}.
 }
 \examples{
+
 ## An example on how to create the design in Hyun and Wong (2015)
+## An initial guess from Table 1:
+\dontrun{
 Theta1 <- c(1.563, 1.790, 8.442, 0.137)
 
 #########################################################
@@ -112,6 +115,7 @@ res2 <- multica_4pl(lx = log(.001),
                    delta = -1, iter = 400,
                    control = list(seed = 1366))
 exp(res2$evol[[length(res2$evol)]]$x) # dose level in mg
+}
 }
 \references{
 Hyun, S. W., & Wong, W. K. (2015). Multiple-Objective Optimal Designs for Studying the Dose Response Function and Interesting Dose Levels. The international journal of biostatistics, 11(2), 253-271.

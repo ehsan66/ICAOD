@@ -47,8 +47,10 @@
 #' an object of class "ICA". See "Value" in \code{\link{mica}}.
 #' @export
 #' @examples
+#'
 #'## An example on how to create the design in Hyun and Wong (2015)
-## An initial guess from Table 1:
+#'## An initial guess from Table 1:
+#'\dontrun{
 #'Theta1 <- c(1.563, 1.790, 8.442, 0.137)
 #'
 #'#########################################################
@@ -99,7 +101,7 @@
 #'                    delta = -1, iter = 400,
 #'                    control = list(seed = 1366))
 #'exp(res2$evol[[length(res2$evol)]]$x) # dose level in mg
-
+#'}
 multica_4pl <- function(lx,
                         ux,
                         param,

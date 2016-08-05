@@ -83,7 +83,7 @@ create_multiple <-function(model, fimfunc2, type, ...){
           ### computing the generalized inverse of Fisher information matrix
           if (lambda[2] != 0 || lambda[3] != 0){
             #if (singular_FIM)
-            FIM_inv <- ICAOD::mpginv(FIM_val, tol = sqrt(.Machine$double.xmin)) #else
+            FIM_inv <- mpginv(FIM_val, tol = sqrt(.Machine$double.xmin)) #else
             #FIM_inv <- solve(FIM_val, tol =sqrt(.Machine$double.eps))
             #det( FIM_inv)
             #MASS::ginv(FIM_val, tol = sqrt(.Machine$double.eps))
@@ -164,8 +164,8 @@ create_multiple <-function(model, fimfunc2, type, ...){
       #################### find the generalized inverse
       FIM_val = FIM(x = x, w = w, param = param)
       #FIM_inv <- solve(FIM_val, tol = .Machine$double.xmin)
-      # FIM_inv <- ICAOD::mpginv(FIM_val, tol =  sqrt(.Machine$double.xmin))
-      FIM_inv <- ICAOD::mpginv(FIM_val, tol =  sqrt(.Machine$double.eps))
+      # FIM_inv <- mpginv(FIM_val, tol =  sqrt(.Machine$double.xmin))
+      FIM_inv <- mpginv(FIM_val, tol =  sqrt(.Machine$double.eps))
       ##################################################
 
 

@@ -1,6 +1,6 @@
 Package: ICAOD
-Title: Imperialist Competitive Algorithm (ICA) for optimal designs
-Version: 0.0.0.9000
+Title: Imperialist Competitive Algorithm (ICA) for Optimal Designs
+Version: 0.9.1.9000
 Authors@R: c(person("Ehsan", "Masoudi", role = c("aut", "cre"),  email = "ehsan.masoudi@wwu.de"),  person("Heinz", "Holling", role = "aut"),  person("Weng Kee", "Wong", role = "aut"))
 Description:  Imperialist Competitive Algorithm (ICA) to find optimal designs for nonlinear models.
 Depends:
@@ -8,6 +8,6 @@ Depends:
 License: GPL (>= 2)
 LazyData: true
 LinkingTo: Rcpp, RcppEigen
-Imports: Rcpp, RcppEigen, Rsolnp, nloptr, stats, graphics, grDevices
+Imports: Rcpp, Rsolnp, nloptr, stats, graphics, grDevices
 Suggests: rgl, lattice
 RoxygenNote: 5.0.1

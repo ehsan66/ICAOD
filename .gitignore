@@ -14,14 +14,11 @@ vignettes/*.pdf
 .httr-oauth
 .Rproj.user
 src/*.dll
-
 myexamples.R
 todo.txt
 very_important_do_not_delete.txt
 .Rbuildignore
 debugging.R
-
-
 ## for FWA algoeirthm
 H_iterate.R
 H_on_average_ica_k.R

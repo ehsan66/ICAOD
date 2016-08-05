@@ -123,31 +123,6 @@ FIM_exp_3par <- function(x, w, param) {
     .Call('ICAOD_FIM_exp_3par', PACKAGE = 'ICAOD', x, w, param)
 }
 
-#' Fisher information matrix for the two-parameter logistic (2PL) model.
-#'
-#' The mean of response variable is \deqn{f(x, \bold{\theta}) = \frac{1}{(1 + \exp(-b (x - a)))},}{f(x, \bold{\theta}) = 1/(1 + \exp(-b (x - a))),} where
-#' \eqn{\bold{\theta} = (a, b)}.
-#' @param x vector of design points. In IRT, \eqn{x} is the person ability parameter.
-#' @param w vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w)} should be 1.
-#' @param param vector of model parameters \eqn{\bold{\theta} = (a, b)}. In IRT parameter
-#' \eqn{a} is the item difficulty parameter and parameter \eqn{b} is the item discrimination parameter.
-#' @return Fisher information matrix.
-#' @family FIM
-#' @export
-#' @details
-#' There is no closed-form for the locally optimal design.
-#'  For minimax and standardized D-optimal design, the optimal design is symmetric around point
-#' \eqn{(a^L + a^U)/2}{(aL + aU)/2} where \eqn{a^L}{aL} and \eqn{a^U}{aU} are the
-#' lower bound and upper bound for parameter \eqn{a}, respectively. In \code{\link{mica}},
-#'  options \code{sym} and \code{sym_point} in \code{control} can be used to make the search
-#'   for the optimal design easier.
-#'
-#' @importFrom Rcpp evalCpp
-#' @useDynLib ICAOD
-FIM_logistic <- function(x, w, param) {
-    .Call('ICAOD_FIM_logistic', PACKAGE = 'ICAOD', x, w, param)
-}
-
 #' Fisher information matrix for the one-parameter logistic model (1PL or Rasch model).
 #'
 #' The mean of response variable is
@@ -190,6 +165,31 @@ FIM_logisitic_1par <- function(x, w, param) {
 #' @export
 FIM_logistic_4par <- function(x, w, param) {
     .Call('ICAOD_FIM_logistic_4par', PACKAGE = 'ICAOD', x, w, param)
+}
+
+#' Fisher information matrix for the two-parameter logistic (2PL) model.
+#'
+#' The mean of response variable is \deqn{f(x, \bold{\theta}) = \frac{1}{(1 + \exp(-b (x - a)))},}{f(x, \bold{\theta}) = 1/(1 + \exp(-b (x - a))),} where
+#' \eqn{\bold{\theta} = (a, b)}.
+#' @param x vector of design points. In IRT, \eqn{x} is the person ability parameter.
+#' @param w vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w)} should be 1.
+#' @param param vector of model parameters \eqn{\bold{\theta} = (a, b)}. In IRT parameter
+#' \eqn{a} is the item difficulty parameter and parameter \eqn{b} is the item discrimination parameter.
+#' @return Fisher information matrix.
+#' @family FIM
+#' @export
+#' @details
+#' There is no closed-form for the locally optimal design.
+#'  For minimax and standardized D-optimal design, the optimal design is symmetric around point
+#' \eqn{(a^L + a^U)/2}{(aL + aU)/2} where \eqn{a^L}{aL} and \eqn{a^U}{aU} are the
+#' lower bound and upper bound for parameter \eqn{a}, respectively. In \code{\link{mica}},
+#'  options \code{sym} and \code{sym_point} in \code{control} can be used to make the search
+#'   for the optimal design easier.
+#'
+#' @importFrom Rcpp evalCpp
+#' @useDynLib ICAOD
+FIM_logistic <- function(x, w, param) {
+    .Call('ICAOD_FIM_logistic', PACKAGE = 'ICAOD', x, w, param)
 }
 
 #' Fisher information matrix for the log-linear model.

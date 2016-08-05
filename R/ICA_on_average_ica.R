@@ -24,6 +24,7 @@
 #' @return
 #' an object of class "ICA". See "Value" in \code{\link{mica}}.
 #' @examples
+#' \dontrun{
 #' test <- on_average_ica (fimfunc = "FIM_logistic",
 #'                         lx = -5, ux = 5, prior = rep(1/4, 4),
 #'                         param = matrix(c(0.5, 1.5, 0.5, 1.5, 4.0, 4.0, 5.0, 5.0), 4, 2),
@@ -39,8 +40,9 @@
 #'                          iter = 200, k =3,
 #'                          control = list(stop_rule = "equivalence",
 #'                          stoptol = .9995, equivalence_every = 100))
+#'}
 #'
-
+#' @export
 
 on_average_ica <- function(fimfunc,
                            lx,
