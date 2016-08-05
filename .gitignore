@@ -1,4 +1,27 @@
-.Rproj.user
+# History files
 .Rhistory
+.Rapp.history
+# Session Data files
 .RData
-.Ruserdata
+# Example code in package build process
+*-Ex.R
+# RStudio files
+.Rproj.user/
+# produced vignettes
+vignettes/*.html
+vignettes/*.pdf
+# OAuth2 token, see https://github.com/hadley/httr/releases/tag/v0.3
+.httr-oauth
+.Rproj.user
+src/*.dll
+
+myexamples.R
+todo.txt
+very_important_do_not_delete.txt
+.Rbuildignore
+debugging.R
+
+
+## for FWA algoeirthm
+^R/*.FW_
+^R/*.H
