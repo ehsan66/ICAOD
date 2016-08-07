@@ -6,7 +6,16 @@
 ## R CMD check results
 There were no ERRORs or WARNINGs.
 
-One note for email: my first submission.
+One NOTE for email: my first submission.
 
 Reverse dependencies: checked by devtools:
 No ERRORs or WARNINGs found 
+
+
+
+Re-submission1
+1- 'ICA' abbreviation has been removed from title.
+2- some examples were added. However, the cpu time is increased.
+3- checked by win-build again. only one NOTE:
+
+* checking CRAN incoming feasibility ... NOTE
