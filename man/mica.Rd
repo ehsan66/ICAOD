@@ -2,7 +2,7 @@
 % Please edit documentation in R/ICA_mica.R
 \name{mica}
 \alias{mica}
-\title{Imperialist Competitive Algorithm (ICA) to find locally, minimax and standardized maximin D-optimal designs for nonlinear models}
+\title{Imperialist Competitive Algorithm to find locally, minimax and standardized maximin D-optimal designs for nonlinear models}
 \usage{
 mica(fimfunc, lx, ux, lp, up, iter, k, control = list(),
   control_gosolnp = list(), type, initial = NULL, locally = NULL, ...)
@@ -212,7 +212,7 @@ plot(res)
 # finding minimax D-optimal design
 mica(fimfunc = "FIM_exp_2par", lx = 0, ux = 1, lp = c(1, 1), up = c(1, 5),
     iter = 100, k = 3, type = "minimax", control = list(seed = 215))
-
+}
 # finding locally D-optimal design. Please note that  'lp' and 'up' are equal
 mica(fimfunc = "FIM_exp_2par", lx = 0, ux = 1, lp = c(2, 3), up = c(2, 3),
     iter = 40, k = 2, type = "locally", control = list(seed = 215))
@@ -222,9 +222,9 @@ mica(fimfunc = "FIM_exp_2par", lx = 0, ux = 1, lp = c(2, 3), up = c(2, 3),
 res_loc <-mica(fimfunc = "FIM_exp_2par", lx = 0, ux = 1, lp = c(2, 3), up = c(2, 3),
               iter = 40, k = 2, type = "locally",
                control = list(seed = 215, equal_weight = TRUE))
+\dontrun{
 res_loc <- iterate(res_loc, 10) ## update the result
 plot(res_loc)
-
 # using symetric option for the logisitic model
 mica(fimfunc = "FIM_logistic", lx = -5, ux = 5, lp = c(0, 1), up = c(3.5 , 1.25),
     iter = 100, k = 5, control = list(rseed = 215, sym = TRUE,

@@ -2,7 +2,7 @@
 % Please edit documentation in R/ICA_on_average_ica.R
 \name{on_average_ica}
 \alias{on_average_ica}
-\title{Imperialist Competitive Algorithm (ICA) to find optimum on-the-average designs based on the least favorable distribution.}
+\title{Imperialist Competitive Algorithm to find optimum on-the-average designs based on the least favorable distribution.}
 \usage{
 on_average_ica(fimfunc, lx, ux, prior, param, iter, k, control = list(),
   initial = NULL, ...)

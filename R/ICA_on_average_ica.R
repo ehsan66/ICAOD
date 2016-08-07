@@ -1,4 +1,4 @@
-#' Imperialist Competitive Algorithm (ICA) to find optimum on-the-average designs based on the least favorable distribution.
+#' Imperialist Competitive Algorithm to find optimum on-the-average designs based on the least favorable distribution.
 #'
 #' For nonlinear models, if a set of possible values of the vector parameters \eqn{\bold{\theta}} is available, the optimum-on-the-average designs
 #' can be applied. In this approach the criterion is evaluated at plausible parameter values and weighted by a probability measure

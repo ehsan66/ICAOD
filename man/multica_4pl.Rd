@@ -2,7 +2,7 @@
 % Please edit documentation in R/ICA_multica_4pl.R
 \name{multica_4pl}
 \alias{multica_4pl}
-\title{Imperialist Competitive Algorithm (ICA) to find multiple-objective optimal designs for the 4-parameter logistic models.}
+\title{Imperialist Competitive Algorithm to find multiple-objective optimal designs for the 4-parameter logistic models.}
 \usage{
 multica_4pl(lx, ux, param, iter, k, delta, lambda, control = list(),
   initial = NULL)
@@ -64,7 +64,7 @@ This function is not suitable for finding the c-optimal designs for estimating '
 
 ## An example on how to create the design in Hyun and Wong (2015)
 ## An initial guess from Table 1:
-\dontrun{
+
 Theta1 <- c(1.563, 1.790, 8.442, 0.137)
 
 #########################################################
@@ -78,6 +78,7 @@ res <- multica_4pl(lx = log(.001),
                    delta = -1,
                    iter = 150,
                    control = list(seed = 1366, plot_cost = TRUE))
+\dontrun{
 #######################################################
 ## finding multiple objective optimal design: example 1, Table 3
 res1 <- multica_4pl(lx = log(.001),

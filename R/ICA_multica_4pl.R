@@ -1,4 +1,4 @@
-#' Imperialist Competitive Algorithm (ICA) to find multiple-objective optimal designs for the 4-parameter logistic models.
+#' Imperialist Competitive Algorithm to find multiple-objective optimal designs for the 4-parameter logistic models.
 #'
 #' The 4-parameter Hill model is \eqn{Y_i = f(D_i, a, b, c, d) + \epsilon_i}{Y_i = f(Di, a, b, c, d) + \epsiloni}
 #' where \eqn{\epsilon_i \sim N(0, \sigma^2)}{\epsiloni ~ N(0, \sigma2)},
@@ -50,7 +50,7 @@
 #'
 #'## An example on how to create the design in Hyun and Wong (2015)
 #'## An initial guess from Table 1:
-#'\dontrun{
+#'
 #'Theta1 <- c(1.563, 1.790, 8.442, 0.137)
 #'
 #'#########################################################
@@ -64,6 +64,7 @@
 #'                    delta = -1,
 #'                    iter = 150,
 #'                    control = list(seed = 1366, plot_cost = TRUE))
+#'\dontrun{
 #'#######################################################
 #'## finding multiple objective optimal design: example 1, Table 3
 #'res1 <- multica_4pl(lx = log(.001),

@@ -1,6 +1,6 @@
 Package: ICAOD
-Title: Imperialist Competitive Algorithm (ICA) for Optimal Designs
-Version: 0.9.1.9000
+Title: Imperialist Competitive Algorithm for Optimal Designs
+Version: 0.9.1
 Authors@R: c(person("Ehsan", "Masoudi", role = c("aut", "cre"),  email = "ehsan.masoudi@wwu.de"),  person("Heinz", "Holling", role = "aut"),  person("Weng Kee", "Wong", role = "aut"))
 Description:  Imperialist Competitive Algorithm (ICA) to find optimal designs for nonlinear models.
 Depends:
