@@ -19,3 +19,9 @@ Re-submission1
 3- checked by win-build again. only one NOTE:
 
 * checking CRAN incoming feasibility ... NOTE
+
+Re-submission2
+thanks for reminding me.
+1- Some description is added to the description field
+2- URL are added for BugReports 
+
