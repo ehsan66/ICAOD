@@ -25,16 +25,16 @@
 #' an object of class "ICA". See "Value" in \code{\link{mica}}.
 #' @examples
 #' \dontrun{
-#' test <- on_average_ica (fimfunc = "FIM_logistic",
-#'                         lx = -5, ux = 5, prior = rep(1/4, 4),
-#'                         param = matrix(c(0.5, 1.5, 0.5, 1.5, 4.0, 4.0, 5.0, 5.0), 4, 2),
-#'                         iter = 200, k = 3)
+#' test <- ave(fimfunc = "FIM_logistic",
+#'                        lx = -5, ux = 5, prior = rep(1/4, 4),
+#'                        param = matrix(c(0.5, 1.5, 0.5, 1.5, 4.0, 4.0, 5.0, 5.0), 4, 2),
+#'                        iter = 200, k = 3)
 #'
 #' plot(test)
 #' print(test)
 #'################################################################################
 #'## using equivalence theorem as stopping rule. Can be applied in H-algorithm
-#' test <- on_average_ica (fimfunc = "FIM_logistic",
+#' test <- ave (fimfunc = "FIM_logistic",
 #'                          lx = -5, ux = 5, prior = rep(1/4, 4),
 #'                          param = matrix(c(0.5, 1.5, 0.5, 1.5, 4.0, 4.0, 5.0, 5.0), 4, 2),
 #'                          iter = 200, k =3,
@@ -44,7 +44,7 @@
 #'
 #' @export
 
-on_average_ica <- function(fimfunc,
+ave <- function(fimfunc,
                            lx,
                            ux,
                            prior,
@@ -296,12 +296,12 @@ on_average_ica <- function(fimfunc,
                                                                     stop_rule = "equivalence", equal_weight = TRUE,
                                                                     stop_tol = .999,  equivalence_every = 100)))
     locally_val <- rep(NA,  n_prior)
-    DLB_val <- rep(NA,  n_prior)
+    ELB_val <- rep(NA,  n_prior)
     locally_design <- matrix(NA, ncol = dim(param)[1], nrow = n_prior)
 
     for (i in 1:n_prior){
       locally_val[i] <- locally_res[, i]$evol[[length(locally_res[, i]$evol)]]$min_cost
-      DLB_val[i] <- locally_res[, i]$evol[[length(locally_res[, i]$evol)]]$DLB
+      ELB_val[i] <- locally_res[, i]$evol[[length(locally_res[, i]$evol)]]$ELB
       locally_design[i, ] <- c(locally_res[, i]$evol[[length(locally_res[, i]$evol)]]$x,
                                locally_res[, i]$evol[[length(locally_res[, i]$evol)]]$w)
     }

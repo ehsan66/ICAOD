@@ -4,7 +4,7 @@
 #' Print method for an object of class "equivalence".
 #' @param x an object of class 'equivalence'.
 #' @param ... argument with no further use.
-#' @seealso \code{\link{equivalence}}, \code{\link{equivalence_multiple}} and \code{\link{equivalence_on_average}}.
+#' @seealso \code{\link{equivalence}}, \code{\link{equivalence_multiple}} and \code{\link{equivalence_ave}}.
 #' @export
 
 print.equivalence <- function(x,  ...){
@@ -25,7 +25,7 @@ print.equivalence <- function(x,  ...){
         "\nProbability measure on answering set: ", object$mu)
     cat("\nCriterion value", object$crtval,
       "\nMaximum of sensitivity function: ", object$max_deriv,
-      "\nD-efficiency lower bound: ", object$DLB,
+      "\nEfficiency lower bound: ", object$ELB,
       "\n###################################################")
   ##############################################################################
   return(invisible(NULL))

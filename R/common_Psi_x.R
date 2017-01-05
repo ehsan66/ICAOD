@@ -6,9 +6,9 @@ Psi_x <- function(x1, mu, FIM,  x, w,  answering){
 
   ## here x is a degenerate design that putt all its mass on x.
   # x1 is one point
-  # This function is required to check the equivalence theorem by ploting and also find the D-efficiency lower bound
+  # This function is required to check the equivalence theorem by ploting and also find the Efficiency lower bound
   # mu is a vector of measure. For locally optimal design mu = 1
-  # FIM: is the Fisher information matrix 
+  # FIM: is the Fisher information matrix
   # x: vector of design points
   # w: vector of design weights
   # answering: the matrix of elements of answering set. Each row is an element.

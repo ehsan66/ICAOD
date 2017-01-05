@@ -18,9 +18,9 @@
 #' @param lambda user select weights, where \eqn{\lambda_1}{\lambda1} is the weight for estimating parameters,
 #' \eqn{\lambda_2}{\lambda2} is the weignt for estimating median effective dose level (ED50), and \eqn{\lambda_3}{\lambda3} is the weight for estimating minimum effective dose level (MED).
 #' @param delta numeric, predetermined clinically significant effect to define the MED.
-#' @param maxeval_equivalence maximum number of evaulations (\code{maxeval})  that will be passed to optimization function \code{\link[nloptr]{directL}} to find the maximum of the sensitivity function required for calculating DLB. See "Details" of \code{\link{equivalence}}.
+#' @param maxeval_equivalence maximum number of evaulations (\code{maxeval})  that will be passed to optimization function \code{\link[nloptr]{directL}} to find the maximum of the sensitivity function required for calculating ELB. See "Details" of \code{\link{equivalence}}.
 #' @param plot_sensitivity logical; sensitivity should be plotted? see "Details" of \code{\link{equivalence}}.
-#' @seealso \code{\link{equivalence}} and \code{\link{equivalence_on_average}}.
+#' @seealso \code{\link{equivalence}} and \code{\link{equivalence_ave}}.
 #' @details
 #' When \eqn{\lambda_2 = 1}{\lambda1 = 1}, the function checks the equivalence theorem with respect to the
 #'  c-optimality criterion for estimating ED50. When \eqn{\lambda_3 = 1}{\lambda3 = 1}, it checks the equivalence theorem
@@ -75,7 +75,7 @@
 #'  an object of class \code{'equivalence'} that is a list contains:
 #'  \describe{
 #'  \item{\code{max_deriv}}{maximum of the sensitivity function}
-#'  \item{\code{DLB}}{D-efficiency lower bound. If negative, the value of \code{maxeval_equivalence} should be increased to find the global maximum.}
+#'  \item{\code{ELB}}{Efficiency lower bound. If negative, the value of \code{maxeval_equivalence} should be increased to find the global maximum.}
 #'  \item{\code{crtval}}{criterion value.}
 #'  }
 #' @export
@@ -179,7 +179,7 @@ equivalence_multiple <- function(x, w,
 
   # D-efficiency lower bound
   npar <- length(param)
-  DLB <- npar/(npar + max_deriv)
+  ELB <- npar/(npar + max_deriv)
 
   if (plot_sensitivity)
     PlotPsi_x(lower = lx, upper =   ux,
@@ -191,7 +191,7 @@ equivalence_multiple <- function(x, w,
               plot_3d = NULL, # not applicable
               answering = answering)
 
-  object <- list(type = "locally", max_deriv = max_deriv, DLB = DLB, crtval = crtval)
+  object <- list(type = "locally", max_deriv = max_deriv, ELB = ELB, crtval = crtval)
   class(object) <- c("list", "equivalence")
 
   return(object)

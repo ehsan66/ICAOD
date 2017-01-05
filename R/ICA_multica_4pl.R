@@ -1,4 +1,4 @@
-#' Imperialist Competitive Algorithm to find multiple-objective optimal designs for the 4-parameter logistic models.
+#' Imperialist Competitive Algorithm to find multiple-objective optimal designs for the 4-parameter logistic model.
 #'
 #' The 4-parameter Hill model is \eqn{Y_i = f(D_i, a, b, c, d) + \epsilon_i}{Y_i = f(Di, a, b, c, d) + \epsiloni}
 #' where \eqn{\epsilon_i \sim N(0, \sigma^2)}{\epsiloni ~ N(0, \sigma2)},
@@ -27,7 +27,7 @@
 #' @param iter maximum number of iterations.
 #' @param k number of design (support) points. Must be larger than the number of model parameters \eqn{4} to avoid singularity of the FIM.
 #' @param lambda user select weights, where \eqn{\lambda_1}{\lambda1} is the weight for estimating parameters,
-#' \eqn{\lambda_2}{\lambda2} is the weignt for estimating median effective dose level (ED50), and \eqn{\lambda_3}{\lambda3} is the weight for estimating minimum effective dose level (MED).
+#' \eqn{\lambda_2}{\lambda2} is the weight for estimating median effective dose level (ED50), and \eqn{\lambda_3}{\lambda3} is the weight for estimating minimum effective dose level (MED).
 #' @param delta numeric, predetermined clinically significant effect to define the MED.
 #' When the dose-response relationship (slop \eqn{\theta_2}{\theta2}) is decreasing (increasing), the value of \code{delta} is negative (positive).
 #' @param control a list of control parameters. See "Details" of \code{\link{mica}}.
@@ -93,8 +93,8 @@
 #'b <- -1.79 # Hill constant
 #'c <- 0.137 # lower limit
 #'d <- 1.7 # upper limit
-#'D <- c(.001, 1000) ## dose in mg
-#'## Hill_para is c(a, b, c, d)
+#'D belongs to c(.001, 1000) ## dose in mg
+#'## Hill parameters are c(a, b, c, d)
 #'res2 <- multica_4pl(lx = log(.001),
 #'                    ux = log(1000),
 #'                    param =  c(d - c, -b, b * log(a), c),

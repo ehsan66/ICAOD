@@ -27,13 +27,14 @@
 #' @param lx lower bound of the design space \eqn{\chi}.
 #' @param ux upper bound of the design space \eqn{\chi}.
 #' @param type a character strings; \code{'minimax'} for minimax optimal design, \code{'standardized'} for standardized maximin D-optimal design and \code{'locally'} for locally D-optimal design.
-#' @param n.seg the number of starting points for finding all local optima to construct the answering set is \code{(n.seg + 1)^p}. Only for minimax and standardized maximin optimal designs. See "Details".
-#' @param maxeval_equivalence maximum number of evaulations (\code{maxeval})  that will be passed to optimization function \code{\link[nloptr]{directL}} to find the maximum of the sensitivity function required for calculating DLB. See "Details".
+#' @param n.seg determines the number of starting points for finding all local optima to construct the answering set is \code{(n.seg + 1)^p}. Only for minimax and standardized maximin optimal designs. See "Details".
+#' @param maxeval_equivalence maximum number of evaulations (\code{maxeval})  that will be passed to optimization function \code{\link[nloptr]{directL}} to find the maximum of the sensitivity function required for calculating ELB. See "Details".
 #' @param locally a function that returns the value of determinant of FIM for
 #'         the locally D-optimal design, i.e.  \eqn{|M(\xi_{\boldsymbol{\theta}}, \boldsymbol{\theta})|}{|M(\xi_\theta, \theta)|}.
 #'          Only required when \code{type} is set to \code{"standardized"}. See "Details"
-#' @param control_gosolnp  tuning parameters of function \code{\link[Rsolnp]{gosolnp}} for models that their locally optimal design do not have an
-#'  analytical solution and is find by \code{\link[Rsolnp]{gosolnp}}. Only required when \code{type} is set to \code{'standardized'}. See "Details".
+#' @param control_gosolnp  tuning parameters of function \code{\link[Rsolnp]{gosolnp}}. It is applicable only when
+#' \code{typ = 'standardized'} and for the model of interest from the pre-defined information matrices the analytical solution for the locally D-optimal
+#'  design is not available.\code{\link[Rsolnp]{gosolnp}}. See "Details".
 #' @param plot_3d a character strings to show which packages should be used for plotting the sensitivity function when
 #' design space is of two dimension; \code{"lattice"} to use package \link[lattice]{lattice} and \code{"rgl"} to use package \link[rgl]{rgl}.
 #' The package should be installed before use.
@@ -63,8 +64,8 @@
 #'   \deqn{d_{\mbox{eff}} = \left(\frac{\max_{\boldsymbol{\theta} \in \Theta} -\log|M(\xi_D, \boldsymbol{\theta})|}{\max_{\boldsymbol{\theta} \in \Theta} -\log|M(\xi, \boldsymbol{\theta})|}\right)^{1/p},}{
 #'     d_eff = {(maximum over \Theta -log|M(\xi_D, \theta)|)/(maximum over \Theta -log|M(\xi, \theta)|)}^(1/p),}
 #'       where \eqn{\xi_D} is  the minimax D-optimal design.
-#' Using argument similar to Atwood (1969), we obtain a D-efficiency Lower Bound (DLB) for the minimax D-efficiency of a design \eqn{\xi} without knowing \eqn{\xi^*}{\xi*}.
-#' DLB is caluclated by \eqn{p/(p + max_{\boldsymbol{x} \in \chi}c(\boldsymbol{x}, \mu, \xi))}{p/(p + maximum over \chi c(x, \mu, \xi))}, where \eqn{\mu^*}{\mu*}
+#' Using argument similar to Atwood (1969), we obtain a D-efficiency Lower Bound (ELB) for the minimax D-efficiency of a design \eqn{\xi} without knowing \eqn{\xi^*}{\xi*}.
+#' ELB is caluclated by \eqn{p/(p + max_{\boldsymbol{x} \in \chi}c(\boldsymbol{x}, \mu, \xi))}{p/(p + maximum over \chi c(x, \mu, \xi))}, where \eqn{\mu^*}{\mu*}
 #'     is the probability measure defined on \eqn{A(\xi)} that maximizes \eqn{c(x_\xi,\mu,\xi)}{c(x_\xi,\mu,\xi)} over all probability measures \eqn{\mu}
 #'      and \eqn{x_\xi}{x_\xi} is any arbitrary support point of \eqn{\xi}.\cr
 #'
@@ -97,10 +98,10 @@
 #' }
 #' User can also provide its own \code{locally}. In this case, \code{args(locally)}
 #' must be \code{function (param, auxiliary)}, where \code{param} is the vector of parameters and
-#' \code{auxiliary} is an obligatory arguments for internal use when \code{locally = NULL}. Please see
+#' \code{auxiliary} is an obligatory argument for internal use when \code{locally = NULL}. Please see
 #' "Examples" on how to use \code{locally}.\cr
 #'
-#' For output \code{max_deriv}, if the local maximum is found (you can detect it from sensitivity plot) or DLB is negative,
+#' For output \code{max_deriv}, if the local maximum is found (you can detect it from sensitivity plot) or ELB is negative,
 #'  the value of \code{maxeval_equivalence} should be increased to return the global maximum.\cr
 #'
 #'  The criterion value for locally D-optimal design is
@@ -208,11 +209,11 @@
 #'  \item{\code{answering_cost}}{cost of each element of answering set. \code{NA} for locally optimal design.}
 #'  \item{\code{mu}}{probability measure on answering set. Equal to \eqn{1} for locally D-optimal design.}
 #'  \item{\code{max_deriv}}{maximum of the sensitivity function}
-#'  \item{\code{DLB}}{D-efficiency lower bound. If negative, the value of \code{maxeval_equivalence} should be increased to find the global maximum.}
+#'  \item{\code{ELB}}{D-efficiency lower bound. If negative, the value of \code{maxeval_equivalence} should be increased to find the global maximum.}
 #'  \item{\code{crtval}}{criterion value. See "Details".}
 #'  }
 #' @export
-#' @seealso \code{\link{print.equivalence}}, \code{\link{equivalence_on_average}} and \code{\link{equivalence_multiple}}.
+#' @seealso \code{\link{print.equivalence}}, \code{\link{equivalence_ave}} and \code{\link{equivalence_multiple}}.
 
 
 
@@ -494,7 +495,7 @@ equivalence <- function(fimfunc,
   if(length(arg$lx) == 1)
     Psi_x_plot <-  arg$Psi_x ## for PlotPsi_x
 
-  # it is necessary to distniguish between Psi_x for plotiing and finding DLB becasue in plotting for models with two
+  # it is necessary to distniguish between Psi_x for plotiing and finding ELB becasue in plotting for models with two
   # explanatory variables the function should be defined as a function of x, y (x, y here are the ploints to be plotted)
 
   if(length(arg$lx) == 2)
@@ -504,7 +505,7 @@ equivalence <- function(fimfunc,
 
 
   ##############################################################################
-  # finding the answering set, measure and DLB
+  # finding the answering set, measure and ELB
   # coppied from iterate
   if (type != "locally"){
     ## finding the answering set, measure
@@ -603,7 +604,7 @@ equivalence <- function(fimfunc,
   ##########################################################################
 
   # D-efficiency lower bound
-  DLB <- npar/(npar + max_deriv)
+  ELB <- npar/(npar + max_deriv)
 
 
   if (plot_sensitivity)
@@ -625,7 +626,7 @@ equivalence <- function(fimfunc,
                  answering_cost = answering_cost,
                  mu = mu,
                  max_deriv = max_deriv,
-                 DLB = DLB)
+                 ELB = ELB)
 
 
   if (type == "locally")

@@ -32,7 +32,6 @@ Calculate_Cost <- function(mat, fixed_arg){
       x <- x_w$x
       w <- x_w$w
     }
-
     optim_func <- fixed_arg$optim_func
     store[[i]] <- optim_func(fn = fixed_arg$crfunc2,
                              x = x,
@@ -48,7 +47,6 @@ Calculate_Cost <- function(mat, fixed_arg){
 
     x <- w <-MinRowId <- NA
   }
-
 ##we multiply the cost function by negative for maximin and minimax optimal design!
 
 if(fixed_arg$type != "locally" && fixed_arg$type != "optim_on_average"){

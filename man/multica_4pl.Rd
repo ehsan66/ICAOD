@@ -2,7 +2,7 @@
 % Please edit documentation in R/ICA_multica_4pl.R
 \name{multica_4pl}
 \alias{multica_4pl}
-\title{Imperialist Competitive Algorithm to find multiple-objective optimal designs for the 4-parameter logistic models.}
+\title{Imperialist Competitive Algorithm to find multiple-objective optimal designs for the 4-parameter logistic model.}
 \usage{
 multica_4pl(lx, ux, param, iter, k, delta, lambda, control = list(),
   initial = NULL)
@@ -22,7 +22,7 @@ multica_4pl(lx, ux, param, iter, k, delta, lambda, control = list(),
 When the dose-response relationship (slop \eqn{\theta_2}{\theta2}) is decreasing (increasing), the value of \code{delta} is negative (positive).}
 
 \item{lambda}{user select weights, where \eqn{\lambda_1}{\lambda1} is the weight for estimating parameters,
-\eqn{\lambda_2}{\lambda2} is the weignt for estimating median effective dose level (ED50), and \eqn{\lambda_3}{\lambda3} is the weight for estimating minimum effective dose level (MED).}
+\eqn{\lambda_2}{\lambda2} is the weight for estimating median effective dose level (ED50), and \eqn{\lambda_3}{\lambda3} is the weight for estimating minimum effective dose level (MED).}
 
 \item{control}{a list of control parameters. See "Details" of \code{\link{mica}}.}
 
@@ -107,8 +107,8 @@ a <- 0.008949  # ED50
 b <- -1.79 # Hill constant
 c <- 0.137 # lower limit
 d <- 1.7 # upper limit
-D <- c(.001, 1000) ## dose in mg
-## Hill_para is c(a, b, c, d)
+D belongs to c(.001, 1000) ## dose in mg
+## Hill parameters are c(a, b, c, d)
 res2 <- multica_4pl(lx = log(.001),
                    ux = log(1000),
                    param =  c(d - c, -b, b * log(a), c),

@@ -23,7 +23,7 @@ equivalence_multiple(x, w, lx, ux, param, lambda, delta,
 
 \item{delta}{numeric, predetermined clinically significant effect to define the MED.}
 
-\item{maxeval_equivalence}{maximum number of evaulations (\code{maxeval})  that will be passed to optimization function \code{\link[nloptr]{directL}} to find the maximum of the sensitivity function required for calculating DLB. See "Details" of \code{\link{equivalence}}.}
+\item{maxeval_equivalence}{maximum number of evaulations (\code{maxeval})  that will be passed to optimization function \code{\link[nloptr]{directL}} to find the maximum of the sensitivity function required for calculating ELB. See "Details" of \code{\link{equivalence}}.}
 
 \item{plot_sensitivity}{logical; sensitivity should be plotted? see "Details" of \code{\link{equivalence}}.}
 }
@@ -31,7 +31,7 @@ equivalence_multiple(x, w, lx, ux, param, lambda, delta,
 an object of class \code{'equivalence'} that is a list contains:
  \describe{
  \item{\code{max_deriv}}{maximum of the sensitivity function}
- \item{\code{DLB}}{D-efficiency lower bound. If negative, the value of \code{maxeval_equivalence} should be increased to find the global maximum.}
+ \item{\code{ELB}}{Efficiency lower bound. If negative, the value of \code{maxeval_equivalence} should be increased to find the global maximum.}
  \item{\code{crtval}}{criterion value.}
  }
 }
@@ -97,6 +97,6 @@ equivalence_multiple (x = c(log(.001), -4.6150000, -4.6000000, log(1000)),
 }
 }
 \seealso{
-\code{\link{equivalence}} and \code{\link{equivalence_on_average}}.
+\code{\link{equivalence}} and \code{\link{equivalence_ave}}.
 }
 

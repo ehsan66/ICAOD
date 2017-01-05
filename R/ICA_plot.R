@@ -101,7 +101,7 @@ plot.ICA <- function(x, iter = NULL,  sensitivity = TRUE, print_equivalence = FA
                          n.seg = object$arg$control$n.seg,
                          maxeval_equivalence = object$arg$control$maxeval_equivalence)
     if (type == "optim_on_average")
-      out <- equivalence_on_average(fimfunc = object$arg$FIM,
+      out <- equivalence_ave(fimfunc = object$arg$FIM,
                                     x = object$evol[[totaliter]]$x,
                                     w = object$evol[[totaliter]]$w,
                                     param = object$arg$param,

@@ -1,27 +1,23 @@
 ## Test environments
-* local OS X install, R  3.3.1 
+* local OS X install, R 3.3.2
+* ubuntu 12.04 (on travis-ci), R 3.3.2
 * win-builder (devel and release)
-* Windows10 R  3.3.1 
 
 ## R CMD check results
-There were no ERRORs or WARNINGs.
 
-One NOTE for email: my first submission.
+0 errors | 0 warnings | 1 note
 
-Reverse dependencies: checked by devtools:
-No ERRORs or WARNINGs found 
+* This is a new release.
 
+## Reverse dependencies
 
+This is a new release, so there are no reverse dependencies.
 
-Re-submission1
-1- 'ICA' abbreviation has been removed from title.
-2- some examples were added. However, the cpu time is increased.
-3- checked by win-build again. only one NOTE:
+---
 
-* checking CRAN incoming feasibility ... NOTE
+* I have run R CMD check on the NUMBER downstream dependencies.
+  (Summary at ...). 
+  
+* FAILURE SUMMARY
 
-Re-submission2
-thanks for reminding me.
-1- Some description is added to the description field
-2- URL are added for BugReports 
-
+* All revdep maintainers were notified of the release on RELEASE DATE.

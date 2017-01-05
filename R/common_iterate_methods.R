@@ -4,7 +4,7 @@
 #' @param object object of class 'ICA'.
 #' @param iter number of iterations.
 #' @return object of class 'ICA'.
-#'
+#' @export
 
 iterate <- function(object, iter){
   UseMethod("iterate")

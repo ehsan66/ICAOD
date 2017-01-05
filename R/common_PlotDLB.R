@@ -1,20 +1,20 @@
 
-PlotDLB <- function(Iter ,
-                         DLB,
+PlotELB <- function(Iter ,
+                         ELB,
                          plot_main = TRUE,
                          ...){
-  # Iter: the iterations of DLB
-  # DLB: a vector of D-efficiency lower bounds
+  # Iter: the iterations of ELB
+  # ELB: a vector of Efficiency lower bounds
 
   cex.main <- .9
   prec <- 8
 
   if(plot_main)
-    main1 <- paste("D-Efficiency Lower Bound (DLB): ", round(DLB[length(DLB)], prec), paste = "") else
+    main1 <- paste("D-Efficiency Lower Bound (ELB): ", round(ELB[length(ELB)], prec), paste = "") else
       main1 = NULL
 
-  plot(x = Iter, y = DLB ,
-       xlim = c(Iter[1], Iter[length(Iter)]), xlab = "Iteration", ylab = "D-Efficiency Lower Bound (DLB)", type = "s",
+  plot(x = Iter, y = ELB ,
+       xlim = c(Iter[1], Iter[length(Iter)]), xlab = "Iteration", ylab = "D-Efficiency Lower Bound (ELB)", type = "s",
        main = main1,
        cex.main = cex.main,
        xaxt = "n",...)

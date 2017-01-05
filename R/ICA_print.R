@@ -29,10 +29,10 @@ print.ICA <- function(x, iter = NULL, ...){
   ### printing, match with cat in iterate.ICA
   cat("\n###################################################\n## ICA generated design:")
   if (type != "locally" && type != "optim_on_average" && type != "multiple_locally")
-    cat("\nICA iter:", totaliter, "\nPoints:", object$evol[[totaliter]]$x,
-        "\nWeights: ", object$evol[[totaliter]]$w,
+    cat("\nICA iter:", totaliter, "\npoints:", object$evol[[totaliter]]$x,
+        "\nweights: ", object$evol[[totaliter]]$w,
         "\nparam: ", object$evol[[totaliter]]$param,
-        "\nBest criterion value: ", object$evol[[totaliter]]$min_cost) else
+        "\nbest criterion value: ", object$evol[[totaliter]]$min_cost) else
           cat("\nICA iter:", totaliter, "\nPoints:", object$evol[[totaliter]]$x,
               "\nWeights: ", object$evol[[totaliter]]$w,
               "\nBest criterion value: ", object$evol[[totaliter]]$min_cost)
@@ -44,7 +44,7 @@ print.ICA <- function(x, iter = NULL, ...){
   # cat("\nanswering cost value: ", object$evol[[totaliter]]$answering_cost)
 
   cat("\nmaximum of derivative plot:", object$evol[[totaliter]]$max_deriv,
-      "\nD-efficiency lower bound (DLB):", object$evol[[totaliter]]$DLB)
+      "\nefficiency lower bound (ELB):", object$evol[[totaliter]]$ELB)
 
   cat("\ntotal local search:", object$alg$nlocal, "\ntotal revolution:", object$alg$nrevol)
   if (object$arg$control$only_improve)

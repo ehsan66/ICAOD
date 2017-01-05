@@ -148,7 +148,7 @@ iterate.ICA <- function(object, iter){
   if(length(arg$lx) == 1)
     Psi_x_plot <-  arg$Psi_x ## for PlotPsi_x
 
-  # it is necessary to distniguish between Psi_x for plotiing and finding DLB becasue in plotting for models with two
+  # it is necessary to distniguish between Psi_x for plotiing and finding ELB becasue in plotting for models with two
   # explanatory variables the function should be defined as a function of x, y (x, y here are the ploints to be plotted)
 
   if(length(arg$lx) == 2)
@@ -553,10 +553,10 @@ iterate.ICA <- function(object, iter){
     ################################################################ print trace
     if (control$trace){
       if (type != "locally" && type != "optim_on_average")
-        cat("\nICA iter:", totaliter, "\nPoints:", x, "\nWeights: ", w, "\nparam: ",
-            inparam, "\nBest criterion value: ", min_cost[totaliter],"\n") else
-              cat("\nICA iter:", totaliter, "\nPoints:", x, "\nWeights: ", w,
-                  "\nBest criterion value: ", min_cost[totaliter],"\n")
+        cat("\nICA iter:", totaliter, "\npoints:", x, "\nweights: ", w, "\nparam: ",
+            inparam, "\nbest criterion value: ", min_cost[totaliter],"\n") else
+              cat("\nICA iter:", totaliter, "\npoints:", x, "\nweights: ", w,
+                  "\nbest criterion value: ", min_cost[totaliter],"\n")
     }
     ############################################################################
 
@@ -602,7 +602,7 @@ iterate.ICA <- function(object, iter){
     ############################################################################
 
     ####################################################################################
-    #check the equivalence theorem and find DLB
+    #check the equivalence theorem and find ELB
     ####################################################################################
     ## we check the quvalence theorem in the last iteration anyway. but we may not plot it.
     if (check_counter == control$equivalence_every || (check_last && !continue)){
@@ -710,16 +710,16 @@ iterate.ICA <- function(object, iter){
       max_deriv <- max(max_deriv)
       ##########################################################################
 
-      # D-efficiency lower bound
-      DLB <- npar/(npar + max_deriv)
+      # Efficiency lower bound
+      ELB <- npar/(npar + max_deriv)
 
       ###Point_mat <- matrix(x, ncol = n_independent, nrow = arg$k)
 
-      GE_confirmation <- (DLB >= control$stoptol)
+      GE_confirmation <- (ELB >= control$stoptol)
       ##########################################################################
       # print trace that is related to checking
       if (control$trace)
-        cat("Maximum of sensitivity:", max_deriv, "\nD-efficiency lower bound (DLB):", DLB, "\n")
+        cat("maximum of sensitivity:", max_deriv, "\nefficiency lower bound (ELB):", ELB, "\n")
       ##########################################################################
 
       #if (n_independent == 1){
@@ -741,7 +741,7 @@ iterate.ICA <- function(object, iter){
                   answering = answering)
       ##########################################################################
     }else
-      max_deriv <- answering <- answering_cost <-all_optima <- all_optima_cost  <- mu <- DLB <- NA
+      max_deriv <- answering <- answering_cost <-all_optima <- all_optima_cost  <- mu <- ELB <- NA
     ####################################################################### end of check
     #  if (check_counter == control$equivalence_every || (check_last && !continue)) ##########
     ####################################################################################
@@ -763,7 +763,7 @@ iterate.ICA <- function(object, iter){
                               answering_cost = answering_cost,
                               mu = mu,
                               max_deriv = max_deriv,
-                              DLB = DLB)
+                              ELB = ELB)
 
     if (type != "locally" && type != "optim_on_average"){
       evol[[totaliter]]$param = inparam
@@ -773,10 +773,10 @@ iterate.ICA <- function(object, iter){
 
     ################################################################ print trace
     if (control$trace){
-      cat("Total local search:", total_nlocal, "\n")
-      cat("Total revolution:", total_nrevol, "\n")
+      cat("total local search:", total_nlocal, "\n")
+      cat("total revolution:", total_nrevol, "\n")
       if (control$only_improve)
-        cat("Total improve:", total_nimprove, "\n")
+        cat("total improve:", total_nimprove, "\n")
     }
     ############################################################################
   }
@@ -787,7 +787,7 @@ iterate.ICA <- function(object, iter){
   if (!control$only_improve)
     total_nimprove <- NA
 
-  #if (DLB >= control$stoptol && control$stop_rule == "equivalence")
+  #if (ELB >= control$stoptol && control$stop_rule == "equivalence")
   #  convergence = "equivalence" else
 
   ##############################################################################
@@ -826,7 +826,7 @@ iterate.ICA <- function(object, iter){
   #   answering = evol[[totaliter]]$answering,
   #   answering_cost = evol[[totaliter]]$answering_cost,
   #   max_deriv = evol[[totaliter]]$max_deriv,
-  #   DLB = evol[[totaliter]]$DLB,
+  #   ELB = evol[[totaliter]]$ELB,
   #   mu = evol[[totaliter]]$mu,
   #   nfeval = total_nfeval,
   #   nlocal = total_nlocal,

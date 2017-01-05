@@ -27,9 +27,9 @@ As a \code{character}, it must be the name of the FIM function that are availabl
 
 \item{control}{a list of control parameters. See "Details".}
 
-\item{control_gosolnp}{tuning parameters of function \code{\link[Rsolnp]{gosolnp}} for models that their locally optimal design do not have an
-analytical solution and is find by \code{\link[Rsolnp]{gosolnp}}. Only required when \code{type} is set to \code{'standardized'}.
-See "Details" of \code{\link{equivalence}}.}
+\item{control_gosolnp}{tuning parameters of function \code{\link[Rsolnp]{gosolnp}}. It is applicable only when
+\code{typ = 'standardized'} and for the model of interest from the pre-defined information matrices the analytical solution for the locally D-optimal
+ design is not available.\code{\link[Rsolnp]{gosolnp}}. See "Details" of \code{\link{equivalence}}.}
 
 \item{type}{a character strings; \code{"minimax"} for minimax optimal design, \code{"standardized"} for standardized maximin D-optimal design and \code{"locally"} for locally D-optimal design.
 When \code{"locally"}, then  \code{lp} must be set equal to \code{up}.}
@@ -62,7 +62,7 @@ an object of class "ICA" that is a list contains another three lists:
       \code{answering_cost}         \tab      \tab cost of each element of answering set. \code{NA} for locally optimal design. \cr
       \code{mu}                     \tab      \tab found probability measure on answering set. \code{NA} for locally optimal design. \cr
       \code{max_deriv}              \tab      \tab maximum of the sensitivity function.  \cr
-      \code{DLB}                    \tab      \tab D-efficiency lower bound. \cr
+      \code{ELB}                    \tab      \tab D-efficiency lower bound. \cr
       \code{inner_param}            \tab      \tab inner parameter. See "Details".\cr
     }
   }
@@ -100,7 +100,7 @@ where the minization is over \eqn{\Xi} and \eqn{\theta_0}{\theta0} is the initia
 }
 \details{
 \code{fimfunc}  as a \code{function} must have three arguments:
-  1) desig points \code{x},
+  1) design points \code{x},
   2) weights \code{w} and 3) model parameters \code{param}.
    The output should be of type \code{matrix}.
     Further parameters can be set, but should be passed by  \code{...} in \code{mica} (like parameter \eqn{s} in power logistic model).
@@ -144,9 +144,9 @@ The \code{control} argument is a list that can supply any of the following compo
   \item{\code{stop_rule}}{a character string denotes stopping rule.
   When \code{"maxiter"}, then  ICA only stops when  reachs the maximum number of iterations.
   When \code{"one_empire"}, then ICA stops if either all empires collapsed and one empire remains or reachs the maximum number of iterations.
-  When \code{"equivalence"}, then ICA stops if either the D-efficiency lower bound (\code{DLB}) of the current design is greater than \code{stoptol} or reachs the maximum number of iterations.}
-  \item{\code{stoptol}}{numeric between \eqn{0} and \eqn{1}. The minimum \code{DLB} for the best current imperialist (best design) to stop the algorithm by equivalence theorem when \code{stop_rule = "equivalence"}. Defaults to \code{0.99}.}
-  \item{\code{equivalence_every}}{a positive integer. Check and compute \code{DLB} in every \code{equivalence_every} iteration. Checking equivalence theorem in small intervals slows down the algorithm. Defaults to \code{200}.}
+  When \code{"equivalence"}, then ICA stops if either the D-efficiency lower bound (\code{ELB}) of the current design is greater than \code{stoptol} or reachs the maximum number of iterations.}
+  \item{\code{stoptol}}{numeric between \eqn{0} and \eqn{1}. The minimum \code{ELB} for the best current imperialist (best design) to stop the algorithm by equivalence theorem when \code{stop_rule = "equivalence"}. Defaults to \code{0.99}.}
+  \item{\code{equivalence_every}}{a positive integer. Check and compute \code{ELB} in every \code{equivalence_every} iteration. Checking equivalence theorem in small intervals slows down the algorithm. Defaults to \code{200}.}
   \item{\code{equal_weight}}{logical; whether the points should have equal weights. Defaults to \code{FALSE}.}
   \item{\code{sym}}{logical. Whether the design is symmetric around a point. If \code{TRUE} then \code{sym_point} must be given. Defaults to \code{FALSE}}
   \item{\code{sym_point}}{a vector of the same length as \code{lx}. The point that the design is symmetric around.
@@ -192,7 +192,7 @@ Please note that the speed of \code{mica} highly depends on the \code{inner_maxe
 \code{equivalence_every} and \code{l} in local search are the other factors that impact the CPU time.\cr
 
 From Section "Value",  note that \code{all_optima}, \code{all_optima_cost}, \code{answering}, \code{answering_cost},
-   \code{mu},  \code{max_deriv} and \code{DLB} are  \code{NA} when the
+   \code{mu},  \code{max_deriv} and \code{ELB} are  \code{NA} when the
       equivalence theorem was not requested for that iteration by \code{equivalence_every} in control.
        For example, if \code{equivalence_every = 100}, then  the equivalence theorem is only check for
        best designs in iteration \eqn{100}, \eqn{200}, \eqn{300} and so on.\cr
@@ -262,15 +262,13 @@ mica(fimfunc = logistic_fim, lx = -5, ux = 5, lp = c(-1, 1), up = c(-1 , 1),
 mica(fimfunc = "FIM_comp_inhibition", lx = c(0, 0), ux = c(30, 60),
     lp = c(7, 4, 2), up = c(7, 5, 3), k =3, type = "standardized",
     iter = 300, control = list(rseed = 215, inner_maxit = 300,
-                               stop_rule = "equivalence",
-                               countries = 100, nimperialists = 10))
+                               stop_rule = "equivalence"))
 
 ## setting the parameter space as only the points on the vertices
 mica(fimfunc = "FIM_comp_inhibition", lx = c(0, 0), ux = c(30, 60),
     lp = c(7, 4, 2), up = c(7, 5, 3), k =3, type = "standardized",
     iter = 300, control = list(rseed = 215, inner_space = "vertices",
-                               stop_rule = "equivalence",
-                               countries = 100, nimperialists = 10))
+                               stop_rule = "equivalence"))
 
 ## every row is one of the vertices of Theta
 param_set <- matrix(c(7, 4, 2, 7, 5, 2, 7, 4, 3, 7, 5, 3),
@@ -278,8 +276,8 @@ param_set <- matrix(c(7, 4, 2, 7, 5, 2, 7, 4, 3, 7, 5, 3),
 res <-mica(fimfunc = "FIM_comp_inhibition", lx = c(0, 0), ux = c(30, 60),
           lp = c(7, 4, 2), up = c(7, 5, 3), k =3, type = "standardized",
           iter = 300, control = list(rseed = 215,inner_space = "discrete",
-                                     stop_rule = "equivalence", countries = 100,
-                                     nimperialists = 10, param_set = param_set))
+                                     stop_rule = "equivalence",
+                                      param_set = param_set))
 
 
 #######################################################################
