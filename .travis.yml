@@ -2,6 +2,6 @@
 
 language: R
 r:
-  - release
+  - 3.3.2
 sudo: false
 cache: packages
