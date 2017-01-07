@@ -2,37 +2,45 @@
 % Please edit documentation in R/common_equivalence_multiple.R
 \name{equivalence_multiple}
 \alias{equivalence_multiple}
-\title{Checking the optimality of a given design with respect to  the multi-objective criterion for the 4-parameter logisitic model.}
+\title{Checking the optimality of a given design with respect to  the multi-objective criterion for the 4-parameter logistic model.}
 \usage{
 equivalence_multiple(x, w, lx, ux, param, lambda, delta,
   maxeval_equivalence = 6000, plot_sensitivity = TRUE)
 }
 \arguments{
-\item{x}{a vector of design points. When design space is multi-dimensional then \code{x} should be filled dimension by dimension. See "Examples".}
+\item{x}{a vector of design points. If the  model has \eqn{n} explanatory variables, let \eqn{x_{ij}}
+ be the \eqn{j}th component of the $\eqn{i}th design point.
+The argument \code{x} is \eqn{x = (x_{11}, x_{21},..., x_{k1},..., x_{1n}, x_{2n},... x_{kn})}.
+See "Examples" on how to set this argument when the design space does not have one dimension, e.g. is of two-dimension.}
 
-\item{w}{a vector of design weights.}
+\item{w}{a vector of design weights
+For  the locally D-optimal design,\code{lp} and \code{up}  must be fixed to the same values, i.e. \code{lp = up}.}
 
-\item{lx}{lower bound of the design space \eqn{\chi}.}
+\item{lx}{lower bound of the design space \eqn{\chi}}
 
-\item{ux}{upper bound of the design space \eqn{\chi}.}
+\item{ux}{upper bound of the design space \eqn{\chi}}
 
-\item{param}{initial guess for parameters \eqn{\Theta = (\theta_1, \theta_2, \theta_3, \theta_4)}{\Theta = (\theta1, \theta2, \theta3, \theta4)}.}
+\item{param}{a vector of parameters  \eqn{\bold{\theta} = (\theta_1, \theta_2, \theta_3, \theta_4)}{\theta = (\theta1, \theta2, \theta3, \theta4)}.}
 
-\item{lambda}{user select weights, where \eqn{\lambda_1}{\lambda1} is the weight for estimating parameters,
-\eqn{\lambda_2}{\lambda2} is the weignt for estimating median effective dose level (ED50), and \eqn{\lambda_3}{\lambda3} is the weight for estimating minimum effective dose level (MED).}
+\item{lambda}{the relative importance of each of the 3 criteria,
+i.e. \eqn{\lambda = (\lambda_1, \lambda_2, \lambda_3)}{\lambda = (\lambda1, \lambda2, \lambda3)}.
+ Here \eqn{0 < \lambda_i < 1}{0 < \lambdai < 1} and the sum of \eqn{\lambda_1}{\lambda1}, \eqn{\lambda_2}{\lambda2} and \eqn{\lambda_3}{\lambda3}
+ must be one.}
 
-\item{delta}{numeric, predetermined clinically significant effect to define the MED.}
+\item{delta}{predetermined meaningful value of the minimum effective dose MED.}
 
-\item{maxeval_equivalence}{maximum number of evaulations (\code{maxeval})  that will be passed to optimization function \code{\link[nloptr]{directL}} to find the maximum of the sensitivity function required for calculating ELB. See "Details" of \code{\link{equivalence}}.}
+\item{maxeval_equivalence}{maximum number of evaluations (\code{maxeval})  that will be passed to optimization
+function \code{\link[nloptr]{directL}} to find the maximum of the sensitivity function required for calculating ELB. See "Details" of \code{\link{equivalence}}.}
 
-\item{plot_sensitivity}{logical; sensitivity should be plotted? see "Details" of \code{\link{equivalence}}.}
+\item{plot_sensitivity}{\code{logical}, if \code{TRUE}, the sensitivity function will be plotted.}
 }
 \value{
 an object of class \code{'equivalence'} that is a list contains:
  \describe{
  \item{\code{max_deriv}}{maximum of the sensitivity function}
- \item{\code{ELB}}{Efficiency lower bound. If negative, the value of \code{maxeval_equivalence} should be increased to find the global maximum.}
- \item{\code{crtval}}{criterion value.}
+ \item{\code{ELB}}{Efficiency lower bound
+ If it is negative, then the value of \code{maxeval_equivalence} should be increased to find the global maximum.}
+ \item{\code{crtval}}{criterion value}
  }
 }
 \description{

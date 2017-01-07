@@ -8,27 +8,27 @@ ave(fimfunc, lx, ux, prior, param, iter, k, control = list(),
   initial = NULL, ...)
 }
 \arguments{
-\item{fimfunc}{FIM as a \code{function} or a \code{character} string. See \link{mica} argument.}
+\item{fimfunc}{the name of the FIM from available FIM functions in the package as a character string or the user-written function that returns the FIM as a \code{matrix}. See "Details" in \link{mica}.}
 
-\item{lx}{lower bound of the design space \eqn{\chi}.}
+\item{lx}{lower bound of the design space \eqn{\chi}}
 
-\item{ux}{upper bound of the design space \eqn{\chi}.}
+\item{ux}{upper bound of the design space \eqn{\chi}}
 
-\item{prior}{a vector of probability measure \eqn{\pi}.}
+\item{prior}{a vector of the probability measure \eqn{\pi}.}
 
-\item{param}{a matrix for set of parameters, i.e. support of \eqn{\pi}. Every row is is a vector of values of parameters.
+\item{param}{a matrix for set of parameters, i.e. support of \eqn{\pi}. Every row is is a vector of values of a parameter.
 The number of its rows must be equal to the length of \code{prior}.}
 
-\item{iter}{maximum number of iterations.}
+\item{iter}{maximum number of iterations}
 
 \item{k}{number of design (support) points. Must be larger than the number of model parameters \eqn{p} to avoid singularity of the FIM.}
 
-\item{control}{a list of control parameters. See "Details" of \code{\link{mica}}.}
+\item{control}{a list of contains the tuning parameters of ICA and the design problem. See "Details" of \code{\link{mica}}.}
 
-\item{initial}{initial a matrix of user intial countries or
-a vector of a country that will be inserted  into the initial countries of ICA. See "Details" of \code{\link{mica}}.}
+\item{initial}{a matrix of the  initial designs that will be used as initial countries in ICA.
+Every row is a design and concatenation of \code{x} and \code{w}.  Default is \code{NULL}. See "Details" of \code{\link{mica}}.}
 
-\item{...}{further arguments to be passed to the FIM function corresponding to \code{fimfunc}. For power logisitc model when \code{fimfunc} is equal to \code{FIM_power_logistic}, the value of  \code{s} should be given here.}
+\item{...}{further arguments to be passed to the FIM function given by \code{fimfunc}.}
 }
 \value{
 an object of class "ICA". See "Value" in \code{\link{mica}}.

@@ -5,7 +5,7 @@
 #' @param x an object of class "ICA".
 #' @param iter iteration.
 #' @param ... argument with no further use.
-#' @seealso \code{\link{mica}}
+#' @seealso \code{\link{mica}}, \code{\link{multica_4pl}} and \code{\link{ave}}
 #' @export
 
 print.ICA <- function(x, iter = NULL, ...){

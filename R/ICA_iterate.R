@@ -1,5 +1,8 @@
 # roxygen
 #' Update an object of class 'ICA'
+#'
+#' Function \code{iterate.ICA} takes an object of class \code{"ICA"} and runs the ICA algorithm and updates the results.
+#'
 #' @param object an object of class 'ICA'.
 #' @param iter number of iterations.
 #' @seealso \code{\link{mica}}

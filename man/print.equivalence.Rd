@@ -15,6 +15,6 @@
 Print method for an object of class "equivalence".
 }
 \seealso{
-\code{\link{equivalence}}, \code{\link{equivalence_multiple}} and \code{\link{equivalence_on_average}}.
+\code{\link{equivalence}}, \code{\link{equivalence_multiple}} and \code{\link{equivalence_ave}}.
 }
 

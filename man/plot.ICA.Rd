@@ -23,6 +23,6 @@ Only applicable when \code{sensitivity = TRUE}.}
 Plot method for an object of class "ICA".
 }
 \seealso{
-\code{\link{mica}}
+\code{\link{mica}}, \code{\link{multica_4pl}} and \code{\link{ave}}
 }
 

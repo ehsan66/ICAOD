@@ -8,7 +8,7 @@
 #' @param print_equivalence logical; if \code{TRUE} the result of checking by equivalence theorem will be printed.
 #' Only applicable when \code{sensitivity = TRUE}.
 #' @param ... argument with no further use.
-#' @seealso \code{\link{mica}}
+#' @seealso \code{\link{mica}}, \code{\link{multica_4pl}} and \code{\link{ave}}
 #' @export
 
 plot.ICA <- function(x, iter = NULL,  sensitivity = TRUE, print_equivalence = FALSE, ...){

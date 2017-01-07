@@ -8,77 +8,79 @@ mica(fimfunc, lx, ux, lp, up, iter, k, control = list(),
   control_gosolnp = list(), type, initial = NULL, locally = NULL, ...)
 }
 \arguments{
-\item{fimfunc}{FIM as a \code{function} or \code{character}.
-As a \code{character}, it must be the name of the FIM function that are available,
- e.g. \code{as.character(substitute(FIM_logistic))}.
-   As a \code{function} it must return the information matrix.  See "Details".}
+\item{fimfunc}{the name of the FIM from available FIM functions in the package as a character string or the user-written function that returns the FIM as a \code{matrix}.
+See "Details".}
 
-\item{lx}{lower bound of the design space \eqn{\chi}.}
+\item{lx}{lower bound of the design space \eqn{\chi}}
 
-\item{ux}{upper bound of the design space \eqn{\chi}.}
+\item{ux}{upper bound of the design space \eqn{\chi}}
 
-\item{lp}{lower bound of the region of unceratinty \eqn{\Theta}. The order of the dimension is the same as the order of the parameters in the argument \code{param}of \code{fimfunc}.}
+\item{lp}{lower bound of the region of uncertainty \eqn{\Theta}. As same order as the argument \code{param} of \code{fimfunc}.}
 
-\item{up}{upper bound of the region of unceratinty \eqn{\Theta}. If \code{lp = up}, then \eqn{\Theta = \theta_0}{\Theta = \theta0} and the genearted design is locally D-optimal design. See "Examples".}
+\item{up}{upper bound of the region of uncertainty \eqn{\Theta}.
+For  the locally D-optimal design,\code{lp} and \code{up}  must be fixed to the same values, i.e. \code{lp = up}.}
 
 \item{iter}{maximum number of iterations.}
 
 \item{k}{number of design (support) points. Must be larger than the number of model parameters \eqn{p} to avoid singularity of the FIM.}
 
-\item{control}{a list of control parameters. See "Details".}
+\item{control}{a list of contains the tuning parameters of ICA and the design problem. See "Details".}
 
-\item{control_gosolnp}{tuning parameters of function \code{\link[Rsolnp]{gosolnp}}. It is applicable only when
-\code{typ = 'standardized'} and for the model of interest from the pre-defined information matrices the analytical solution for the locally D-optimal
- design is not available.\code{\link[Rsolnp]{gosolnp}}. See "Details" of \code{\link{equivalence}}.}
+\item{control_gosolnp}{tuning parameters of the function \code{\link[Rsolnp]{gosolnp}}.
+Only when 1) \code{type = "standardized"} 2) \code{fimfunc} is a character string  3) locally D-optimal design is not available in a closed-form.
+See "Details" of \code{\link{equivalence}} for its components.}
 
-\item{type}{a character strings; \code{"minimax"} for minimax optimal design, \code{"standardized"} for standardized maximin D-optimal design and \code{"locally"} for locally D-optimal design.
-When \code{"locally"}, then  \code{lp} must be set equal to \code{up}.}
+\item{type}{a character string that shows the type of optimal design. \code{"minimax"} for a minimax optimal design, \code{"standardized"} for a standardized maximin D-optimal design and \code{"locally"} for a locally D-optimal design.
+When \code{type = "locally"}, then  \code{lp} must be set equal to \code{up}.}
 
-\item{initial}{a matrix of user intial countries or a vector of a country that will be inserted  into the initial countries of ICA. See "Details" .}
+\item{initial}{a matrix of the  initial designs that will be used as initial countries in ICA.
+Every row is a design and concatenation of \code{x} and \code{w}.  Default is \code{NULL}. See "Details" on how to define it when the design space is not of one dimension.}
 
-\item{locally}{locally a function that returns the value of determinant of FIM for
+\item{locally}{a function that returns the value of determinant of FIM for
 the locally D-optimal design, i.e.  \eqn{|M(\xi_{\bold{\theta}}, \bold{\theta})|}{|M(\xi_\theta, \theta)|}.
- Only required when \code{type} is set to \code{"standardized"}. See "Details" of \code{\link{equivalence}}.}
+ Only required when \code{type = "standardized"}. See "Details" of \code{\link{equivalence}}.}
 
-\item{...}{further arguments to be passed to the FIM function corresponding to \code{fimfunc}.
-For power logisitc model when \code{fimfunc} is equal to \code{"FIM_power_logistic"},
- the value of  \code{s} must be given here.}
+\item{...}{further arguments to be passed to the FIM function given by \code{fimfunc}.}
 }
 \value{
-an object of class "ICA" that is a list contains another three lists:
+an object of class "ICA" that is a list containing three sub-lists:
 \describe{
-  \item{\code{arg}}{a list contains the arguments. Required for other methods.}
-  \item{\code{evol}}{a list as length as the number of iterations to save the best design (best imperialist) in each iteration.
+  \item{\code{arg}}{a list of design and algorithm parameters}
+  \item{\code{evol}}{a list that stores the best design (the most powerful imperialist)  in each iteration. The output design is stored in the last component of the list.
    \code{evol[[iter]]} contains:
     \tabular{lll}{
-      \code{iter}                   \tab      \tab iteration. \cr
-      \code{x}                      \tab      \tab design point. \cr
-      \code{w}                      \tab      \tab design weight. \cr
-      \code{min_cost}               \tab      \tab cost of the best imperialist. \cr
-      \code{mean_cost}              \tab      \tab mean of costs of all imperialists. \cr
-      \code{all_optima}             \tab      \tab all optima of the inner problem. \code{NA} for locally optimal design. \cr
-      \code{all_optima_cost}        \tab      \tab cost of all optima of the inner problem. \code{NA} for locally optimal design. \cr
-      \code{answering}              \tab      \tab answering set. \code{NA} for locally optimal design. \cr
-      \code{answering_cost}         \tab      \tab cost of each element of answering set. \code{NA} for locally optimal design. \cr
-      \code{mu}                     \tab      \tab found probability measure on answering set. \code{NA} for locally optimal design. \cr
+      \code{iter}                   \tab      \tab iteration.\cr
+      \code{x}                      \tab      \tab design points \cr
+      \code{w}                      \tab      \tab design weights \cr
+      \code{min_cost}               \tab      \tab cost (criterion value) of the best imperialist \cr
+      \code{mean_cost}              \tab      \tab mean of costs of all imperialists \cr
+      \code{all_optima}             \tab      \tab all optima of the inner problem. It is \code{NA} for a locally optimal design. \cr
+      \code{all_optima_cost}        \tab      \tab cost of all optima of the inner problem. It is \code{NA} for a locally optimal design. \cr
+      \code{answering}              \tab      \tab answering set. It is \code{NA} for a locally optimal design. \cr
+      \code{answering_cost}         \tab      \tab cost of each element of the answering set. It is \code{NA} for a locally optimal design. \cr
+      \code{mu}                     \tab      \tab the probability measure on the answering set. It is \code{NA} for a locally optimal design. \cr
       \code{max_deriv}              \tab      \tab maximum of the sensitivity function.  \cr
-      \code{ELB}                    \tab      \tab D-efficiency lower bound. \cr
-      \code{inner_param}            \tab      \tab inner parameter. See "Details".\cr
+      \code{ELB}                    \tab      \tab D-efficiency lower bound \cr
+      \code{inner_param}            \tab      \tab inner parameter \cr
     }
   }
 
-  \item{\code{empires}}{a list of empires.}
-  \item{\code{alg}}{a list that contains the best solution with components:
+  \item{\code{empires}}{a list of empires of the last iteration.}
+  \item{\code{alg}}{a list with the following components:
     \tabular{lll}{
-      \code{nfeval}           \tab      \tab number of function evaluations. (the call for checking equivalence theorem is not counted) \cr
-      \code{nlocal}           \tab      \tab number of successful local search. \cr
-      \code{nrevol}           \tab      \tab number of successful revolutions. \cr
-      \code{nimprove}         \tab      \tab number of successful movements toward the imperialists in assimilation step. \cr
-      \code{convergence}      \tab      \tab Why the algorithm has stopped?. \cr
+      \code{nfeval}           \tab      \tab number of function evaluations (the function evaluations (calls) for checking the equivalence theorem is not counted) \cr
+      \code{nlocal}           \tab      \tab number of successful local search \cr
+      \code{nrevol}           \tab      \tab number of successful revolutions \cr
+      \code{nimprove}         \tab      \tab number of successful movements toward the imperialists in assimilation step \cr
+      \code{convergence}      \tab      \tab Why the algorithm has been stopped? \cr
     }
   }
 }
-The design in \code{best} is the same best imperialist generated in last iteration and  stored in \code{evol}.
+Given an iteration number, please note that \code{all_optima}, \code{all_optima_cost}, \code{answering}, \code{answering_cost},
+   \code{mu},  \code{max_deriv} and \code{ELB} are  \code{NA} when the
+      equivalence theorem was not requested for that iteration.
+       For example, if \code{equivalence_every = 100}, then  the equivalence theorem is only checked in every 100 iteration for
+       the best designs.\cr
 }
 \description{
 Let \eqn{\Xi} be the space of all  approximate designs with
@@ -88,15 +90,14 @@ Let \eqn{\Xi} be the space of all  approximate designs with
  A  minimax D-optimal design \eqn{\xi^*}{\xi*} is defined by
  \deqn{\xi^* = \arg \min_{\xi  \in \Xi}\max_{\theta \in \Theta} -\log|M(\xi, \theta)|.}{
  \xi* = arg min over \Xi {max over \Theta -log|M(\xi, \theta)|}.}
- Throughout, the terms ``inner problem'' and ``outer problem'' are used for optimization over \eqn{\Theta} and \eqn{\Xi}, respectively.\cr
  A standardized maximin D-optimal designs \eqn{\xi^*}{\xi*} is defined by
  \deqn{ \xi^* = \arg \max_{\xi \in \Xi}\inf_{\theta \in \Theta} \left[\left(\frac{|M(\xi, \theta)|}{|M(\xi_{\theta}, \theta)|}\right)^\frac{1}{p}\right],}{
   \xi* =  arg max over \Xi {inf over \Theta {|M(\xi, \theta)| / |M(\xi_\theta, \theta)|}^p},}
-  where \eqn{p} is the number of model paramters and
+  where \eqn{p} is the number of model parameters and
    \eqn{\xi_{\theta}}{\xi_\theta}  is the locally D-optimal design with respect to \eqn{\theta}.\cr
 A locally D-optimal designs \eqn{\xi^*}{\xi*} is defined by
-\deqn{\xi^* = \arg \min_{\xi  \in \Xi} -\log|M(\xi, \theta_0)|.}{\xi* = arg min -log|M(\xi, \theta0)|,}
-where the minization is over \eqn{\Xi} and \eqn{\theta_0}{\theta0} is the initial values for the unknown parameters.\cr
+\deqn{\xi^* = \arg \min_{\xi  \in \Xi} -\log|M(\xi, \theta_0)|.}{\xi* = arg min -log|M(\xi, \theta_0)|,}
+where the minization is over \eqn{\Xi} and \eqn{\theta_0} is the user-given initial values for the unknown parameters.\cr
 }
 \details{
 \code{fimfunc}  as a \code{function} must have three arguments:
@@ -105,8 +106,8 @@ where the minization is over \eqn{\Xi} and \eqn{\theta_0}{\theta0} is the initia
    The output should be of type \code{matrix}.
     Further parameters can be set, but should be passed by  \code{...} in \code{mica} (like parameter \eqn{s} in power logistic model).
     See "Examples".\cr
-\code{fimfunc} as a character string  must be the name of the FIM functions defined in this package.
-The implemented FIM functions are given as follows:
+\code{fimfunc} as a character string  must be the name of the FIM functions available in this package.
+The implemented FIM functions are as follows:
 \tabular{lll}{
 \code{fiumfunc = "FIM_logistic"}            \tab  equivalent to    \tab \code{fiumfunc = \link{FIM_logistic}} \cr
 \code{fiumfunc = "FIM_logistic_4par"}       \tab  equivalent to    \tab \code{fiumfunc = \link{FIM_logistic_4par}} \cr
@@ -121,8 +122,7 @@ The implemented FIM functions are given as follows:
 \code{fiumfunc = "FIM_uncomp_inhibition"}   \tab  equivalent to    \tab \code{fiumfunc = \link{FIM_uncomp_inhibition}} \cr
 \code{fiumfunc = "FIM_mixed_inhibition"}    \tab  equivalent to    \tab \code{fiumfunc = \link{FIM_mixed_inhibition}} \cr
 }
-Setting \code{fimfunc} as a character strings only results in using the internal defined \code{locally} for standardized maximin
-optimal designs. See each information matrix for information about the parameters and the analytical locally optimal design (if available).
+See each information matrix for information about the parameters and the analytical locally optimal design (if available).
 
 
 
@@ -133,42 +133,43 @@ The \code{control} argument is a list that can supply any of the following compo
   \item{\code{nimp}}{number of imperialists. Defaults to 10 percent of \code{ncount}.}
   \item{\code{assim_coeff}}{assimilation coefficient. Defaults to \code{4}.}
   \item{\code{revol_rate}}{revolution rate. Defaults to \code{0.3}}
-  \item{\code{damp}}{damp ratio for revolution rate. Less than one. \code{revol_rate} is decreased by \code{damp} in every iteration. Defaults to \code{0.99}}
+  \item{\code{damp}}{damp ratio for revolution rate.  \code{revol_rate} is decreased by \code{damp} in every iteration. Defaults to \code{0.99}}
   \item{\code{zeta}}{a coefficient to find the 'total cost' of empires. Defaults to \code{0.1}.}
   \item{\code{uniting_threshold}}{if the distance between two imperialists is less than the product of the \code{uniting_threshold} and the largest distance in the search space, then ICA unites these two empires.
   defaults to \code{0.02}.}
-  \item{\code{assim_strategy}}{a character strings denotes assimilation strategy; \code{PICA} for perturbed ICA and \code{ICA} for the original version. Defaults to \code{PICA}.}
+  \item{\code{assim_strategy}}{a character strings that denotes the assimilation strategy; \code{PICA} for perturbed ICA and \code{ICA} for the original version. Defaults to \code{PICA}.}
   \item{\code{lsearch}}{logical. Perform a local search on imperialists in every iteration?  Defaults to \code{TRUE}.}
-  \item{\code{l}}{positive integer. the number of local search for each imperialist. Defaults to \code{2}.}
-  \item{\code{only_improve}}{logical. In assimilation step, only move the colonies if the new position is better than the current position. Defaults to \code{TRUE}.}
+  \item{\code{l}}{positive integer. the number of local search on each imperialist. Defaults to \code{2}.}
+  \item{\code{only_improve}}{\code{logical}, if \code{TRUE}, the new position in the assimilation step replaces the current position if the value of the criterion in the new position is better. . Defaults to \code{TRUE}.}
   \item{\code{stop_rule}}{a character string denotes stopping rule.
-  When \code{"maxiter"}, then  ICA only stops when  reachs the maximum number of iterations.
-  When \code{"one_empire"}, then ICA stops if either all empires collapsed and one empire remains or reachs the maximum number of iterations.
-  When \code{"equivalence"}, then ICA stops if either the D-efficiency lower bound (\code{ELB}) of the current design is greater than \code{stoptol} or reachs the maximum number of iterations.}
+  When \code{"maxiter"}, then  ICA only stops when  it reaches the maximum number of iterations.
+  When \code{"one_empire"}, then ICA stops if either all empires collapsed and one empire remains or it reaches the maximum number of iterations.
+  When \code{"equivalence"}, then ICA stops if either the Efficiency lower bound (\code{ELB}) of the current design is greater than \code{stoptol} or it reaches the maximum number of iterations.}
   \item{\code{stoptol}}{numeric between \eqn{0} and \eqn{1}. The minimum \code{ELB} for the best current imperialist (best design) to stop the algorithm by equivalence theorem when \code{stop_rule = "equivalence"}. Defaults to \code{0.99}.}
   \item{\code{equivalence_every}}{a positive integer. Check and compute \code{ELB} in every \code{equivalence_every} iteration. Checking equivalence theorem in small intervals slows down the algorithm. Defaults to \code{200}.}
   \item{\code{equal_weight}}{logical; whether the points should have equal weights. Defaults to \code{FALSE}.}
   \item{\code{sym}}{logical. Whether the design is symmetric around a point. If \code{TRUE} then \code{sym_point} must be given. Defaults to \code{FALSE}}
   \item{\code{sym_point}}{a vector of the same length as \code{lx}. The point that the design is symmetric around.
-   Must have the same length of \code{lx}. See "Examples".}
-  \item{\code{inner_space}}{a character string denote the inner space. Can be  \code{"continuous"}, \code{"vertices"} or \code{"discrete"}. See below. Defaults to \code{"continuous"}.}
-  \item{\code{param_set}}{a matrix denotes the fixed values for the parameters when \code{inner_space = "discrete"}. Each row of the matrix is one set (vector) of the values of the parameters,
+   Must have the same length as \code{lx}. See "Examples".}
+  \item{\code{inner_space}}{a character string on how to deal with the parameter space (inner space): \code{"continuous"}, \code{"vertices"} or \code{"discrete"}.  Defaults to \code{"continuous"}. See "Details".}
+  \item{\code{param_set}}{ a \code{matrix} that denotes the fixed values for the parameters and is required when \code{inner_space = "discrete"}. Each row of the matrix is the values of the components of the parameters,
    i.e.  \eqn{\theta_{01}}{\theta01} in the first row,  \eqn{\theta_{02}}{\theta02} in the second row and so on. The number of columns should be equal to \code{length(lp)}. See "Examples".}
   \item{\code{inner_maxeval}}{maximum number of function evaluations for the continuous inner problem. It comes from the tuning parameters of  \code{\link[nloptr]{directL}}.
    Its value should be large enough to not miss any global optima. It is only applicable for standardized maxinim and minimax
    optimal designs. Defaults to \code{600}.}
-  \item{\code{plot_deriv}}{logical. Should derivative be plotted whenever equivalence theorem is checked? Defaults to \code{TRUE}.}
+  \item{\code{plot_deriv}}{logical. Should derivative be plotted whenever the equivalence theorem is checked? Defaults to \code{TRUE}.}
   \item{\code{plot_cost}}{logical. Should the evolution of ICA, i.e. mean cost of all imperialists and cost of the best imperialist, be plotted in every iteration? Defaults to \code{TRUE}; when \code{type = "locally"} is \code{FALSE}.}
-  \item{\code{trace}}{logical. Should the best generated design (best imperialist) and corresponding algorithm parameters be printed in every iteration? Defauls to \code{TRUE}.}
+  \item{\code{trace}}{logical. Should the best generated design (best imperialist) and corresponding algorithm parameters be printed in every iteration? Defaults to \code{TRUE}.}
   \item{\code{n.seg}}{a positive integer required when checking the equivalence theorem to construct the answering set.
-  The number of initial starting points for local optimzer (\code{\link[stats]{optim}}) to find all minima of the criterion on parameters space is equal to \code{(n.seg + 1)^length(lp)}. See "Details". Defaults to \code{4}}
+  The number of initial starting points for the local optimizer (\code{\link[stats]{optim}})
+   to find all minima of the criterion on parameters space is equal to \code{(n.seg + 1)^length(lp)}.  Defaults to \code{4}. See "Details" in \code{\link{equivalence}}.}
 }
 
 
-Each row of \code{intial} is one design, i.e. concatenation of
+Each row of \code{initial} is one design, i.e. concatenation of
  \eqn{\bold{x} = (x_1,...x_k)}{x = (x1,...xk)} and \eqn{\bold{w} = (w_1,...,w_k)}{w = (w1,...,wk)}.
-The number of columns of \code{initial} is equal to \eqn{k \times n + k}{k times  n + k},
- where \eqn{n} is the number of model explanatory variables. For multi-dimensional design space, \eqn{\bold{x}} must be
+The number of columns of \code{initial} is equal to \eqn{k \times n + k}{k * (n + k)},
+ where \eqn{n} is the number of model explanatory variables. For multi-dimensional design space, \eqn{\bold{x}}{x} must be
  given dimension by dimension. See description of argument \code{x} in \code{\link{equivalence}}.\cr
 
 
@@ -179,9 +180,8 @@ In \code{control}, if \code{inner_space = "continuous"}, then the inner problem 
   a set of initial values for the parameters, i.e.
    \eqn{\Theta = \{\theta_{01}, \theta_{02},...\}}{\Theta = {\theta01, \theta02, ....}}.
  In this case, the set of initial parameters should be given through \code{param_set}.
- If \code{inner_space = "vertices"} then the set of intial parameters are the vertices of \eqn{\Theta}. This should be set when the user is certain that the D-criterion is convex with respect to the parameter space for every given design.
- Please note that regardless of what \code{inner_space} is, checking the equivalence theorem  is done on continuous parameter space \eqn{\Theta}. See "Examples" on how to use this option. \cr
-
+ If \code{inner_space = "vertices"} then the set of initial parameters are the vertices of \eqn{\Theta}. This should be set when the user is certain that the D-criterion is convex with respect to the parameter space for every given design.
+ Please note that regardless of what \code{inner_space} is chosen, checking the equivalence theorem  will be done on the continuous parameter space \eqn{\Theta}. See "Examples" on how to use this option. \cr
 
 
 For large parameter space or complex models it is important to increase \code{ncount},
@@ -189,16 +189,6 @@ For large parameter space or complex models it is important to increase \code{nc
 
 Please note that the speed of \code{mica} highly depends on the \code{inner_maxeval} parameter
  in \code{control} when \code{inner_space = "continuous"}.
-\code{equivalence_every} and \code{l} in local search are the other factors that impact the CPU time.\cr
-
-From Section "Value",  note that \code{all_optima}, \code{all_optima_cost}, \code{answering}, \code{answering_cost},
-   \code{mu},  \code{max_deriv} and \code{ELB} are  \code{NA} when the
-      equivalence theorem was not requested for that iteration by \code{equivalence_every} in control.
-       For example, if \code{equivalence_every = 100}, then  the equivalence theorem is only check for
-       best designs in iteration \eqn{100}, \eqn{200}, \eqn{300} and so on.\cr
-From Section "Value", \code{inner_param}  is equal to \eqn{\arg \max_{\theta \in \Theta} -\log|M(\xi, \theta)|,}{arg  max -log|M(\xi, \theta)|,} for minimax and
-       \eqn{  \arg \inf_{\theta \in \Theta} \left[\left(\frac{|M(\xi, \theta)|}{|M(\xi_{\theta}, \theta)|}\right)^\frac{1}{p}\right],}{ =  arg inf {|M(\xi, \theta)| / |M(\xi_\theta, \theta)|}^p,}
-       for standardized maximin D-optimal designs.
 }
 \examples{
 #######################################################################

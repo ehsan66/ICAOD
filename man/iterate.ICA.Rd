@@ -12,7 +12,7 @@
 \item{iter}{number of iterations.}
 }
 \description{
-Update an object of class 'ICA'
+Function \code{iterate.ICA} takes an object of class \code{"ICA"} and runs the ICA algorithm and updates the results.
 }
 \seealso{
 \code{\link{mica}}

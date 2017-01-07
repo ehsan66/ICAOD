@@ -1,4 +1,4 @@
-#' Checking the optimality of a given design with respect to the optim-on-the-average  criterion by equivalence theorem.
+#' Checking the optimality of a  design with respect to the optim-on-the-average criterion
 #'
 #' Let \eqn{\Theta}  be the set of plausible parameter values and weighted by a probability measure
 #' \eqn{\pi}, the measure having support in the parameter space \eqn{\Theta}, and \eqn{\Psi(\xi, \theta) =|M(\xi, \theta)|}.
@@ -12,16 +12,21 @@
 #'
 #' @param fimfunc Fisher information matrix. Can be the name of the Fisher information matrix from FIM family functions available in this package as a
 #'  character string or a function that returns the information matrix. See "Details" of \code{\link{mica}}.
-#' @param x a vector of design points. When design space is multi-dimensional then \code{x} should be filled dimension by dimension. See "Examples" of \code{\link{mica}}.
-#' @param w a vector of design weights.
-#' @param lx lower bound of the design space \eqn{\chi}.
-#' @param ux upper bound of the design space \eqn{\chi}.
-#' @param prior a vector of probability measure \eqn{\pi}.
-#' @param param  a matrix contains the value of parameters, i.e. support of \eqn{\pi}. Every row is one parameter.
+#' @param x a vector of design points. If the  model has \eqn{n} explanatory variables, let \eqn{x_{ij}}
+#'  be the \eqn{j}th component of the $\eqn{i}th design point.
+#' The argument \code{x} is \eqn{x = (x_{11}, x_{21},..., x_{k1},..., x_{1n}, x_{2n},... x_{kn})}.
+#' See "Examples" on how to set this argument when the design space does not have one dimension, e.g. is of two-dimension.
+#' @param w a vector of design weights
+#' @param lx lower bound of the design space \eqn{\chi}
+#' @param ux upper bound of the design space \eqn{\chi}
+#' @param prior a vector of the probability measure \eqn{\pi}.
+#' @param param a matrix for set of parameters, i.e. support of \eqn{\pi}. Every row is is a vector of values of a parameter.
 #' The number of its rows must be equal to the length of \code{prior}.
-#' @param maxeval_equivalence maximum number of evaulations (\code{maxeval})  that will be passed to optimization function \code{\link[nloptr]{directL}} to find the maximum of the sensitivity function required for calculating ELB. See "Details" of \code{\link{equivalence}}.
-#' @param plot_sensitivity logical; sensitivity should be plotted? see "Details" of \code{\link{equivalence}}.
-#' @param ... further argument to be passed to \code{fimfunc}.
+#' @param maxeval_equivalence maximum number of evaluations (\code{maxeval})  that will be passed to optimization
+#' function \code{\link[nloptr]{directL}} to find the maximum of the sensitivity function required for calculating ELB.
+#'  See "Details" of \code{\link{equivalence}}.
+#' @param plot_sensitivity  \code{logical}, if \code{TRUE}, the sensitivity function will be plotted.
+#' @param ... further argument to be passed to \code{fimfunc}
 #' @examples
 #'equivalence_ave(fimfunc ="FIM_logistic",lx = -5, ux = 5, x = c(0.2603688, 1, 1.739631),
 #'                       w = c(0.2750147, 0.4499705, 0.2750148),  prior = c(.25, .25, .25, .25),
@@ -30,8 +35,9 @@
 #'  an object of class \code{'equivalence'} that is a list contains:
 #'  \describe{
 #'  \item{\code{max_deriv}}{maximum of the sensitivity function}
-#'  \item{\code{ELB}}{Efficiency lower bound. If negative, the value of \code{maxeval_equivalence} should be increased to find the global maximum.}
-#'  \item{\code{crtval}}{criterion value.}
+#'  \item{\code{ELB}}{Efficiency lower bound. If it is negative,
+#'   then the value of \code{maxeval_equivalence} should be increased to find the global maximum.}
+#'  \item{\code{crtval}}{criterion value}
 #'  }
 #' @seealso \code{\link{equivalence}} and \code{\link{equivalence_multiple}}.
 #' @export

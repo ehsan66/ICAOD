@@ -2,7 +2,7 @@
 % Please edit documentation in R/common_iterate_methods.R
 \name{iterate}
 \alias{iterate}
-\title{update the object of class  'ICA'.}
+\title{update the object by running the ICA algorithm for more number of iterations.}
 \usage{
 iterate(object, iter)
 }
@@ -15,6 +15,9 @@ iterate(object, iter)
 object of class 'ICA'.
 }
 \description{
-Runs the algorithm for more number of iterations.
+Runs the algorithm for more number of iterations and update the results.
+}
+\seealso{
+\code{\link{iterate.ICA}}
 }
 

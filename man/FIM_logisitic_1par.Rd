@@ -23,7 +23,7 @@ The mean of response variable is
  \deqn{M(\xi; a) = \sum_{i = 1}^kw_iM(x_i, a).}{M(\xi, a) = sum w_i M(x_i, a).}
   Here \eqn{M(x, a)}  is \eqn{g(x-a)}, where
  \eqn{g(z) = \frac{\exp(z)}{(1 + \exp(z))^2}}{g(z) = exp(z)/(1 + exp(z))^2}.
- denotes the standard logisitc density.
+ denotes the standard logistic density.
 }
 \details{
 The locally optimal design is a one point design with \eqn{x^* = a}{x* = a} and provides a value of

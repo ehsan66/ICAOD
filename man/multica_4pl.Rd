@@ -2,7 +2,7 @@
 % Please edit documentation in R/ICA_multica_4pl.R
 \name{multica_4pl}
 \alias{multica_4pl}
-\title{Imperialist Competitive Algorithm to find multiple-objective optimal designs for the 4-parameter logistic model.}
+\title{Imperialist Competitive Algorithm to find multiple-objective optimal designs for the 4-parameter logistic model}
 \usage{
 multica_4pl(lx, ux, param, iter, k, delta, lambda, control = list(),
   initial = NULL)
@@ -12,51 +12,49 @@ multica_4pl(lx, ux, param, iter, k, delta, lambda, control = list(),
 
 \item{ux}{upper bound of the design space \eqn{\chi}.}
 
-\item{param}{initial guess of parameters \eqn{\bold{\theta} = (\theta_1, \theta_2, \theta_3, \theta_4)}{\bold{\theta} = (\theta1, \theta2, \theta3, \theta4)}.}
+\item{param}{a vector of parameters  \eqn{\bold{\theta} = (\theta_1, \theta_2, \theta_3, \theta_4)}{\theta = (\theta1, \theta2, \theta3, \theta4)}.}
 
 \item{iter}{maximum number of iterations.}
 
-\item{k}{number of design (support) points. Must be larger than the number of model parameters \eqn{4} to avoid singularity of the FIM.}
+\item{k}{number of design (support) points. Must be larger than the number of \eqn{4} to avoid the singularity of the FIM.}
 
-\item{delta}{numeric, predetermined clinically significant effect to define the MED.
-When the dose-response relationship (slop \eqn{\theta_2}{\theta2}) is decreasing (increasing), the value of \code{delta} is negative (positive).}
+\item{delta}{predetermined meaningful value of the minimum effective dose MED.
+When the dose-response relationship (slop \eqn{\theta_2}{\theta2}) is decreasing (increasing), the value of delta is negative (positive).}
 
-\item{lambda}{user select weights, where \eqn{\lambda_1}{\lambda1} is the weight for estimating parameters,
-\eqn{\lambda_2}{\lambda2} is the weight for estimating median effective dose level (ED50), and \eqn{\lambda_3}{\lambda3} is the weight for estimating minimum effective dose level (MED).}
+\item{lambda}{the relative importance of each of the 3 criteria,
+i.e. \eqn{\lambda = (\lambda_1, \lambda_2, \lambda_3)}{\lambda = (\lambda1, \lambda2, \lambda3)}.
+ Here \eqn{0 < \lambda_i < 1}{0 < \lambdai < 1} and the sum of \eqn{\lambda_1}{\lambda1}, \eqn{\lambda_2}{\lambda2} and \eqn{\lambda_3}{\lambda3}
+ must be one.}
 
-\item{control}{a list of control parameters. See "Details" of \code{\link{mica}}.}
+\item{control}{a list of contains the tuning parameters of ICA and the design problem. See "Details" of \code{\link{mica}}.}
 
-\item{initial}{initial a matrix of user intial countries or
-a vector of a country that will be inserted  into the initial countries of ICA. See "Details" of \code{\link{mica}}.}
+\item{initial}{a matrix of the  initial designs that will be used as initial countries in ICA.
+Every row is a design and concatenation of \code{x} and \code{w}.  Default is \code{NULL}. See "Details" of \code{\link{mica}}.}
 }
 \value{
 an object of class "ICA". See "Value" in \code{\link{mica}}.
 }
 \description{
 The 4-parameter Hill model is \eqn{Y_i = f(D_i, a, b, c, d) + \epsilon_i}{Y_i = f(Di, a, b, c, d) + \epsiloni}
-where \eqn{\epsilon_i \sim N(0, \sigma^2)}{\epsiloni ~ N(0, \sigma2)},
+where \eqn{\epsilon_i \sim N(0, \sigma^2)}{\epsiloni ~ N(0, \sigma2)} and
  \deqn{f(D_i, a,b, c, d) = c + \frac{(d-c)(\frac{D_i}{a})^b}{1+(\frac{D_i}{a})^b}}{
  f(Di, a,b, c, d) = c + (d-c)(Di/a)^b/(1 + (1 + Di)^b)} is the mean response at dose \eqn{D_i}{Di}, \eqn{a} is the ED50,
  \eqn{d} is the upper limit of response, \eqn{c} is the lower limit of response and \eqn{b} denotes the Hill constant that
  control the flexibility in the slope of the response curve.\cr
-Let \eqn{\bold{\theta} = (\theta_1, \theta_2, \theta_3, \theta_4)}{\bold{\theta} = (\theta1, \theta2, \theta3, \theta4)}. The Hill model
+Let \eqn{\bold{\theta} = (\theta_1, \theta_2, \theta_3, \theta_4)}{\theta = (\theta1, \theta2, \theta3, \theta4)}. The Hill model
  may be re-parameterized as
  \deqn{f(x, \bold{\theta}) = \frac{\theta_1}{1 + exp(\theta_2 x + \theta_3)} + \theta_4,}{
- f(x, \bold{\theta})= \theta1/(1 + exp(\theta2*x + \theta3)) + \theta4,}
+ f(x, \theta)= \theta1/(1 + exp(\theta2*x + \theta3)) + \theta4,}
  which is sometimes referred to as \strong{4-parameter logistic model}. This form is equivalent to
- Hill model with \eqn{\theta_1 = d - c}{\theta1 = d - c}, \eqn{\theta_2 = - b}{\theta2 = - b},
+ the Hill model with \eqn{\theta_1 = d - c}{\theta1 = d - c}, \eqn{\theta_2 = - b}{\theta2 = - b},
   \eqn{\theta_3 = b\log(a)}{\theta3 = blog(a)}, \eqn{\theta_4 = c}{\theta4 = c}, \eqn{\theta_1 > 0}{\theta1 > 0},
   \eqn{\theta_2 \neq 0}{\theta2 not equal to 0}, and \eqn{-\infty < ED50 < \infty}, where \eqn{x_i = log(D_i) \in [-M, M]}{xi = log(Di) belongs to [-M, M]}
-  for some sufficiently large value of \eqn{M}. The user can easily transform \eqn{a}, \eqn{b}, \eqn{c}, \eqn{d} and \eqn{D}
-   to \eqn{\theta_1}{\theta1}, \eqn{\theta_2}{\theta2}, \eqn{\theta_3}{\theta3}, \eqn{\theta_4}{\theta4}
-    and \eqn{x} to find the multiple-objective optimal design for the 4-parameter logisitc model with this function and then
-    transform the design for 4-parameter logistic model  to the 4-parameter Hill model. See "Examples". \cr
+  for some sufficiently large value of \eqn{M}.
 }
 \details{
-When \eqn{\lambda_1 > 0}{\lambda1 > 0}, then the number of support points \code{k} must at least be 4 to avoid singularity of the information matrix.\cr
 This function is not suitable for finding the c-optimal designs for estimating 'MED' or 'ED50' and the results may not be stable.
- The reason is that for c-optimal the generalized inverese of Fisher information matrix unstable and depends
- on the tolerenace (probably because the matrix is exactly singular). \cr
+ The reason is that for the c-optimal criterion the generalized inverse of the Fisher information matrix is unstable and depends
+ on the tolerance (probably because the matrix is exactly singular). \cr
 
  The tolerance for finding the general inverse of Fisher information matrix is set to \code{.Machine$double.xmin}.
 }

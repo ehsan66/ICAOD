@@ -1,5 +1,4 @@
-#' Checking minimax, standardized maximin and locally D-optimality of a givne design by equivalence theorem
-#'
+#' Checking optimality of a design with respect to locally D-optimal, minimax D-optimal and standardized maximin D-optimal criteria
 #'
 #' An approximate design \eqn{\xi} is a probability measure defined on a user-selected design space \eqn{\chi}.
 #' Let \eqn{\Xi} be the space of all such designs on \eqn{\chi} and let \eqn{\xi}
@@ -17,36 +16,46 @@
 #' The set \eqn{A(\xi^*)}{A(\xi*)} is sometimes called the \bold{answering set} of
 #'  \eqn{\xi^*}{\xi*} and the measure \eqn{\mu^*}{\mu*} is a subgradient of the
 #'    non-differentiable criterion evaluated at \eqn{M(\xi^*,\nu)}{M(\xi*,\nu)}.\cr
+#' For standardized maximin D-optimal design the answering set \eqn{N(\xi^*)}{N(\xi*)} is
+#'    \deqn{N(\xi^*) = \left\{\boldsymbol{\nu} \in \Theta \mid \mbox{eff}_D(\xi^*, \boldsymbol{\nu}) = \min_{\boldsymbol{\theta} \in \Theta} \mbox{eff}_D(\xi^*, \boldsymbol{\theta}) \right\}.
+#'      }{N(\xi*) = \{\nu belongs to \Theta  |eff_D(\xi*, \nu) = minimum over \Theta eff_D(\xi*, \theta) \},} where
+#'      \eqn{\mbox{eff}_D(\xi, \boldsymbol{\theta}) =  (\frac{|M(\xi, \boldsymbol{\theta})|}{|M(\xi_{\boldsymbol{\theta}}, \boldsymbol{\theta})|})^\frac{1}{p}}{
+#'      eff_D(\xi, \theta) =  (|M(\xi, \theta)|/|M(\xi_\theta, \theta)|)^(1/p)} and \eqn{\xi_\theta} is the locally D-optimal design with respect to \eqn{\theta}. \cr
+#' For locally optimal designs the answering set has only one element that is \eqn{\nu = \boldsymbol{\theta_0} }{\nu = \theta_0} and \eqn{\mu =1}.
 #'
 #' @param fimfunc Fisher information matrix. Can be the name of the Fisher information matrix from FIM family functions available in this package as a
 #'  character string or a function that returns the information matrix. See "Details" of \code{\link{mica}}.
-#' @param x a vector of design points. When design space is multi-dimensional then \code{x} should be filled dimension by dimension. See "Examples".
-#' @param w a vector of design weights.
-#' @param lp lower bound of the region of unceratinty \eqn{\Theta}. The order of the dimension is the same as the order of the parameters in the argument \code{param}of \code{fimfunc}.
-#' @param up upper bound of the region of unceratinty \eqn{\Theta}. If \code{lp = up}, then \eqn{\Theta = \boldsymbol{\theta_0} = lp}{\Theta = \theta_0 = lp} and the design is checked for locally D-optimality, See also argument \code{type}.
-#' @param lx lower bound of the design space \eqn{\chi}.
-#' @param ux upper bound of the design space \eqn{\chi}.
-#' @param type a character strings; \code{'minimax'} for minimax optimal design, \code{'standardized'} for standardized maximin D-optimal design and \code{'locally'} for locally D-optimal design.
-#' @param n.seg determines the number of starting points for finding all local optima to construct the answering set is \code{(n.seg + 1)^p}. Only for minimax and standardized maximin optimal designs. See "Details".
-#' @param maxeval_equivalence maximum number of evaulations (\code{maxeval})  that will be passed to optimization function \code{\link[nloptr]{directL}} to find the maximum of the sensitivity function required for calculating ELB. See "Details".
+#' @param x a vector of design points. If the  model has \eqn{n} explanatory variables, let \eqn{x_{ij}}
+#'  be the \eqn{j}th component of the $\eqn{i}th design point.
+#' The argument \code{x} is \eqn{x = (x_{11}, x_{21},..., x_{k1},..., x_{1n}, x_{2n},... x_{kn})}.
+#' See "Examples" on how to set this argument when the design space does not have one dimension, e.g. is of two-dimension.
+#' @param w a vector of design weights
+#' @param lp lower bound of the region of uncertainty \eqn{\Theta}. As same order as the argument \code{param} of \code{fimfunc}.
+#' @param up upper bound of the region of uncertainty \eqn{\Theta}.
+#'  For  the locally D-optimal design,\code{lp} and \code{up}  must be fixed to the same values, i.e. \code{lp = up}.
+#' @param lx lower bound of the design space \eqn{\chi}
+#' @param ux upper bound of the design space \eqn{\chi}
+#' @param type a character string that shows the type of optimal design. \code{"minimax"} for a minimax optimal design, \code{"standardized"} for a standardized maximin D-optimal design and \code{"locally"} for a locally D-optimal design.
+#' When \code{type = "locally"}, then  \code{lp} must be set equal to \code{up}.
+#' @param n.seg number of starting points to find all local optima of the inner problem for constructing the answering set
+#'  \eqn{A(\xi)} or \eqn{N(\xi)} is equal to \code{(n.seg + 1)^p}. Applicable only when
+#'   \code{type = "standardized"} or \code{type = "minimax"}. Defaults to \code{4}. See "Details".
+#'
+#' @param maxeval_equivalence maximum number of evaluations (\code{maxeval})  that will be passed to optimization
+#' function \code{\link[nloptr]{directL}} to find the maximum of the sensitivity function required for calculating ELB. See "Details".
 #' @param locally a function that returns the value of determinant of FIM for
-#'         the locally D-optimal design, i.e.  \eqn{|M(\xi_{\boldsymbol{\theta}}, \boldsymbol{\theta})|}{|M(\xi_\theta, \theta)|}.
-#'          Only required when \code{type} is set to \code{"standardized"}. See "Details"
-#' @param control_gosolnp  tuning parameters of function \code{\link[Rsolnp]{gosolnp}}. It is applicable only when
-#' \code{typ = 'standardized'} and for the model of interest from the pre-defined information matrices the analytical solution for the locally D-optimal
-#'  design is not available.\code{\link[Rsolnp]{gosolnp}}. See "Details".
-#' @param plot_3d a character strings to show which packages should be used for plotting the sensitivity function when
-#' design space is of two dimension; \code{"lattice"} to use package \link[lattice]{lattice} and \code{"rgl"} to use package \link[rgl]{rgl}.
-#' The package should be installed before use.
-#' @param plot_sensitivity logical; sensitivity should be plotted? see "Details".
+#'         the locally D-optimal design, i.e.  \eqn{|M(\xi_{\bold{\theta}}, \bold{\theta})|}{|M(\xi_\theta, \theta)|}.
+#'          Only required when \code{type = "standardized"}. See "Details".
+#' @param control_gosolnp  tuning parameters of the function \code{\link[Rsolnp]{gosolnp}}.
+#' Only when 1) \code{type = "standardized"} 2) \code{fimfunc} is a character string  3) locally D-optimal design is not available in a closed-form.
+#' See "Details" for the components.
+#' @param plot_3d a character strings shows which plotting package should be used to plot the two-dimensional sensitivity function.
+#' \code{plot_3d = "lattice"} to use package \link[lattice]{lattice} and \code{plot_3d = "rgl"} to use package \link[rgl]{rgl}. The package should be installed before use.
+#' @param plot_sensitivity \code{logical}, if \code{TRUE}, the sensitivity function will be plotted.
 #' @param ... further argument to be passed to \code{fimfunc}.
 #' @references
 #' Atwood, C. L. (1969). Optimal and efficient designs of experiments. The Annals of Mathematical Statistics, 1570-1602.
 #' @details
-#'
-#' For locally optimal designs the answering set has only one element that is \eqn{\nu = \boldsymbol{\theta_0} }{\nu = \theta_0} and \eqn{\mu =1}.
-#' Thus, \code{n.seg} has no further use for locally optimal designs.\cr
-#'
 #'
 #'     There is no theoretical rule on how to choose the number of points in \eqn{A(\xi^*)}{A(\xi*)} as support
 #'  for the measure \eqn{\mu^*}{\mu*}  and they would have to be found by trial and error.
@@ -54,60 +63,51 @@
 #'    different \code{(n.seg + 1)^p} starting points  and then pick the ones nearest to the global minimum
 #'     subject to a tolerance of \eqn{0.005}.\cr
 #'
-#'  If \eqn{\chi} is one or two dimensional, one may plot sensitivity function \eqn{c(\boldsymbol{x}, \xi^*, \mu^*)}{c(x, \xi*, \mu*)} versus
-#'   \eqn{\boldsymbol{x} \in \chi}{x (belongs to \chi)} and  visually inspect whether the graph meets the conditions in the equivalence theorem.
-#'     If it does, the design \eqn{\xi^*}{\xi*} is minimax optimal; otherwise it is not optimal.
-#'
+# If \eqn{\chi} is one or two dimensional, one may plot sensitivity function \eqn{c(\boldsymbol{x}, \xi^*, \mu^*)}{c(x, \xi*, \mu*)} versus
+#   \eqn{\boldsymbol{x} \in \chi}{x (belongs to \chi)} and  visually inspect whether the graph meets the conditions in the equivalence theorem.
+#     If it does, the design \eqn{\xi^*}{\xi*} is minimax optimal; otherwise it is not optimal.
+#
 #'
 #' We measure the closeness of a design
 #'  \eqn{\xi} to the minimax optimal design  using its minimax D-efficiency defined by
 #'   \deqn{d_{\mbox{eff}} = \left(\frac{\max_{\boldsymbol{\theta} \in \Theta} -\log|M(\xi_D, \boldsymbol{\theta})|}{\max_{\boldsymbol{\theta} \in \Theta} -\log|M(\xi, \boldsymbol{\theta})|}\right)^{1/p},}{
 #'     d_eff = {(maximum over \Theta -log|M(\xi_D, \theta)|)/(maximum over \Theta -log|M(\xi, \theta)|)}^(1/p),}
 #'       where \eqn{\xi_D} is  the minimax D-optimal design.
-#' Using argument similar to Atwood (1969), we obtain a D-efficiency Lower Bound (ELB) for the minimax D-efficiency of a design \eqn{\xi} without knowing \eqn{\xi^*}{\xi*}.
-#' ELB is caluclated by \eqn{p/(p + max_{\boldsymbol{x} \in \chi}c(\boldsymbol{x}, \mu, \xi))}{p/(p + maximum over \chi c(x, \mu, \xi))}, where \eqn{\mu^*}{\mu*}
+#' We may obtain a D-efficiency Lower Bound (ELB) for the minimax D-efficiency of a design \eqn{\xi} without knowing \eqn{\xi^*}{\xi*}.
+#' ELB is calculated by \eqn{p/(p + max_{\boldsymbol{x} \in \chi}c(\boldsymbol{x}, \mu, \xi))}{p/(p + maximum over \chi c(x, \mu, \xi))}, where \eqn{\mu^*}{\mu*}
 #'     is the probability measure defined on \eqn{A(\xi)} that maximizes \eqn{c(x_\xi,\mu,\xi)}{c(x_\xi,\mu,\xi)} over all probability measures \eqn{\mu}
 #'      and \eqn{x_\xi}{x_\xi} is any arbitrary support point of \eqn{\xi}.\cr
+#' Using similar arguments, we can find the D-efficiency lower bound for the standardized maximin D-optimal and locally D-optimal designs.
 #'
-#'  For standardazed maximin D-optimal design the answering set \eqn{N(\xi^*)}{N(\xi*)} is
-#'    \deqn{N(\xi^*) = \left\{\boldsymbol{\nu} \in \Theta \mid \mbox{eff}_D(\xi^*, \boldsymbol{\nu}) = \min_{\boldsymbol{\theta} \in \Theta} \mbox{eff}_D(\xi^*, \boldsymbol{\theta}) \right\}.
-#'      }{N(\xi*) = \{\nu belongs to \Theta  |eff_D(\xi*, \nu) = minimum over \Theta eff_D(\xi*, \theta) \},} where
-#'      \eqn{\mbox{eff}_D(\xi, \boldsymbol{\theta}) =  (\frac{|M(\xi, \boldsymbol{\theta})|}{|M(\xi_{\boldsymbol{\theta}}, \boldsymbol{\theta})|})^\frac{1}{p}}{
-#'      eff_D(\xi, \theta) =  (|M(\xi, \theta)|/|M(\xi_\theta, \theta)|)^(1/p)} and \eqn{\xi_\theta} is the locally D-optimal design with respect to \eqn{\theta}. \cr
-#'  We measure the closeness of a design  \eqn{\xi} to the standardized maximin optimal design \eqn{\xi_D} using its standardized maximin  D-efficiency defined by
-#'  \deqn{ d_{\mbox{eff}} = \frac{\min_{\boldsymbol{\theta} \in \Theta} \mbox{eff}_D(\xi, \boldsymbol{\theta})}{\min_{\boldsymbol{\theta} \in \Theta} \mbox{eff}_D(\xi_D, \boldsymbol{\theta})}.}{
-#'  d_eff = (minimum over \Theta eff_D(\xi, \theta))/ (minimum over \Theta eff_D(\xi_D, \theta)).}
-#'  Similar to the minimax design, we can also find standardized maximin D-efficiency
-#'  lower bound for the generated standardized maximin design and locally D-optimal design.\cr
+#  We measure the closeness of a design  \eqn{\xi} to the standardized maximin optimal design \eqn{\xi_D} using its standardized maximin  D-efficiency defined by
+#  \deqn{ d_{\mbox{eff}} = \frac{\min_{\boldsymbol{\theta} \in \Theta} \mbox{eff}_D(\xi, \boldsymbol{\theta})}{\min_{\boldsymbol{\theta} \in \Theta} \mbox{eff}_D(\xi_D, \boldsymbol{\theta})}.}{
+#  d_eff = (minimum over \Theta eff_D(\xi, \theta))/ (minimum over \Theta eff_D(\xi_D, \theta)).}
+#  Similar to the minimax design, we can also find standardized maximin D-efficiency
+#  lower bound for the generated standardized maximin design and locally D-optimal design.\cr
 #'
-#'  For standardized maximin D-optimal designs the function \code{locally} is created automatically when \code{locally = NULL}:
+#'  For standardized maximin D-optimal designs, if \code{fimfunc} is a \bold{character} strings from the list of available FIM, then the function \code{locally} is created automatically as follows:
 #'   \itemize{
-#'      \item{when \code{fimfunc} is a \bold{character} strings from the available FIM and
-#'       locally D-optimal design has a \bold{closed-form} for the chosen model: }{
-#'        \code{locally} is an algebraic function that returns the value of determinant of the FIM for
-#'         the locally D-optimal design, i.e.
-#'         \eqn{|M(\xi_{\boldsymbol{\theta}}, \boldsymbol{\theta})|}{|M(\xi_\theta, \theta)|}. See "Details"
+#'      \item{ if a \bold{closed-form} is available for the locally D-optimal designs for the model of interest: }{
+#'        function \code{locally} combines  some algebraic functions to return the value of the determinant. See "Details"
 #'         of each defined FIM for the formula.}
-#'      \item{when \code{fimfunc} is a \bold{character} strings but locally D-optimal design has \bold{no closed-form}:}{
-#'         \code{\link[Rsolnp]{gosolnp}} is used to find the locally D-optimal design
-#'          (within the class of minimally-supported and equally-weighted designs). \code{control_gosolnp} is a list of
-#'          some of the tunning parameters of \code{\link[Rsolnp]{gosolnp}} that are: \code{n.sim}
-#'           (default \code{500}), \code{n.restarts} (default \code{1})
-#'            and \code{trace} (default \code{FALSE}).}
-#'      \item{when \code{fimfunc} is a \bold{user given} function:}{ same as the previous case.}
+#'      \item{if  \bold{no closed-form} is available for the locally D-optimal designs for the model of interest: }{
+#'         function \code{\link[Rsolnp]{gosolnp}} is used to find the locally D-optimal design
+#'          (within the class of minimally-supported and equally-weighted designs).
+#'           Argument \code{control_gosolnp} is a list that contains some tuning parameters of the function \code{gosolnp} that are  \code{n.sim} (default \code{500}), \code{n.restarts} (default \code{1}) and \code{trace} (default \code{FALSE}).}
 #' }
-#' User can also provide its own \code{locally}. In this case, \code{args(locally)}
-#' must be \code{function (param, auxiliary)}, where \code{param} is the vector of parameters and
-#' \code{auxiliary} is an obligatory argument for internal use when \code{locally = NULL}. Please see
-#' "Examples" on how to use \code{locally}.\cr
 #'
-#' For output \code{max_deriv}, if the local maximum is found (you can detect it from sensitivity plot) or ELB is negative,
-#'  the value of \code{maxeval_equivalence} should be increased to return the global maximum.\cr
+#' We note that if \code{fimfunc} is defined by the user, defining \code{locally} is  obligatory.
+#' In this case function \code{locally} must have two arguments: 1) model parameters \code{param} 2)  \code{auxiliary} that is for internal use.\cr
+#'
+#' To calculate the ELB, it is necessary to find the global maximum of the sensitivity function.
+#' if a local maximum is found then a negative value for ELB may be reported.
+#' In this case, increasing the value of \code{maxeval_equivalence} can fix the computational issue.\cr
 #'
 #'  The criterion value for locally D-optimal design is
-#'  \deqn{-\log|M(\xi, \boldsymbol{\theta_0} )|;}{-log|M(\xi, \theta_0 )|;} for minimax optimal design is
+#'  \deqn{-\log|M(\xi, \boldsymbol{\theta_0} )|;}{-log|M(\xi, \theta_0 )|;}
+#'   for minimax optimal design is (global maximum)
 #'  \deqn{\max_{\theta \in \Theta} -\log|M(\xi, \theta)|;}{max -log|M(\xi, \theta)|;}
-#'  for standardized maximin optimal design is
+#'  for standardized maximin optimal design is (global minimum)
 #'  \deqn{\inf_{\theta \in \Theta} \left[\left(\frac{|M(\xi, \theta)|}{|M(\xi_{\theta}, \theta)|}\right)^\frac{1}{p}\right].}{
 #'   inf {|M(\xi, \theta)| / |M(\xi_\theta, \theta)|}^p.}
 #'
@@ -202,15 +202,22 @@
 #' @return
 #'  an object of class \code{'equivalence'} that is a list contains:
 #'  \describe{
-#'  \item{\code{type}}{argumet \code{type} required for print methods.}
-#'  \item{\code{all_optima}}{a matrix; all optima of the inner problem (optimization over the parameter space for the given design to find the minimum efficiency for standardized maximin design or maximum inefficiency for minimax. \code{NA} for locally optimal design.}
-#'  \item{\code{all_optima_cost}}{cost of each element of \code{all_optima}. \code{NA} for locally optimal design.}
-#'  \item{\code{answering}}{a matrix; answering set chosen from \code{all_optima}. \code{NA} for locally optimal design.}
-#'  \item{\code{answering_cost}}{cost of each element of answering set. \code{NA} for locally optimal design.}
-#'  \item{\code{mu}}{probability measure on answering set. Equal to \eqn{1} for locally D-optimal design.}
+#'  \item{\code{type}}{argument \code{type} that is required for print methods.}
+#'  \item{\code{all_optima}}{a \code{matrix}; all the local maxima of  the minimax D-criterion for minimax optimal design problems
+#'    or all the local minima of the standardized maximin D-criterion standardized maximin optimal design problems.
+#'     Each row is one element of a set of parameters.
+#'       For locally optimal designs it will be set to \code{NA}.}
+#'  \item{\code{all_optima_cost}}{cost of each element of \code{all_optima}. \code{NA} for locally optimal designs.}
+#'  \item{\code{answering}}{a matrix; answering set \eqn{A(\xi)} or \eqn{N(\xi)}  chosen from \code{all_optima}
+#'   based on a pre-chosen tolerance, say \eqn{0.005}. Each row is one element of the set. \code{NA} for locally optimal designs.}
+#'  \item{\code{answering_cost}}{cost of each element of answering set. \code{NA} for locally optimal designs.}
+#'  \item{\code{mu}}{the probability measure on the answering set. It is \code{NA} for a locally optimal design.}
 #'  \item{\code{max_deriv}}{maximum of the sensitivity function}
-#'  \item{\code{ELB}}{D-efficiency lower bound. If negative, the value of \code{maxeval_equivalence} should be increased to find the global maximum.}
-#'  \item{\code{crtval}}{criterion value. See "Details".}
+#'  \item{\code{ELB}}{D-efficiency lower bound. If negative, probably a local maximum has been found. In this case,
+#'  the value of \code{maxeval_equivalence} should be increased to find the global maximum.}
+#'  \item{\code{crtval}}{criterion value.  In minimax optimal design it is equal to the minimum of \code{answering_cost} and for the
+#'    standardized maximin optimal design it is equal to the maximum of \code{answering_cost}.
+#'     For the locally D-optimal design it is the value of the logarithm of the determinant of the FIM. See "Details".}
 #'  }
 #' @export
 #' @seealso \code{\link{print.equivalence}}, \code{\link{equivalence_ave}} and \code{\link{equivalence_multiple}}.
