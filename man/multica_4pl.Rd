@@ -105,7 +105,7 @@ a <- 0.008949  # ED50
 b <- -1.79 # Hill constant
 c <- 0.137 # lower limit
 d <- 1.7 # upper limit
-D belongs to c(.001, 1000) ## dose in mg
+# D belongs to c(.001, 1000) ## dose in mg
 ## Hill parameters are c(a, b, c, d)
 res2 <- multica_4pl(lx = log(.001),
                    ux = log(1000),
