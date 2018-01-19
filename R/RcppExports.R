@@ -2,318 +2,202 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 det2 <- function(mat, logarithm = FALSE) {
-    .Call('ICAOD_det2', PACKAGE = 'ICAOD', mat, logarithm)
+    .Call('_ICAOD_det2', PACKAGE = 'ICAOD', mat, logarithm)
 }
 
-#' Fisher information matrix for the competitive inhibition Michaelis-Menten model.
+#' @title Fisher Information Matrix for a 2-Parameter Cox Proportional-Hazards Model for Type One Censored Data
 #'
-#' The mean velocity of the reaction rate is
-#'  \deqn{\eta = \frac{VS}{Km(1 + \frac{I}{Kic} + S)}.}{\eta = (VS)/(Km(1 + I/Kic) + S).}
-#'  Here,  \eqn{S} is the substrate concentration,
-#'   \eqn{I} is the inhibitor concentration,
-#'    \eqn{V} is the maximum velocity of the enzyme, \eqn{Kic}{K_{ic}}
-#'     is the dissociation constants and \eqn{Km}{K_m} is the Michaelis-Menten constant.
-#'      Any design point is of the form \eqn{(S, I)}.
+#' @description
+#' It provides the cpp function for the FIM introduced in  Eq. (3.1) of Schmidt and Schwabe (2015) for type one censored data.
 #'
-#' @param S vector of \code{S} component of design points. \code{S} is the substrate concentration.
-#' @param I  vector of \code{I} component of design points. \code{I} is the inhibitor concentration.
-#' @param w vector of corresponding weights for each design point. Its length must be equal to the length of \code{I} and \code{S}, and \code{sum(w)} should be 1.
-#' @param param vector of model parameters \eqn{(V, K_m, K_{ic})}{(V, Km, Kic)}.
-#' @return Fisher information matrix of design.
-#' @details The model has an analytical solution for the locally D-optimal design. See Bogacka et al. (2011) for details.\cr
-#' The optimal design does not depend on parameter \eqn{V}.
-#' @family FIM
-#' @references
-#' Bogacka, B., Patan, M., Johnson, P. J., Youdim, K., & Atkinson, A. C. (2011). Optimum design of experiments for enzyme inhibition kinetic models. Journal of biopharmaceutical statistics, 21(3), 555-572.
-#' @export
 #'
-FIM_comp_inhibition <- function(S, I, w, param) {
-    .Call('ICAOD_FIM_comp_inhibition', PACKAGE = 'ICAOD', S, I, w, param)
-}
-
-#' Fisher information matrix for the three-parameter emax model.
-#'
-#' The mean of response variable is
-#'  \deqn{f(x, \bold{\theta}) = \theta_0 + \frac{\theta_1 x}{(x + \theta_2)}}{f(x, \bold{\theta}) = \theta0 + \theta1 x/(x + \theta2)}.
-#' @param x vector of design points.
-#' @param w vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w)} should be 1.
-#' @param param vector of model parameters
-#'  \eqn{\bold{\theta} = (\theta_0, \theta_1, \theta_2)}{\bold{\theta} =(\theta0, \theta1, \theta2)}.
+#' @param x Vector of design points.
+#' @param w Vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w) = 1}.
+#' @param param Vector of values for the model parameters \eqn{c(\beta_0, \beta_1)}.
+#' @param tcensor The experiment is terminated at the fixed time point \code{tcensor}.
 #' @return Fisher information matrix.
-#' @references Dette, H., Kiss, C., Bevanda, M., & Bretz, F. (2010). Optimal designs for the EMAX, log-linear and exponential models. Biometrika, 97(2), 513-518.
-#' @family FIM
-#' @details
-#' The model has an analytical solution for the locally D-optimal design. See Dette et al. (2010) for more details.\cr
-#' The Fisher information matrix does not depend on \eqn{\theta_0}{\theta0}.
+#' @references Schmidt, D., & Schwabe, R. (2015). On optimal designs for censored data. Metrika, 78(3), 237-257.
 #' @export
-FIM_emax_3par <- function(x, w, param) {
-    .Call('ICAOD_FIM_emax_3par', PACKAGE = 'ICAOD', x, w, param)
+FIM_2par_exp_censor1 <- function(x, w, param, tcensor) {
+    .Call('_ICAOD_FIM_2par_exp_censor1', PACKAGE = 'ICAOD', x, w, param, tcensor)
 }
 
-#' Fisher information matrix for the two-parameter exponential model.
+#' @title Fisher Information Matrix for a 2-Parameter Cox Proportional-Hazards Model for Random Censored Data
 #'
-#' The mean of response variable is \deqn{f(x, \bold{\theta}) = a + \exp(-bx)}.
-#' @param x vector of design points.
-#' @param w vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w)} should be 1.
-#' @param param vector of model parameters \eqn{\bold{\theta} = (a, b)}.
+#' @description
+#' It provides the cpp function for the FIM introduced in  Eq. (3.1) of Schmidt and Schwabe (2015) for random censored data (type two censored data).
+#'
+#'
+#' @param x Vector of design points.
+#' @param w Vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w) = 1}.
+#' @param param Vector of values for the model parameters \eqn{c(\beta_0, \beta_1)}.
+#' @param tcensor The experiment is terminated at the fixed time point \code{tcensor}.
+#' @return Fisher information matrix.
+#' @references Schmidt, D., & Schwabe, R. (2015). On optimal designs for censored data. Metrika, 78(3), 237-257.
+#' @export
+FIM_2par_exp_censor2 <- function(x, w, param, tcensor) {
+    .Call('_ICAOD_FIM_2par_exp_censor2', PACKAGE = 'ICAOD', x, w, param, tcensor)
+}
+
+#' @title Fisher Information Matrix for a 3-Parameter Cox Proportional-Hazards Model for Type One Censored Data
+#'
+#' @description
+#' It provides the cpp function for the FIM introduced in Page 247 of Schmidt and Schwabe (2015) for type one censored data.
+#'
+#'
+#' @param x Vector of design points.
+#' @param w Vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w) = 1}.
+#' @param param Vector of values for the model parameters \eqn{c(\beta_0, \beta_1, \beta_2)}.
+#' @param tcensor The experiment is terminated at the fixed time point \code{tcensor}.
+#' @return Fisher information matrix.
+#' @references Schmidt, D., & Schwabe, R. (2015). On optimal designs for censored data. Metrika, 78(3), 237-257.
+#' @export
+FIM_3par_exp_censor1 <- function(x, w, param, tcensor) {
+    .Call('_ICAOD_FIM_3par_exp_censor1', PACKAGE = 'ICAOD', x, w, param, tcensor)
+}
+
+#' @title Fisher Information Matrix for a 3-Parameter Cox Proportional-Hazards Model for Random Censored Data
+#'
+#' @description
+#' It provides the cpp function for the FIM introduced in Page 247 of Schmidt and Schwabe (2015) for random censored data (type two censored data).
+#'
+#'
+#' @param x Vector of design points.
+#' @param w Vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w) = 1}.
+#' @param param Vector of values for the model parameters \eqn{(\beta_0, \beta_1, \beta_2)}.
+#' @param tcensor The experiment is terminated at the fixed time point \code{tcensor}.
+#' @return Fisher information matrix.
+#' @references Schmidt, D., & Schwabe, R. (2015). On optimal designs for censored data. Metrika, 78(3), 237-257.
+#' @export
+FIM_3par_exp_censor2 <- function(x, w, param, tcensor) {
+    .Call('_ICAOD_FIM_3par_exp_censor2', PACKAGE = 'ICAOD', x, w, param, tcensor)
+}
+
+#' @title Fisher Information Matrix for the 2-Parameter Exponential Model
+#'
+#' @description
+#' It provides the cpp function for FIM for the model  \code{~a + exp(-b*x)}.
+#'
+#' @param x Vector of design points.
+#' @param w Vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w) = 1}.
+#' @param param Vector of values for the model parameters \code{c(a, b)}.
 #' @return Fisher information matrix.
 #' @references Dette, H., & Neugebauer, H. M. (1997). Bayesian D-optimal designs for exponential regression models. Journal of Statistical Planning and Inference, 60(2), 331-349.
-#' @family FIM
-#' @details The Fisher information matrix does not depend on \code{a}.\cr
-#' The locally D optimal design is independent of the nominal
-#' value of \eqn{a} and is equally supported at \eqn{x = 0} and \eqn{x = 1/b}
-#'  only when \eqn{x \in [0, 1]}{{x belongs to [0, 1]}}. See "Examples".
+#' @details The FIM does not depend on the value of \code{a}.
+#' @examples FIM_exp_2par(x = c(1, 2), w = c(.5, .5), param = c(3, 4))
+#' @export
+FIM_exp_2par <- function(x, w, param) {
+    .Call('_ICAOD_FIM_exp_2par', PACKAGE = 'ICAOD', x, w, param)
+}
+
+#' @title Fisher Information Matrix for the Logistic Model with Two Predictors
+#' @description It provides the cpp function for FIM for the following model:\cr
+#'   \code{~exp(b0+ b1 * x1 + b2 * x2 + b3 * x1 * x2)/(1 + exp(b0 + b1 * x1 + b2 * x2 + b3 * x1 * x2))}.
+#' @param x1 Vector of design points (for first predictor).
+#' @param x2 Vector of design points (for second predictor).
+#' @param w Vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w) = 1}.
+#' @param param Vector of values for the model parameters \code{c(b0, b1, b2, b3)}.
+#' @return Fisher information matrix.
+#' @export
+FIM_logistic_2pred <- function(x1, x2, w, param) {
+    .Call('_ICAOD_FIM_logistic_2pred', PACKAGE = 'ICAOD', x1, x2, w, param)
+}
+
+#' @title Fisher Information Matrix for the 4-Parameter Logistic Model
+#'
+#' @description It provides the cpp function for the FIM for the model
+#'  \code{~theta1/(1+exp(theta2*x+theta3))+theta4}.
+#'  This model is another re-parameterization of the 4-parameter Hill model.
+#'   For more details, see Eq. (1) and (2) in Hyun and  Wong (2015).
+#' @param x Vector of design points.
+#' @param w Vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w) = 1}.
+#' @param param Vector of values for the model parameters \code{c(theta1, theta2, theta3, theta4)}.
+#' @return Fisher information matrix.
+#' @details The fisher information matrix does not depend on \code{theta4}.\cr
+#' @references
+#' Hyun, S. W., & Wong, W. K. (2015). Multiple-Objective Optimal Designs for Studying the Dose Response Function and Interesting Dose Levels. The international journal of biostatistics, 11(2), 253-271.
+#' @seealso \code{\link{multiple}}
 #' @export
 #' @examples
-#' \dontrun{
-#' ### finding the locally optimal design for different values for design interval
-#' mica(fimfunc = "FIM_exp_2par", lx = 0, ux = 1, lp = c(1, 2), up = c(1, 2),
-#'      iter = 100, k = 2, type = "locally", control = list(seed = 215))
-#'
-#' mica(fimfunc = "FIM_exp_2par", lx = .0001, ux = 1, lp = c(1, 2), up = c(1, 2),
-#'      iter = 100, k = 2, type = "locally", control = list(seed = 215))
-#'
-#' mica(fimfunc = "FIM_exp_2par", lx = 0, ux = 10, lp = c(1, 2), up = c(1, 2),
-#'      iter = 100, k = 2, type = "locally", control = list(seed = 215))
-#'
-#' mica(fimfunc = "FIM_exp_2par", lx = .0001, ux = 10, lp = c(1, 2), up = c(1, 2),
-#'      iter = 100, k = 2, type = "locally", control = list(seed = 215))
-#'
-#' ## it seems for design interval x = [x_l, x_u], when x_l > 0,
-#' ## the locally D-optimal design is a two-point equally weighted design
-#' ## with x1 = x_l, x2 = x_u
-#'
-#' mica(fimfunc = "FIM_exp_2par", lx = .5, ux = 10, lp = c(1, 2), up = c(1, 2),
-#'      iter = 100, k = 2, type = "locally", control = list(seed = 215))
-#'
-#' mica(fimfunc = "FIM_exp_2par", lx = .0001, ux = 10, lp = c(1, 2), up = c(1, 2),
-#'      iter = 100, k = 2, type = "locally", control = list(seed = 215))
-#'
-#' mica(fimfunc = "FIM_exp_2par", lx = 1, ux = 10, lp = c(1, 2), up = c(1, 2),
-#'         iter = 100, k = 2, type = "locally", control = list(seed = 215))
-#'
-#'
-#' mica(fimfunc = "FIM_exp_2par", lx = 2, ux = 10, lp = c(1, 2), up = c(1, 2),
-#'      iter = 100, k = 2, type = "locally", control = list(seed = 215))
-#'
-#' mica(fimfunc = "FIM_exp_2par", lx = 3, ux = 9, lp = c(1, 2), up = c(1, 2),
-#'      iter = 100, k = 2, type = "locally", control = list(seed = 215))
-#'
-#' }
-FIM_exp_2par <- function(x, w, param) {
-    .Call('ICAOD_FIM_exp_2par', PACKAGE = 'ICAOD', x, w, param)
-}
-
-#' Fisher information matrix for the three-parameter exponential model.
-#'
-#' The mean of response variable is
-#'  \deqn{f(x, \bold{\theta}) = \theta_0 + \theta_1 \exp(\frac{x}{\theta_2})}{f(x, \bold{\theta}) = \theta0 + \theta1 \exp(x/\theta2)}.
-#' @param x vector of design points.
-#' @param w vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w)} should be 1.
-#' @param param vector of model parameters
-#'  \eqn{\bold{\theta} = (\theta_0, \theta_1, \theta_2)}{\bold{\theta} =(\theta0, \theta1, \theta2)}.
-#' @return Fisher information matrix.
-#' @references Dette, H., Kiss, C., Bevanda, M., & Bretz, F. (2010). Optimal designs for the EMAX, log-linear and exponential models. Biometrika, 97(2), 513-518.
-#' @family FIM
-#' @details
-#' The model has an analytical solution for the locally D-optimal design. See Dette et al. (2010) for more details.\cr
-#' The Fisher information matrix does not depend on \eqn{\theta_0}{\theta0}.
-#' @export
-FIM_exp_3par <- function(x, w, param) {
-    .Call('ICAOD_FIM_exp_3par', PACKAGE = 'ICAOD', x, w, param)
-}
-
-#' Fisher information matrix for the one-parameter logistic model (1PL or Rasch model).
-#'
-#' The mean of response variable is
-#'  \deqn{f(x, a) = 1/(1 + \exp(-(x - a))).}{f(x, a) = \frac{1}{(1 + exp(-(x - a)))}.}
-#'  This function returns Fisher information for the design \eqn{\xi} that is
-#'  \deqn{M(\xi; a) = \sum_{i = 1}^kw_iM(x_i, a).}{M(\xi, a) = sum w_i M(x_i, a).}
-#'   Here \eqn{M(x, a)}  is \eqn{g(x-a)}, where
-#'  \eqn{g(z) = \frac{\exp(z)}{(1 + \exp(z))^2}}{g(z) = exp(z)/(1 + exp(z))^2}.
-#'  denotes the standard logistic density.
-#'
-#' @param x vector of design points. In IRT \code{x} is the person ability parameter.
-#' @param w vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w)} should be 1.
-#' @param param parameter \eqn{a}. In IRT, it is called difficulty parameter.
-#' @return Fisher information as a one by one matrix.
-#' @references
-#' Grasshoff, U., Holling, H., & Schwabe, R. (2012). Optimal designs for the Rasch model. Psychometrika, 77(4), 710-723.
-#' @details
-#' The locally optimal design is a one point design with \eqn{x^* = a}{x* = a} and provides a value of
-#' \eqn{M(\xi^*, a) =  1/4}{M(\xi*, a) =  1/4} for the information.
-#' @family FIM
-#' @export
-FIM_logisitic_1par <- function(x, w, param) {
-    .Call('ICAOD_FIM_logisitic_1par', PACKAGE = 'ICAOD', x, w, param)
-}
-
-#' Fisher information matrix for the four parameter logistic model.
-#'
-#' The mean of the response variable is
-#'  \deqn{f(x, \bold{\theta}) = \frac{\theta_1}{1 + \exp(\theta_2 x + \theta_3)} + \theta_4,}{
-#'  f(x, \bold{\theta})= \theta1/(1 + exp(\theta2*x + \theta3)) + \theta4,}
-#'   where \eqn{\bold{\theta} = (\theta_1, \theta_2, \theta_3, \theta_4)}{\bold{\theta} = (\theta1, \theta2, \theta3, \theta4)}.
-#' @param x vector of design points.
-#' @param w vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w)} should be 1.
-#' @param param vector of model parameters
-#'  \eqn{\bold{\theta} = (\theta_1, \theta_2, \theta_3, \theta_4)}{\bold{\theta} = (\theta1, \theta2, \theta3, \theta4)}.
-#' @return Fisher information matrix.
-#' @details The fisher information matrix does not depend on \eqn{\theta_4}{\theta4}.\cr
-#' There is no analytical solution for the locally D-optimal design for this model.
-#' @family FIM
-#' @export
+#' FIM_logistic_4par(x = c(-6.9, -4.6, -3.9, 6.7 ),
+#'                   w = c(0.489, 0.40, 0.061, 0.050),
+#'                   param = c(1.563, 1.790, 8.442, 0.137))
 FIM_logistic_4par <- function(x, w, param) {
-    .Call('ICAOD_FIM_logistic_4par', PACKAGE = 'ICAOD', x, w, param)
+    .Call('_ICAOD_FIM_logistic_4par', PACKAGE = 'ICAOD', x, w, param)
 }
 
-#' Fisher information matrix for the two-parameter logistic (2PL) model.
-#'
-#' The mean of response variable is \deqn{f(x, \bold{\theta}) = \frac{1}{(1 + \exp(-b (x - a)))},}{f(x, \bold{\theta}) = 1/(1 + \exp(-b (x - a))),} where
-#' \eqn{\bold{\theta} = (a, b)}.
-#' @param x vector of design points. In IRT, \eqn{x} is the person ability parameter.
-#' @param w vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w)} should be 1.
-#' @param param vector of model parameters \eqn{\bold{\theta} = (a, b)}. In IRT parameter
-#' \eqn{a} is the item difficulty parameter and parameter \eqn{b} is the item discrimination parameter.
+#' @title Fisher Information Matrix for the 2-Parameter Logistic (2PL) Model
+#' @description It provides the cpp function for FIM for the model  \code{~1/(1 + exp(-b *(x - a)))}.
+#' In item response theory (IRT),
+#' \eqn{a} is the item difficulty parameter, \eqn{b} is the item discrimination parameter and \eqn{x} is the person ability parameter.
+#' @param x Vector of design points.
+#' @param w Vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w) = 1}.
+#' @param param Vector of values for the model parameters \code{c(a, b)}.
 #' @return Fisher information matrix.
-#' @family FIM
 #' @export
 #' @details
-#' There is no closed-form for the locally optimal design.
-#'  For minimax and standardized D-optimal design, the optimal design is symmetric around point
-#' \eqn{(a^L + a^U)/2}{(aL + aU)/2} where \eqn{a^L}{aL} and \eqn{a^U}{aU} are the
-#' lower bound and upper bound for parameter \eqn{a}, respectively. In \code{\link{mica}},
-#'  options \code{sym} and \code{sym_point} in \code{control} can be used to make the search
-#'   for the optimal design easier.
-#'
+#'  It can be shown that minimax and standardized D-optimal designs for the 2PL model is symmetric around point
+#' \eqn{a_M = (a^L + a^U)/2}{aM = (aL + aU)/2} where \eqn{a^L}{aL} and \eqn{a^U}{aU} are the
+#' lower bound and upper bound for parameter \eqn{a}, respectively. In \code{\link{ICA.control}},
+#'  arguments \code{sym} and \code{sym_point} can be used to specify \eqn{a_M}{aM} and find accurate symmetric optimal designs.
+#' @examples
+#' FIM_logistic(x = c(1, 2), w = c(.5, .5), param = c(2, 1))
 #' @importFrom Rcpp evalCpp
 #' @useDynLib ICAOD
 FIM_logistic <- function(x, w, param) {
-    .Call('ICAOD_FIM_logistic', PACKAGE = 'ICAOD', x, w, param)
+    .Call('_ICAOD_FIM_logistic', PACKAGE = 'ICAOD', x, w, param)
 }
 
-#' Fisher information matrix for the log-linear model.
+#' @title Fisher Information Matrix for the Mixed Inhibition Model
 #'
-#' The mean of response variable is
-#'  \deqn{f(x, \bold{\theta}) = \theta_0 + \theta_1\log(x + \theta_2)}{f(x, \bold{\theta}) = \theta0 + \theta1\log(x + \theta2)}.
+#' @description  It provides the cpp function for the FIM for the model \code{~theta0 + theta1* log(x + theta2)}.
 #'
-#'
-#' @param x vector of design points.
-#' @param w vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w)} should be 1.
-#' @param param vector of model parameters
-#'  \eqn{\bold{\theta} = (\theta_0, \theta_1, \theta_2)}{\bold{\theta} =(\theta0, \theta1, \theta2)}.
+#' @param x Vector of design points.
+#' @param w Vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w) = 1}.
+#' @param param Vector of values for the model parameters \code{c(theta0, theta1, theta2)}.
 #' @return Fisher information matrix.
 #' @references Dette, H., Kiss, C., Bevanda, M., & Bretz, F. (2010). Optimal designs for the EMAX, log-linear and exponential models. Biometrika, 97(2), 513-518.
-#' @family FIM
 #' @details
-#' The model has an analytical solution for the locally D-optimal design. See Dette et al. (2010) for more details.\cr
-#' The Fisher information matrix does not depend on \eqn{\theta_0}{\theta0}.
+#' The FIM of this model does not depend on the parameter \code{theta0}.
 #' @export
 FIM_loglin <- function(x, w, param) {
-    .Call('ICAOD_FIM_loglin', PACKAGE = 'ICAOD', x, w, param)
+    .Call('_ICAOD_FIM_loglin', PACKAGE = 'ICAOD', x, w, param)
 }
 
-#' Fisher information matrix for the Michaelis-Menten model.
+#'  @title Fisher Information Matrix for the Mixed Inhibition Model.
 #'
-#' The mean of the response variable is
-#'  \deqn{f(x, \bold{\theta}) = \frac{ax}{(b + x)},}{f(x, \bold{\theta}) = ax/(b + x),}
-#'  where \eqn{\bold{\theta} = (a, b)}.
-#' @param x vector of design points.
-#' @param w vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w)} should be 1.
-#' @param param vector of model parameters \eqn{\bold{\theta} = (a, b)}.
-#' @return Fisher information matrix.
-#' @references Rasch, D. (1990). Optimum experimental design in nonlinear regression. Communications in Statistics-Theory and Methods, 19(12), 4786-4806.
-#' @details
-#' There is an analytical solution for the locally D-optimal design. See Rasch (1990).
-#' @family FIM
-#' @export
-FIM_michaelis <- function(x, w, param) {
-    .Call('ICAOD_FIM_michaelis', PACKAGE = 'ICAOD', x, w, param)
-}
-
-#' Fisher information matrix for the mixed inhibition Michaelis-Menten model.
+#' @description
+#'  It provides the cpp function for FIM for the model \code{~ V*S/(Km * (1 + I/Kic)+ S * (1 + I/Kiu))}
 #'
-#' The mean velocity of the reaction rate is
-#' \deqn{\eta = \frac{VS}{K_m(1 + \frac{I}{Kic}) + S(1 + \frac{I}{Kiu})}.}{\eta = VS/(K_m(1 + I/Kic) + S(1 + I/Kiu)).}
-#'  Here, \eqn{S} is the substrate concentration, \eqn{I} is the inhibitor concentration,
-#'   \eqn{V} is the maximum velocity of the enzyme, \eqn{K_{ic}}{Kic} and
-#'    \eqn{K_{iu}}{Kiu} are the dissociation constants and \eqn{K_m}{Km} is
-#'     the Michaelis-Menten constant. Any design point is of the form \eqn{(S, I)}.
-#'
-#'
-#' @param S vector of \code{S} component of design points. \code{S} is the substrate concentration.
-#' @param I  vector of \code{I} component of design points. \code{I} is the inhibitor concentration.
-#' @param w vector of corresponding weights for each design point. Its length must be equal to the length of \code{I} and \code{S}, and \code{sum(w)} should be 1.
-#' @param param vector of model parameters \eqn{(V, K_m, K_{ic}, K_{iu})}{(V, Km, Kic, Kiu)}.
+#' @param S Vector of \code{S} component of design points. \code{S} is the substrate concentration.
+#' @param I  Vector of \code{I} component of design points. \code{I} is the inhibitor concentration.
+#' @param w Vector of design weight. Its length must be equal to the length of \code{S} and \code{I}, besides  \code{sum(w) = 1}.
+#' @param param Vector of values for the model parameters \code{c(V, Km, Kic, Kiu)}.
 #' @return Fisher information matrix of design.
 #' @references Bogacka, B., Patan, M., Johnson, P. J., Youdim, K., & Atkinson, A. C. (2011). Optimum design of experiments for enzyme inhibition kinetic models. Journal of biopharmaceutical statistics, 21(3), 555-572.
-#' @family FIM
-#' @details The model has an analytical solution for the locally D-optimal design. See Bogacka et al. (2011) for details.\cr
-#' The optimal design does not depend on parameter \eqn{V}.
+#' @details
+#'  The optimal design does not depend on parameter \eqn{V}.
+#' @examples
+#' FIM_mixed_inhibition(S = c(30, 3.86, 30, 4.60),
+#'                      I = c(0, 0, 5.11, 4.16), w = rep(.25, 4),
+#'                      param = c(1.5, 5.2, 3.4, 5.6))
 #' @export
 FIM_mixed_inhibition <- function(S, I, w, param) {
-    .Call('ICAOD_FIM_mixed_inhibition', PACKAGE = 'ICAOD', S, I, w, param)
+    .Call('_ICAOD_FIM_mixed_inhibition', PACKAGE = 'ICAOD', S, I, w, param)
 }
 
-#' Fisher information matrix for the noncompetitive inhibition Michaelis-Menten model.
-#'
-#' The mean velocity of the reaction rate is
-#'  \deqn{\eta = \frac{VS}{(K_m + S)(1 + \frac{I}{K_{ic}})}.}{\eta = VS/(Km + S)(1 + I/Kic).}
-#'   Here, \eqn{S} is the substrate concentration, \eqn{I} is the inhibitor concentration,
-#'    \eqn{V} is the maximum velocity of the enzyme,
-#'     \eqn{K_{ic}}{Kic} is the dissociation constants and \eqn{K_m}{Km} is the Michaelis-Menten constant.
-#'      Any design point is of the form \eqn{(S, I)}.
-#' @param S vector of \code{S} component of design points. \code{S} is the substrate concentration.
-#' @param I  vector of \code{I} component of design points. \code{I} is the inhibitor concentration.
-#' @param w vector of corresponding weights for each design point. Its length must be equal to the length of \code{I} and \code{S}, and \code{sum(w)} should be 1.
-#' @param param vector of model parameters \eqn{(V, K_m, K_{ic})}{(V, Km, Kic)}.
+#' @title Fisher Information Matrix for the Power Logistic Model
+#' @description It provides the cpp function for FIM for the model  \code{~1/(1 + exp(-b *(x - a)))^s}, but when \code{s} is fixed (a two by two matrix).
+#' @param x Vector of design points.
+#' @param w Vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w) = 1}.
+#' @param param Vector of values for the model parameters \code{c(a, b)}.
+#' @param s parameter \code{s}.
 #' @return Fisher information matrix.
-#' @references Bogacka, B., Patan, M., Johnson, P. J., Youdim, K., & Atkinson, A. C. (2011). Optimum design of experiments for enzyme inhibition kinetic models. Journal of biopharmaceutical statistics, 21(3), 555-572.
-#' @details The model has an analytical solution for the locally D-optimal design. See Bogacka et al. (2011) for details.\cr
-#' The optimal design does not depend on parameter \eqn{V}.
-#' @family FIM
 #' @export
-FIM_noncomp_inhibition <- function(S, I, w, param) {
-    .Call('ICAOD_FIM_noncomp_inhibition', PACKAGE = 'ICAOD', S, I, w, param)
-}
-
-#' Fisher information matrix for the power logistic model.
-#'
-#' The mean of response variable is
-#'  \deqn{f(x; a, b, s) =  \frac{1}{(1 + \exp(-b (x - a)))^s},}{f(x; a, b, s) =  1/(1 + \exp(-b (x - a)))^s,}
-#' @param x vector of design points.
-#' @param w vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w)} should be 1.
-#' @param param vector of model parameters \eqn{(a, b)}.
-#' @param s power parameter.
-#' @return Fisher information matrix.
-#' @details
-#' There is no analytical solution for the locally D-optimal design. Parameter \eqn{s} must be
-#' passed by \code{...} in most of the functions like \code{\link{mica}}.
-#' @family FIM
-#' @export
+#' @note This matrix is a two by two matrix and not equal to the Fisher information matrix for the power logistic model
+#' when the derivative is taken with respect to all the three parameters.
+#' This matrix is only given to be used in some illustrative examples.
 FIM_power_logistic <- function(x, w, param, s) {
-    .Call('ICAOD_FIM_power_logistic', PACKAGE = 'ICAOD', x, w, param, s)
-}
-
-#' Fisher information matrix for the uncompetitive inhibition Michaelis-Menten model.
-#'
-#' The mean velocity of the reaction rate is
-#'  \deqn{\eta =  \frac{VS}{(K_m + S(1 + \frac{I}{K_{iu}}))}.}{\eta =  VS/(Km + S(1 + I/Kiu)).}
-#'  Here, \eqn{S} is the substrate concentration, \eqn{I} is the inhibitor concentration,
-#'   \eqn{V} is the maximum velocity of the enzyme, \eqn{K_{iu}}{Kiu} is the dissociation constants and
-#'    \eqn{K_m}{Km} is the Michaelis-Menten constant. Any design point is of the form \eqn{(S, I)}.
-#' @param S vector of \code{S} component of design points. \code{S} is the substrate concentration.
-#' @param I  vector of \code{I} component of design points. \code{I} is the inhibitor concentration.
-#' @param w vector of corresponding weights for each design point.
-#'  Its length must be equal to the length of \code{I} and \code{S}, and \code{sum(w)} should be 1.
-#' @param param vector of model parameters \eqn{(V, K_m, K_{iu})}{(V, Km, Kiu)}.
-#' @return Fisher information matrix.
-#' @references Bogacka, B., Patan, M., Johnson, P. J., Youdim, K., & Atkinson, A. C. (2011). Optimum design of experiments for enzyme inhibition kinetic models. Journal of biopharmaceutical statistics, 21(3), 555-572.
-#' @details The model has an analytical solution for the locally D-optimal design. See Bogacka et al. (2011) for details.\cr
-#' The optimal design does not depend on parameter \eqn{V}.
-#' @family FIM
-#' @export
-FIM_uncomp_inhibition <- function(S, I, w, param) {
-    .Call('ICAOD_FIM_uncomp_inhibition', PACKAGE = 'ICAOD', S, I, w, param)
+    .Call('_ICAOD_FIM_power_logistic', PACKAGE = 'ICAOD', x, w, param, s)
 }
 

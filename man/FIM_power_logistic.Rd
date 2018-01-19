@@ -2,40 +2,27 @@
 % Please edit documentation in R/RcppExports.R
 \name{FIM_power_logistic}
 \alias{FIM_power_logistic}
-\title{Fisher information matrix for the power logistic model.}
+\title{Fisher Information Matrix for the Power Logistic Model}
 \usage{
 FIM_power_logistic(x, w, param, s)
 }
 \arguments{
-\item{x}{vector of design points.}
+\item{x}{Vector of design points.}
 
-\item{w}{vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w)} should be 1.}
+\item{w}{Vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w) = 1}.}
 
-\item{param}{vector of model parameters \eqn{(a, b)}.}
+\item{param}{Vector of values for the model parameters \code{c(a, b)}.}
 
-\item{s}{power parameter.}
+\item{s}{parameter \code{s}.}
 }
 \value{
 Fisher information matrix.
 }
 \description{
-The mean of response variable is
- \deqn{f(x; a, b, s) =  \frac{1}{(1 + \exp(-b (x - a)))^s},}{f(x; a, b, s) =  1/(1 + \exp(-b (x - a)))^s,}
+It provides the cpp function for FIM for the model  \code{~1/(1 + exp(-b *(x - a)))^s}, but when \code{s} is fixed (a two by two matrix).
 }
-\details{
-There is no analytical solution for the locally D-optimal design. Parameter \eqn{s} must be
-passed by \code{...} in most of the functions like \code{\link{mica}}.
+\note{
+This matrix is a two by two matrix and not equal to the Fisher information matrix for the power logistic model
+when the derivative is taken with respect to all the three parameters.
+This matrix is only given to be used in some illustrative examples.
 }
-\seealso{
-Other FIM: \code{\link{FIM_comp_inhibition}},
-  \code{\link{FIM_emax_3par}}, \code{\link{FIM_exp_2par}},
-  \code{\link{FIM_exp_3par}},
-  \code{\link{FIM_logisitic_1par}},
-  \code{\link{FIM_logistic_4par}},
-  \code{\link{FIM_logistic}}, \code{\link{FIM_loglin}},
-  \code{\link{FIM_michaelis}},
-  \code{\link{FIM_mixed_inhibition}},
-  \code{\link{FIM_noncomp_inhibition}},
-  \code{\link{FIM_uncomp_inhibition}}
-}
-

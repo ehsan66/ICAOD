@@ -2,42 +2,26 @@
 % Please edit documentation in R/RcppExports.R
 \name{FIM_loglin}
 \alias{FIM_loglin}
-\title{Fisher information matrix for the log-linear model.}
+\title{Fisher Information Matrix for the Mixed Inhibition Model}
 \usage{
 FIM_loglin(x, w, param)
 }
 \arguments{
-\item{x}{vector of design points.}
+\item{x}{Vector of design points.}
 
-\item{w}{vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w)} should be 1.}
+\item{w}{Vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w) = 1}.}
 
-\item{param}{vector of model parameters
-\eqn{\bold{\theta} = (\theta_0, \theta_1, \theta_2)}{\bold{\theta} =(\theta0, \theta1, \theta2)}.}
+\item{param}{Vector of values for the model parameters \code{c(theta0, theta1, theta2)}.}
 }
 \value{
 Fisher information matrix.
 }
 \description{
-The mean of response variable is
- \deqn{f(x, \bold{\theta}) = \theta_0 + \theta_1\log(x + \theta_2)}{f(x, \bold{\theta}) = \theta0 + \theta1\log(x + \theta2)}.
+It provides the cpp function for the FIM for the model \code{~theta0 + theta1* log(x + theta2)}.
 }
 \details{
-The model has an analytical solution for the locally D-optimal design. See Dette et al. (2010) for more details.\cr
-The Fisher information matrix does not depend on \eqn{\theta_0}{\theta0}.
+The FIM of this model does not depend on the parameter \code{theta0}.
 }
 \references{
 Dette, H., Kiss, C., Bevanda, M., & Bretz, F. (2010). Optimal designs for the EMAX, log-linear and exponential models. Biometrika, 97(2), 513-518.
 }
-\seealso{
-Other FIM: \code{\link{FIM_comp_inhibition}},
-  \code{\link{FIM_emax_3par}}, \code{\link{FIM_exp_2par}},
-  \code{\link{FIM_exp_3par}},
-  \code{\link{FIM_logisitic_1par}},
-  \code{\link{FIM_logistic_4par}},
-  \code{\link{FIM_logistic}}, \code{\link{FIM_michaelis}},
-  \code{\link{FIM_mixed_inhibition}},
-  \code{\link{FIM_noncomp_inhibition}},
-  \code{\link{FIM_power_logistic}},
-  \code{\link{FIM_uncomp_inhibition}}
-}
-

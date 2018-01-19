@@ -1,9 +1,12 @@
-# ICAOD 0.9.1
-
-* The first release of the ICAOD package.
-* ##### Bug1: "iterate" was not exported.
-* some typos in the documentation
-+ I am not happy with the name of the functions "equivalence_on_average" and "on_average_ICA"
+# ICAOD 0.9.9
+* ##### A very prominent developmnent.
+* Please use the new version instead of the old ones!
+* I changed the whole arguments  to be more user-friendly.
+* Adding formula interface
+* Managing the tuning parameters
+* Adding Bayesian optimal designs
+* Better documentation
+* Still beta version
 
 # ICAOD 0.9.2
 * ##### fixing Bug1: exporting the S3 itertate method
@@ -12,4 +15,10 @@
 * changing the name of "on_average_ICA" to "ave"
 * adding a documentation for the ICAOD package in "ICAOD.R"
 * check the spelling by devtools
-* 
+
+# ICAOD 0.9.1
+* The first release of the ICAOD package.
+* ##### Bug1: "iterate" was not exported.
+* some typos in the documentation
++ I am not happy with the name of the functions "equivalence_on_average" and "on_average_ICA"
+

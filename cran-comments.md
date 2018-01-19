@@ -1,7 +1,7 @@
+# New Update 
 ## Test environments
-1. local OS X install, R 3.3.2
-2. win-builder (devel and release) (1 Note for email)
-3. travis using platform: x86_64-pc-linux-gnu (64-bit) and R version 3.3.1 (2016-06-21)
+1. local OS X install, R version 3.4.3 (2017-11-30)
+
     +   passed but 1 NOTE:
     +   checking top-level files ... NOTE
      Non-standard files/directories found at top level:

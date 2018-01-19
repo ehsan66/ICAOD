@@ -2,24 +2,21 @@
 
 
 //equation1 second one
+// The model has an analytical solution for the locally D-optimal design. See Dette et al. (2010) for more details.\cr
+// The Fisher information matrix does not depend on \eqn{\theta_0}{\theta0}.
 
 // roxygen
-//' Fisher information matrix for the log-linear model.
+//' @title Fisher Information Matrix for the Mixed Inhibition Model
 //'
-//' The mean of response variable is
-//'  \deqn{f(x, \bold{\theta}) = \theta_0 + \theta_1\log(x + \theta_2)}{f(x, \bold{\theta}) = \theta0 + \theta1\log(x + \theta2)}.
+//' @description  It provides the cpp function for the FIM for the model \code{~theta0 + theta1* log(x + theta2)}.
 //'
-//'
-//' @param x vector of design points.
-//' @param w vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w)} should be 1.
-//' @param param vector of model parameters
-//'  \eqn{\bold{\theta} = (\theta_0, \theta_1, \theta_2)}{\bold{\theta} =(\theta0, \theta1, \theta2)}.
+//' @param x Vector of design points.
+//' @param w Vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w) = 1}.
+//' @param param Vector of values for the model parameters \code{c(theta0, theta1, theta2)}.
 //' @return Fisher information matrix.
 //' @references Dette, H., Kiss, C., Bevanda, M., & Bretz, F. (2010). Optimal designs for the EMAX, log-linear and exponential models. Biometrika, 97(2), 513-518.
-//' @family FIM
 //' @details
-//' The model has an analytical solution for the locally D-optimal design. See Dette et al. (2010) for more details.\cr
-//' The Fisher information matrix does not depend on \eqn{\theta_0}{\theta0}.
+//' The FIM of this model does not depend on the parameter \code{theta0}.
 //' @export
 // [[Rcpp::export]]
 

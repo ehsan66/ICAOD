@@ -2,20 +2,17 @@
 
 
 // roxygen
-//' Fisher information matrix for the power logistic model.
-//'
-//' The mean of response variable is
-//'  \deqn{f(x; a, b, s) =  \frac{1}{(1 + \exp(-b (x - a)))^s},}{f(x; a, b, s) =  1/(1 + \exp(-b (x - a)))^s,}
-//' @param x vector of design points.
-//' @param w vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w)} should be 1.
-//' @param param vector of model parameters \eqn{(a, b)}.
-//' @param s power parameter.
+//' @title Fisher Information Matrix for the Power Logistic Model
+//' @description It provides the cpp function for FIM for the model  \code{~1/(1 + exp(-b *(x - a)))^s}, but when \code{s} is fixed (a two by two matrix).
+//' @param x Vector of design points.
+//' @param w Vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w) = 1}.
+//' @param param Vector of values for the model parameters \code{c(a, b)}.
+//' @param s parameter \code{s}.
 //' @return Fisher information matrix.
-//' @details
-//' There is no analytical solution for the locally D-optimal design. Parameter \eqn{s} must be
-//' passed by \code{...} in most of the functions like \code{\link{mica}}.
-//' @family FIM
 //' @export
+//' @note This matrix is a two by two matrix and not equal to the Fisher information matrix for the power logistic model
+//' when the derivative is taken with respect to all the three parameters.
+//' This matrix is only given to be used in some illustrative examples.
 // [[Rcpp::export]]
 
 

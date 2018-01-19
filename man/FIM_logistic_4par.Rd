@@ -2,41 +2,37 @@
 % Please edit documentation in R/RcppExports.R
 \name{FIM_logistic_4par}
 \alias{FIM_logistic_4par}
-\title{Fisher information matrix for the four parameter logistic model.}
+\title{Fisher Information Matrix for the 4-Parameter Logistic Model}
 \usage{
 FIM_logistic_4par(x, w, param)
 }
 \arguments{
-\item{x}{vector of design points.}
+\item{x}{Vector of design points.}
 
-\item{w}{vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w)} should be 1.}
+\item{w}{Vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w) = 1}.}
 
-\item{param}{vector of model parameters
-\eqn{\bold{\theta} = (\theta_1, \theta_2, \theta_3, \theta_4)}{\bold{\theta} = (\theta1, \theta2, \theta3, \theta4)}.}
+\item{param}{Vector of values for the model parameters \code{c(theta1, theta2, theta3, theta4)}.}
 }
 \value{
 Fisher information matrix.
 }
 \description{
-The mean of the response variable is
- \deqn{f(x, \bold{\theta}) = \frac{\theta_1}{1 + \exp(\theta_2 x + \theta_3)} + \theta_4,}{
- f(x, \bold{\theta})= \theta1/(1 + exp(\theta2*x + \theta3)) + \theta4,}
-  where \eqn{\bold{\theta} = (\theta_1, \theta_2, \theta_3, \theta_4)}{\bold{\theta} = (\theta1, \theta2, \theta3, \theta4)}.
+It provides the cpp function for the FIM for the model
+ \code{~theta1/(1+exp(theta2*x+theta3))+theta4}.
+ This model is another re-parameterization of the 4-parameter Hill model.
+  For more details, see Eq. (1) and (2) in Hyun and  Wong (2015).
 }
 \details{
-The fisher information matrix does not depend on \eqn{\theta_4}{\theta4}.\cr
-There is no analytical solution for the locally D-optimal design for this model.
+The fisher information matrix does not depend on \code{theta4}.\cr
+}
+\examples{
+FIM_logistic_4par(x = c(-6.9, -4.6, -3.9, 6.7 ),
+                  w = c(0.489, 0.40, 0.061, 0.050),
+                  param = c(1.563, 1.790, 8.442, 0.137))
+}
+\references{
+Hyun, S. W., & Wong, W. K. (2015). Multiple-Objective Optimal Designs for Studying the Dose Response Function and Interesting Dose Levels. The international journal of biostatistics, 11(2), 253-271.
 }
 \seealso{
-Other FIM: \code{\link{FIM_comp_inhibition}},
-  \code{\link{FIM_emax_3par}}, \code{\link{FIM_exp_2par}},
-  \code{\link{FIM_exp_3par}},
-  \code{\link{FIM_logisitic_1par}},
-  \code{\link{FIM_logistic}}, \code{\link{FIM_loglin}},
-  \code{\link{FIM_michaelis}},
-  \code{\link{FIM_mixed_inhibition}},
-  \code{\link{FIM_noncomp_inhibition}},
-  \code{\link{FIM_power_logistic}},
-  \code{\link{FIM_uncomp_inhibition}}
+\code{\link{multiple}}
 }
-

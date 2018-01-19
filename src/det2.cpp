@@ -12,7 +12,7 @@ double det2(const Eigen::Map<Eigen::MatrixXd> mat , const bool logarithm = false
    if(logarithm == true){
     if(det_FIM > 0){
       det_FIM = log(det_FIM);}else
-      det_FIM = 1e24;
+      det_FIM = R_NegInf;
     }
   return det_FIM;
 }

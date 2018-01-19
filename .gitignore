@@ -16,18 +16,8 @@ vignettes/*.pdf
 src/*.dll
 myexamples.R
 todo.txt
-very_important_do_not_delete.txt
 .Rbuildignore
-debugging.R
-## for FWA algoeirthm
-H_iterate.R
-H_on_average_ica_k.R
-H_make_h.R
-FW_mfwa.R
-FW_print.R
-H.R
-FW_iterate.R
-FW_plot.R
-.DS_Store
+src/*.o
+
 
 NEWS.html

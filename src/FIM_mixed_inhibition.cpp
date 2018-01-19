@@ -2,7 +2,6 @@
 
 
 
-
 //Matlab code to produce the derivatives
 //syms   I S V K_m K_ic K_iu
 //mixed_type = V*S/(K_m*(1+I/K_ic) + S*(1+I/K_iu));
@@ -10,28 +9,26 @@
 //diff(mixed_type, K_m)
 //diff(mixed_type, K_ic)
 //diff(mixed_type, K_iu)
-
+// The model has an analytical solution for the locally D-optimal design. See Bogacka et al. (2011) for details.\cr
 
 // roxygen
-//' Fisher information matrix for the mixed inhibition Michaelis-Menten model.
+//'  @title Fisher Information Matrix for the Mixed Inhibition Model.
 //'
-//' The mean velocity of the reaction rate is
-//' \deqn{\eta = \frac{VS}{K_m(1 + \frac{I}{Kic}) + S(1 + \frac{I}{Kiu})}.}{\eta = VS/(K_m(1 + I/Kic) + S(1 + I/Kiu)).}
-//'  Here, \eqn{S} is the substrate concentration, \eqn{I} is the inhibitor concentration,
-//'   \eqn{V} is the maximum velocity of the enzyme, \eqn{K_{ic}}{Kic} and
-//'    \eqn{K_{iu}}{Kiu} are the dissociation constants and \eqn{K_m}{Km} is
-//'     the Michaelis-Menten constant. Any design point is of the form \eqn{(S, I)}.
+//' @description
+//'  It provides the cpp function for FIM for the model \code{~ V*S/(Km * (1 + I/Kic)+ S * (1 + I/Kiu))}
 //'
-//'
-//' @param S vector of \code{S} component of design points. \code{S} is the substrate concentration.
-//' @param I  vector of \code{I} component of design points. \code{I} is the inhibitor concentration.
-//' @param w vector of corresponding weights for each design point. Its length must be equal to the length of \code{I} and \code{S}, and \code{sum(w)} should be 1.
-//' @param param vector of model parameters \eqn{(V, K_m, K_{ic}, K_{iu})}{(V, Km, Kic, Kiu)}.
+//' @param S Vector of \code{S} component of design points. \code{S} is the substrate concentration.
+//' @param I  Vector of \code{I} component of design points. \code{I} is the inhibitor concentration.
+//' @param w Vector of design weight. Its length must be equal to the length of \code{S} and \code{I}, besides  \code{sum(w) = 1}.
+//' @param param Vector of values for the model parameters \code{c(V, Km, Kic, Kiu)}.
 //' @return Fisher information matrix of design.
 //' @references Bogacka, B., Patan, M., Johnson, P. J., Youdim, K., & Atkinson, A. C. (2011). Optimum design of experiments for enzyme inhibition kinetic models. Journal of biopharmaceutical statistics, 21(3), 555-572.
-//' @family FIM
-//' @details The model has an analytical solution for the locally D-optimal design. See Bogacka et al. (2011) for details.\cr
-//' The optimal design does not depend on parameter \eqn{V}.
+//' @details
+//'  The optimal design does not depend on parameter \eqn{V}.
+//' @examples
+//' FIM_mixed_inhibition(S = c(30, 3.86, 30, 4.60),
+//'                      I = c(0, 0, 5.11, 4.16), w = rep(.25, 4),
+//'                      param = c(1.5, 5.2, 3.4, 5.6))
 //' @export
 // [[Rcpp::export]]
 

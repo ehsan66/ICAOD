@@ -1,25 +1,22 @@
 #include <Rcpp.h>
 
 // roxygen
-//' Fisher information matrix for the two-parameter logistic (2PL) model.
-//'
-//' The mean of response variable is \deqn{f(x, \bold{\theta}) = \frac{1}{(1 + \exp(-b (x - a)))},}{f(x, \bold{\theta}) = 1/(1 + \exp(-b (x - a))),} where
-//' \eqn{\bold{\theta} = (a, b)}.
-//' @param x vector of design points. In IRT, \eqn{x} is the person ability parameter.
-//' @param w vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w)} should be 1.
-//' @param param vector of model parameters \eqn{\bold{\theta} = (a, b)}. In IRT parameter
-//' \eqn{a} is the item difficulty parameter and parameter \eqn{b} is the item discrimination parameter.
+//' @title Fisher Information Matrix for the 2-Parameter Logistic (2PL) Model
+//' @description It provides the cpp function for FIM for the model  \code{~1/(1 + exp(-b *(x - a)))}.
+//' In item response theory (IRT),
+//' \eqn{a} is the item difficulty parameter, \eqn{b} is the item discrimination parameter and \eqn{x} is the person ability parameter.
+//' @param x Vector of design points.
+//' @param w Vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w) = 1}.
+//' @param param Vector of values for the model parameters \code{c(a, b)}.
 //' @return Fisher information matrix.
-//' @family FIM
 //' @export
 //' @details
-//' There is no closed-form for the locally optimal design.
-//'  For minimax and standardized D-optimal design, the optimal design is symmetric around point
-//' \eqn{(a^L + a^U)/2}{(aL + aU)/2} where \eqn{a^L}{aL} and \eqn{a^U}{aU} are the
-//' lower bound and upper bound for parameter \eqn{a}, respectively. In \code{\link{mica}},
-//'  options \code{sym} and \code{sym_point} in \code{control} can be used to make the search
-//'   for the optimal design easier.
-//'
+//'  It can be shown that minimax and standardized D-optimal designs for the 2PL model is symmetric around point
+//' \eqn{a_M = (a^L + a^U)/2}{aM = (aL + aU)/2} where \eqn{a^L}{aL} and \eqn{a^U}{aU} are the
+//' lower bound and upper bound for parameter \eqn{a}, respectively. In \code{\link{ICA.control}},
+//'  arguments \code{sym} and \code{sym_point} can be used to specify \eqn{a_M}{aM} and find accurate symmetric optimal designs.
+//' @examples
+//' FIM_logistic(x = c(1, 2), w = c(.5, .5), param = c(2, 1))
 //' @importFrom Rcpp evalCpp
 //' @useDynLib ICAOD
 // [[Rcpp::export]]
