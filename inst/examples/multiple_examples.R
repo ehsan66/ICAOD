@@ -29,35 +29,18 @@ c <- 0.137 # lower limit
 d <- 1.7 # upper limit
 # D belongs to c(.001, 1000) ## dose in mg
 ## the vector of Hill parameters are now c(a, b, c, d)
-
+\dontrun{
 res2 <- multiple(minDose = .001, maxDose = 1000,
                  inipars =  c(a, b, c, d),
                  Hill_par = TRUE, k = 4, lambda = lam,
-                 delta = -1, iter = 1,
+                 delta = -1, iter = 1000,
                  ICA.control = list(rseed = 1366, ncount = 100,
                                     stop_rule = "equivalence",
                                     checkfreq = 100, stoptol = .95))
-
-\dontrun{
-res2 <- iterate(res2, 1000)
-# stops at iteration 101
+# stops at iteration 100
 }
 
 
-
-\dontshow{
-  # you can convert the Hill paramater to the parameters of the 4-parameter logisitc model:
-
-  Theta2 <- c(d - c, -b, b * log(a), c)
-
-  res2 <- multiple(minDose = log(.001),
-                   maxDose = log(1000),
-                   inipars =  Theta2,
-                   k = 4, lambda = lam,
-                   delta = -1, iter = 1000,
-                   ICA.control = list(rseed = 1366))
-  exp(res2$evol[[length(res2$evol)]]$x) # dose level in mg
-}
 
 
 

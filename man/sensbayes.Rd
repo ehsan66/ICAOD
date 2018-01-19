@@ -90,295 +90,67 @@ Having accurate plots for the sensitivity (derivative) function
 requesting very accurate integral approximations.
 }
 \examples{
-#############################################
-# Two parameter logistic model: uniform prior
-#############################################
-# set the unfirom prior
-uni <- uniform(lower =  c(-3, .1), upper = c(3, 2))
-# set the lgostic model with formula
-res1 <- bayes(formula = ~1/(1 + exp(-b *(x - a))),
-              predvars = "x", parvars = c("a", "b"),
-              family = binomial(), lx = -3, ux = 3,
-              k =  5, iter = 1, prior = uni,
-              ICA.control = list(rseed = 1366))
-
-\dontrun{
-res1 <- iterate(res1, 500)
-plot(res1)
-}
-
-# You can also use your  Fisher information matrix (FIM) if you think it is faster!
-\dontrun{
-bayes(fimfunc = FIM_logistic, lx = -3, ux = 3, k =  5, iter = 500,
-      prior = uni, ICA.control = list(rseed = 1366))
-}
-
-###############################################
-# Two parameter logistic model: normal prior #1
-###############################################
-# defining the normal prior #1
-norm1 <- normal(mu =  c(0, 1),
-                sigma = matrix(c(1, -0.17, -0.17, .5), nrow = 2),
-                lower =  c(-3, .1), upper = c(3, 2))
-# initializing
-res2 <- bayes(formula = ~1/(1 + exp(-b *(x - a))), predvars = "x", parvars = c("a", "b"),
-              family = binomial(), lx = -3, ux = 3, k =  4, iter = 1, prior = norm1,
-              ICA.control = list(rseed = 1366))
-\dontrun{
-res2 <- iterate(res2, 500)
-plot(res2)
-}
-
-###############################################
-# Two parameter logistic model: normal prior #2
-###############################################
-# defining the normal prior #1
-norm2 <- normal(mu =  c(0, 1),
-                sigma = matrix(c(1, 0, 0, .5), nrow = 2),
-                lower =  c(-3, .1), upper = c(3, 2))
-# initializing
-res3 <- bayes(formula = ~1/(1 + exp(-b *(x - a))), predvars = "x", parvars = c("a", "b"),
-              family = binomial(), lx = -3, ux = 3, k =  4, iter = 1, prior = norm2,
-              ICA.control = list(rseed = 1366))
-\dontrun{
-res3 <- iterate(res3, 700)
-plot(res3)
-}
-
-
-######################################################
-# Two parameter logistic model: skewed normal prior #1
-######################################################
-skew1 <- skewnormal(xi = c(0, 1),
-                    Omega = matrix(c(1, -0.17, -0.17, .5), nrow = 2),
-                    alpha = c(1, 0), lower =  c(-3, .1), upper = c(3, 2))
-
-res4 <- bayes(formula = ~1/(1 + exp(-b *(x - a))), predvars = "x", parvars = c("a", "b"),
-              family = binomial(), lx = -3, ux = 3, k =  4, iter = 1, prior = skew1,
-              ICA.control = list(rseed = 1366, ncount = 60))
-\dontrun{
-res4 <- iterate(res4, 700)
-plot(res4)
-}
-
-
-######################################################
-# Two parameter logistic model: skewed normal prior #2
-######################################################
-skew2 <- skewnormal(xi = c(0, 1),
-                    Omega = matrix(c(1, -0.17, -0.17, .5), nrow = 2),
+##################################################################
+# Checking the Bayesian D-optimality of a design for the 2Pl model
+##################################################################
+skew2 <- skewnormal(xi = c(0, 1), Omega = matrix(c(1, -0.17, -0.17, .5), nrow = 2),
                     alpha = c(-1, 0), lower =  c(-3, .1), upper = c(3, 2))
-
-res5 <- bayes(formula = ~1/(1 + exp(-b *(x - a))), predvars = "x", parvars = c("a", "b"),
-              family = binomial(), lx = -3, ux = 3, k =  4, iter = 1, prior = skew2,
-              ICA.control = list(rseed = 1366, ncount = 60))
-
 \dontrun{
-res5 <- iterate(res5, 700)
-plot(res5)
+sensbayes(formula = ~1/(1 + exp(-b *(x - a))),
+          predvars = "x", parvars = c("a", "b"),
+          family = binomial(),
+          x= c(-2.50914, -1.16780, -0.36904, 1.29227),
+          w =c(0.35767, 0.11032, 0.15621, 0.37580),
+          lx = -3, ux = 3,
+          prior = skew2)
+# took 29 seconds on my system!
 }
 
-###############################################
-# Two parameter logistic model: t student prior
-###############################################
-# set the prior
-stud <- student(mean =  c(0, 1), S   = matrix(c(1, -0.17, -0.17, .5), nrow = 2),
-                df = 3, lower =  c(-3, .1), upper = c(3, 2))
-
-res6 <- bayes(formula = ~1/(1 + exp(-b *(x - a))), predvars = "x", parvars = c("a", "b"),
-              family = binomial(), lx = -3, ux = 3, k =  5, iter = 1, prior = stud,
-              ICA.control = list(ncount = 50, rseed = 1366))
-
-\dontrun{
-res6 <- iterate(res6, 500)
-plot(res6)
-}
-# not bad, but to find a very accurate designs we increase
-# the ncount to 200 and repeat the optimization
-
-res6 <- bayes(formula = ~1/(1 + exp(-b *(x - a))),
-              predvars = "x", parvars = c("a", "b"),
-              family = binomial(), lx = -3, ux = 3, k =  5, iter = 1, prior = stud,
-              ICA.control = list(ncount = 200,  rseed = 1366))
-
-\dontrun{
-res6 <- iterate(res6, 1000)
-plot(res6)
-}
+# It took very long.
+# We re-adjust the tuning parameters in sens.bayes.control to be faster
+# See how we drastically reduce the maxEval and increase the tolerance
+sensbayes(formula = ~1/(1 + exp(-b *(x - a))),
+          predvars = "x", parvars = c("a", "b"),
+          family = binomial(),
+          x= c(-2.50914, -1.16780, -0.36904, 1.29227),
+          w =c(0.35767, 0.11032, 0.15621, 0.37580),
+          lx = -3, ux = 3,prior = skew2,
+          sens.bayes.control = list(cubature = list(tol = 1e-4, maxEval = 300)))
+# took 5 Seconds on my system!
 
 
-##############################################
-# 4-parameter sigmoid Emax model: unform prior
-##############################################
+# Compare it with the following:
+sensbayes(formula = ~1/(1 + exp(-b *(x - a))),
+          predvars = "x", parvars = c("a", "b"),
+          family = binomial(),
+          x= c(-2.50914, -1.16780, -0.36904, 1.29227),
+          w =c(0.35767, 0.11032, 0.15621, 0.37580),
+          lx = -3, ux = 3,prior = skew2,
+          sens.bayes.control = list(cubature = list(tol = 1e-3, maxEval = 100)))
+# Look at the plot!
+# took 3 seconds on my system
+
+
+########################################################################################
+# Checking the Bayesian D-optimality of a design for the 4-parameter sigmoid emax model
+########################################################################################
 lb <- c(4, 11, 100, 5)
-ub <- c(8, 15, 130, 9)
-res7 <- bayes(formula = ~ theta1 + (theta2 - theta1)*(x^theta4)/(x^theta4 + theta3^theta4),
-              predvars = c("x"), parvars = c("theta1", "theta2", "theta3", "theta4"),
-              lx = .001, ux = 500, k = 5, iter = 1, prior = uniform(lb, ub),
-              ICA.control = list(rseed = 1366, ncount = 60))
+ub <- c(9, 17, 140, 10)
 \dontrun{
-res7 <- iterate(res7, 200)
-plot(res7)
+sensbayes(formula = ~ theta1 + (theta2 - theta1)*(x^theta4)/(x^theta4 + theta3^theta4),
+          predvars = c("x"), parvars = c("theta1", "theta2", "theta3", "theta4"),
+          x = c(0.78990, 95.66297, 118.42964,147.55809, 500),
+          w = c(0.23426, 0.17071, 0.17684, 0.1827, 0.23549),
+          lx = .001, ux = 500,  prior = uniform(lb, ub))
+# took 180 seconds on my system
 }
 
-
-#######################################################################
-# 2-parameter Cox Proportional-Hazards Model for type one cenosred data
-#######################################################################
-# The Fisher information matrix is available here with name FIM_2par_exp_censor1
-# However, we should reparameterize the function to match the standard of the argument 'fimfunc'
-myfim <- function(x, w, param)
-  FIM_2par_exp_censor1(x = x, w = w, param = param, tcensor = 30)
-res8 <- bayes(fimfunc = myfim, lx = 0, ux = 1, k = 4,
-              iter = 1, prior = uniform(c(-11, -11), c(11, 11)),
-              ICA.control = list(rseed = 1366))
-\dontrun{
-res8 <- iterate(res8, 200)
-plot(res8)
-}
-
-
-#######################################################################
-# 2-parameter Cox Proportional-Hazards Model for random cenosred data
-#######################################################################
-# The Fisher information matrix is available here with name FIM_2par_exp_censor2
-# However, we should reparameterize the function to match the standard of the argument 'fimfunc'
-myfim <- function(x, w, param)
-  FIM_2par_exp_censor2(x = x, w = w, param = param, tcensor = 30)
-res9 <- bayes(fimfunc = myfim, lx = 0, ux = 1, k = 2,
-              iter = 1, prior = uniform(c(-11, -11), c(11, 11)),
-              ICA.control = list(rseed = 1366))
-\dontrun{
-res9 <- iterate(res9, 200)
-plot(res9)
-}
-
-#################################
-# Weibull model: Uniform prior
-################################
-# see Dette, H., & Pepelyshev, A. (2008).
-# Efficient experimental designs for sigmoidal growth models.
-# Journal of statistical planning and inference, 138(1), 2-17.
-
-## See how we fixed a some parameters in Bayesian designs
-res10 <- bayes(formula = ~a - b * exp(-lambda * t ^h),
-               predvars = c("t"),
-               parvars = c("a=1", "b=1", "lambda", "h=1"),
-               lx = .00001, ux = 20,
-               prior = uniform(.5, 2.5), k = 5, iter = 1,
-               ICA.control = list(rseed = 1366), npar = 4)
-
-# you must provide npar here
-
-\dontrun{
-res10 <- iterate(res10, 400)
-plot(res10)
-}
-
-#################################
-# Weibull model: Normal prior
-################################
-norm3 <- normal(mu = 1, sigma = .1, lower = .5, upper = 2.5)
-res11 <- bayes(formula = ~a - b * exp(-lambda * t ^h),
-               predvars = c("t"),
-               parvars = c("a=1", "b=1", "lambda", "h=1"),
-               lx = .00001, ux = 20, prior = norm3, k = 4, iter = 1,
-               ICA.control = list(rseed = 1366), npar = 4)
-
-\dontrun{
-res11 <- iterate(res11, 400)
-plot(res11)
-}
-
-#################################
-# Richards model: Normal prior
-#################################
-norm4 <- normal(mu = c(1, 1), sigma = matrix(c(.2, 0.1, 0.1, .4), 2, 2),
-                lower = c(.4, .4), upper = c(1.6, 1.6))
-
-res12 <- bayes(formula = ~a/(1 + b * exp(-lambda*t))^h,
-               predvars = c("t"),
-               parvars = c("a=1", "b", "lambda", "h=1"),
-               lx = .00001, ux = 10,
-               prior = norm4,
-               k = 5,
-               iter = 1,
-               ICA.control = list(rseed = 1366), npar = 4)
-
-\dontrun{
-res12 <- iterate(res12, 400)
-plot(res12)
-}
-
-#################################
-# Exponential model: Uniform prior
-#################################
-res13 <- bayes(formula = ~a + exp(-b*x), predvars = "x",
-               parvars = c("a = 1", "b"),
-               lx = 0.0001, ux = 1,
-               prior = uniform(lower = 1, upper = 20),
-               iter = 1, k = 3,
-               ICA.control= list(rseed = 100), npar = 2)
-\dontrun{
-res13 <- iterate(res13, 300)
-plot(res13)
-}
-
-#################################
-# Power logistic model
-#################################
-# See, Duarte, B. P., & Wong, W. K. (2014).
-# A Semidefinite Programming based approach for finding
-# Bayesian optimal designs for nonlinear models
-uni1 <- uniform(lower = c(-.3, 6, .5), upper = c(.3, 8, 1))
-res14 <- bayes(formula = ~1/(1 + exp(-b *(x - a)))^s, predvars = "x",
-               parvars = c("a", "b", "s"),
-               lx = -1, ux = 1, prior = uni1, k = 5, iter = 1)
-
-\dontrun{
-res14 <- iterate(res14, 300)
-plot(res14)
-}
-
-############################################################################
-# A two-variable generalized linear model with a gamma distributed response
-############################################################################
-lb <- c(.5, 0, 0, 0, 0, 0)
-ub <- c(2, 1, 1, 1, 1, 1)
-myformula1 <- ~beta0+beta1*x1+beta2*x2+beta3*x1^2+beta4*x2^2+beta5*x1*x2
-res15 <- bayes(formula = myformula1,
-               predvars = c("x1", "x2"), parvars = paste("beta", 0:5, sep = ""),
-               family = Gamma(),
-               lx = rep(0, 2), ux = rep(1, 2),
-               prior = uniform(lower = lb, upper = ub),
-               k = 7,iter = 1, ICA.control = list(rseed = 1366))
-
-\dontrun{
-res15 <- iterate(res15, 300)
-plot(res15)}
-
-#################################
-# Three parameter logistic model
-#################################
-
-sigma1 <- matrix(-0.1, nrow = 3, ncol = 3)
-diag(sigma1) <- c(.5, .4, .1)
-norm5 <- normal(mu =  c(0, 1, .2), sigma = sigma1,
-                lower =  c(-3, .1, 0), upper = c(3, 2, .7))
-
-res16 <- bayes(formula = ~ c + (1-c)/(1 + exp(-b *(x - a))), predvars = "x",
-               parvars = c("a", "b", "c"),
-               family = binomial(), lx = -3, ux = 3,
-               k =  4, iter = 1, prior = norm5,
-               ICA.control = list(rseed = 1366, ncount = 50),
-               crt.bayes.control = list(cubature = list(maxEval = 2500, tol = 1e-4)))
-
-\dontrun{
-res16 <- iterate(res16, 500)
-plot(res16, sens.bayes.control = list(cubature = list(maxEval = 1000, tol = 1e-4),
-                                      optslist = list(maxeval = 100)))
-# took 925 second on my system
-}
-
-
+# Re-adjust the tuning parameters to have it faster
+sensbayes(formula = ~ theta1 + (theta2 - theta1)*(x^theta4)/(x^theta4 + theta3^theta4),
+          predvars = c("x"), parvars = c("theta1", "theta2", "theta3", "theta4"),
+          x = c(0.78990, 95.66297, 118.42964,147.55809, 500),
+          w = c(0.23426, 0.17071, 0.17684, 0.1827, 0.23549),
+          lx = .001, ux = 500,  prior = uniform(lb, ub),
+          sens.bayes.control = list(cubature = list(tol = 1e-3, maxEval = 300)))
+# took 4 seconds on my system. See how much it makes difference
 }

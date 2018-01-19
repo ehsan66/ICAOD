@@ -169,7 +169,7 @@ bayes <- function(formula,
 #'   although the process may take too long (even hours) due to
 #' requesting very accurate integral approximations.
 #'@export
-#'@example inst/examples/bayes_examples.R
+#'@example inst/examples/sensbayes_examples.R
 sensbayes <- function(formula,
                       predvars, parvars,
                       family = gaussian(),
