@@ -11,3 +11,4 @@ NEWS.html
 NEWS.Rmd
 ^\.travis\.yml$
 .travis.yml
+.DS_Store
