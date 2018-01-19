@@ -1040,7 +1040,6 @@ sensmultiple <- function (dose, w,
 #' Only applicable when \code{sensitivity = TRUE}.
 #' @param evolution Plot Evolution? Defaults to \code{FALSE}.
 #' @param ... Argument with no further use.
-#' @export
 #' @seealso \code{\link{minimax}}, \code{\link{locally}}, \code{\link{robust}}
 #' @description
 #'  This function plots the evolution of the algorithm till iteration number \code{iter} iteration and re-checks the general equivalence theorem by plotting the sensitivity function and calculating the ELB.
@@ -1055,7 +1054,7 @@ sensmultiple <- function (dose, w,
 #'  (or a new user-given value, in case it has been reset) of \code{maxeval}.
 #'  If increasing the value of \code{maxeval} gives different criterion values,
 #'  then the results can not be trusted and should be repeated with a higher value for \code{maxeval}.
-#'
+#' @export
 plot.minimax <- function(x, iter = NULL,
                          sensitivity = TRUE,
                          calculate_criterion = FALSE,

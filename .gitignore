@@ -18,6 +18,8 @@ myexamples.R
 todo.txt
 .Rbuildignore
 src/*.o
+cran-comments.md
+
 
 
 NEWS.html
