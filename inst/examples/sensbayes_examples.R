@@ -60,4 +60,4 @@ sensbayes(formula = ~ theta1 + (theta2 - theta1)*(x^theta4)/(x^theta4 + theta3^t
           w = c(0.23426, 0.17071, 0.17684, 0.1827, 0.23549),
           lx = .001, ux = 500,  prior = uniform(lb, ub),
           sens.bayes.control = list(cubature = list(tol = 1e-3, maxEval = 300)))
-# took 4 seconds on my system. See how muchbit makes difference
+# took 4 seconds on my system. See how much it makes difference

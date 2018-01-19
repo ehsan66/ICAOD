@@ -1,13 +1,13 @@
 # New Update 
 ## Test environments
-1. local OS X install, R version 3.4.3 (2017-11-30)
 
-    +   passed but 1 NOTE:
-    +   checking top-level files ... NOTE
-     Non-standard files/directories found at top level:
-     ‘ICAOD.Rproj’ ‘NEWS.Rmd’ ‘README.Rmd’ ‘cran-comments.md’
+* local OS X install, R version 3.4.3 (2017-11-30)
 
+* travis-ci 
 
+* Win-builder
+
+* NO Reverse dependencies
 
 
 ## R CMD check results

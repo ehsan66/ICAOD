@@ -3,8 +3,7 @@ Title: Optimal Designs For Nonlinear Models
 Version: 0.9.9
 Authors@R: c(person("Ehsan", "Masoudi", role = c("aut", "cre"),  email = "ehsan.masoudi@wwu.de"),  person("Heinz", "Holling", role = "aut"),  person("Weng Kee", "Wong", role = "aut"))
 Description: Finds optimal designs for nonlinear models using a metaheuristic algorithm called imperialist competitive algorithm ICA.
-Depends:
-    R (>= 3.4.3)
+Depends: R (>= 3.1.3)
 License: GPL (>= 2)
 LazyData: true
 LinkingTo: Rcpp, RcppEigen
