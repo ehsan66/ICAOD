@@ -17,11 +17,7 @@ src/*.dll
 myexamples.R
 todo.txt
 **.o
-
 README.md
-README.Rmd
-
-NEWS.Rmd
 NEWS.html
-
 .DS_Store
+cran-comments.md
