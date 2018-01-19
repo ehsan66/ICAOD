@@ -17,9 +17,9 @@ src/*.dll
 myexamples.R
 todo.txt
 src/*.o
-cran-comments.md
+
 README.md
 README.Rmd
 
-
+NEWS.Rmd
 NEWS.html
