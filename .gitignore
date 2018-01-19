@@ -16,7 +16,6 @@ vignettes/*.pdf
 src/*.dll
 myexamples.R
 todo.txt
-.Rbuildignore
 src/*.o
 cran-comments.md
 

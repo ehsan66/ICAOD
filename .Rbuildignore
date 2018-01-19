@@ -1,0 +1,13 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+todo.txt
+cran-comments.md
+^revdep$
+^README\.Rmd$
+^README-.*\.png$
+^cran-comments\.md$
+NEWS.md
+NEWS.html
+NEWS.Rmd
+^\.travis\.yml$
+.travis.yml
