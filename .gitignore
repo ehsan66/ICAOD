@@ -16,7 +16,7 @@ vignettes/*.pdf
 src/*.dll
 myexamples.R
 todo.txt
-src/*.o
+**.o
 
 README.md
 README.Rmd

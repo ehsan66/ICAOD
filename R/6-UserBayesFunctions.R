@@ -441,7 +441,6 @@ sensbayescomp <- function(formula,
 #' Only applicable when \code{sensitivity = TRUE}.
 #' @param evolution Plot Evolution? Defaults to \code{FALSE}.
 #' @param ... Argument with no further use.
-#' @export
 #' @seealso \code{\link{bayes}}, \code{\link{bayescomp}}
 #' @description
 #'  This function plots the evolution of the algorithm till iteration number \code{iter} iteration and re-checks the general equivalence theorem by plotting the sensitivity function and calculating the ELB.
@@ -453,6 +452,7 @@ sensbayescomp <- function(formula,
 #'  criterion value (approximate the integration given an output design in a Bayesian problem) with different values for  \code{maxEval} and \code{tol} in \code{\link{crt.bayes.control}}
 #'  to be sure that the function \code{hcubature} approximates the integrals to an acceptable accuracy using the default values
 #'  (or a new user-given values, in case it has been reset) of \code{maxEval} and \code{tol}.
+#' @export
 plot.bayes <- function(x, iter = NULL,
                        sensitivity = TRUE,
                        calculate_criterion = FALSE,

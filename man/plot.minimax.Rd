@@ -4,7 +4,7 @@
 \alias{plot.minimax}
 \title{Plotting \code{minimax} Objects}
 \usage{
-plot.minimax(x, iter = NULL, sensitivity = TRUE,
+\method{plot}{minimax}(x, iter = NULL, sensitivity = TRUE,
   calculate_criterion = FALSE, sens.minimax.control = list(),
   crt.minimax.control = list(), silent = FALSE, plot_3d = c("lattice",
   "rgl"), evolution = FALSE, ...)

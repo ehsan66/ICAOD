@@ -4,7 +4,7 @@
 \alias{plot.bayes}
 \title{Plotting \code{bayes} Objects}
 \usage{
-plot.bayes(x, iter = NULL, sensitivity = TRUE,
+\method{plot}{bayes}(x, iter = NULL, sensitivity = TRUE,
   calculate_criterion = FALSE, sens.bayes.control = list(),
   crt.bayes.control = list(), silent = FALSE, plot_3d = c("lattice",
   "rgl"), evolution = FALSE, ...)
