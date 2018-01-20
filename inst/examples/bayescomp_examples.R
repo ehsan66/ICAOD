@@ -47,15 +47,12 @@ myprob <- function(x, param){
   out <- 1-1/(1+exp(b0 + b1 * x1 + b2 * x2 + b3 * x1 * x2))
   return(out)
 }
-
+\dontrun{
 res2 <- bayescomp(fimfunc = myfim,
                   lx = c(-1, -1), ux = c(1, 1),
-                  prior = myprior, iter = 1, k = 7,
+                  prior = myprior, iter = 1000, k = 7,
                   prob = myprob, alpha = .5,
                   ICA.control = list(rseed = 1366))
-
-\dontrun{
-  res2 <- iterate(res1, 1000)
   plot(res2, sens.bayes.control = list(cubature = list(maxEval = 1000, tol = 1e-4)))
 }
 

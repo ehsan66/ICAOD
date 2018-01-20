@@ -17,6 +17,7 @@ sensbayes(formula = ~1/(1 + exp(-b *(x - a))),
 # It took very long.
 # We re-adjust the tuning parameters in sens.bayes.control to be faster
 # See how we drastically reduce the maxEval and increase the tolerance
+\dontrun{
 sensbayes(formula = ~1/(1 + exp(-b *(x - a))),
           predvars = "x", parvars = c("a", "b"),
           family = binomial(),
@@ -24,6 +25,7 @@ sensbayes(formula = ~1/(1 + exp(-b *(x - a))),
           w =c(0.35767, 0.11032, 0.15621, 0.37580),
           lx = -3, ux = 3,prior = skew2,
           sens.bayes.control = list(cubature = list(tol = 1e-4, maxEval = 300)))
+}
 # took 5 Seconds on my system!
 
 
@@ -54,6 +56,7 @@ sensbayes(formula = ~ theta1 + (theta2 - theta1)*(x^theta4)/(x^theta4 + theta3^t
 }
 
 # Re-adjust the tuning parameters to have it faster
+\dontrun{
 sensbayes(formula = ~ theta1 + (theta2 - theta1)*(x^theta4)/(x^theta4 + theta3^theta4),
           predvars = c("x"), parvars = c("theta1", "theta2", "theta3", "theta4"),
           x = c(0.78990, 95.66297, 118.42964,147.55809, 500),
@@ -61,3 +64,4 @@ sensbayes(formula = ~ theta1 + (theta2 - theta1)*(x^theta4)/(x^theta4 + theta3^t
           lx = .001, ux = 500,  prior = uniform(lb, ub),
           sens.bayes.control = list(cubature = list(tol = 1e-3, maxEval = 300)))
 # took 4 seconds on my system. See how much it makes difference
+}

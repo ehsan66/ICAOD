@@ -156,6 +156,7 @@ bayes(fimfunc = FIM_logistic, lx = -3, ux = 3, k =  5, iter = 500,
 norm1 <- normal(mu =  c(0, 1),
                 sigma = matrix(c(1, -0.17, -0.17, .5), nrow = 2),
                 lower =  c(-3, .1), upper = c(3, 2))
+
 # initializing
 res2 <- bayes(formula = ~1/(1 + exp(-b *(x - a))), predvars = "x", parvars = c("a", "b"),
               family = binomial(), lx = -3, ux = 3, k =  4, iter = 1, prior = norm1,
@@ -172,11 +173,12 @@ plot(res2)
 norm2 <- normal(mu =  c(0, 1),
                 sigma = matrix(c(1, 0, 0, .5), nrow = 2),
                 lower =  c(-3, .1), upper = c(3, 2))
+\dontrun{
 # initializing
 res3 <- bayes(formula = ~1/(1 + exp(-b *(x - a))), predvars = "x", parvars = c("a", "b"),
               family = binomial(), lx = -3, ux = 3, k =  4, iter = 1, prior = norm2,
               ICA.control = list(rseed = 1366))
-\dontrun{
+
 res3 <- iterate(res3, 700)
 plot(res3)
 }
@@ -252,10 +254,11 @@ plot(res7)
 # However, we should reparameterize the function to match the standard of the argument 'fimfunc'
 myfim <- function(x, w, param)
   FIM_2par_exp_censor1(x = x, w = w, param = param, tcensor = 30)
+\dontrun{
 res8 <- bayes(fimfunc = myfim, lx = 0, ux = 1, k = 4,
               iter = 1, prior = uniform(c(-11, -11), c(11, 11)),
               ICA.control = list(rseed = 1366))
-\dontrun{
+
 res8 <- iterate(res8, 200)
 plot(res8)
 }
@@ -346,6 +349,7 @@ plot(res13)
 # A Semidefinite Programming based approach for finding
 # Bayesian optimal designs for nonlinear models
 uni1 <- uniform(lower = c(-.3, 6, .5), upper = c(.3, 8, 1))
+
 res14 <- bayes(formula = ~1/(1 + exp(-b *(x - a)))^s, predvars = "x",
                parvars = c("a", "b", "s"),
                lx = -1, ux = 1, prior = uni1, k = 5, iter = 1)
@@ -361,6 +365,7 @@ plot(res14)
 lb <- c(.5, 0, 0, 0, 0, 0)
 ub <- c(2, 1, 1, 1, 1, 1)
 myformula1 <- ~beta0+beta1*x1+beta2*x2+beta3*x1^2+beta4*x2^2+beta5*x1*x2
+\dontrun{
 res15 <- bayes(formula = myformula1,
                predvars = c("x1", "x2"), parvars = paste("beta", 0:5, sep = ""),
                family = Gamma(),
@@ -368,7 +373,7 @@ res15 <- bayes(formula = myformula1,
                prior = uniform(lower = lb, upper = ub),
                k = 7,iter = 1, ICA.control = list(rseed = 1366))
 
-\dontrun{
+
 res15 <- iterate(res15, 300)
 plot(res15)}
 

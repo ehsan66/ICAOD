@@ -223,16 +223,16 @@ and \code{optslist$maxeval} in \code{crt.minimax.control} to produce very accura
 ########################################
 # Two-parameter exponential growth model
 ########################################
-res <- minimax (formula = ~a + exp(-b*x), predvars = "x", parvars = c("a", "b"),
-                lx = 0, ux = 1, lp = c(1, 1), up = c(1, 10),
-                iter = 1, k = 4, ICA.control= ICA.control(rseed = 100))
+res1 <- minimax (formula = ~a + exp(-b*x), predvars = "x", parvars = c("a", "b"),
+                 lx = 0, ux = 1, lp = c(1, 1), up = c(1, 10),
+                 iter = 1, k = 4, ICA.control= ICA.control(rseed = 100))
 \dontrun{
-res <- iterate(res, 150)
-# iterating the algorithm up to 150 more iterations
+  res1 <- iterate(res1, 150)
+  # iterating the algorithm up to 150 more iterations
 }
 
-res # print method
-plot(res) # veryfying the general equivalence theorem
+res1 # print method
+plot(res1) # veryfying the general equivalence theorem
 
 ########################################
 # Two-parameter logistic model.
@@ -243,11 +243,13 @@ cont1 <- crt.minimax.control(optslist = list(maxeval = 500))
 cont2 <- ICA.control(rseed = 100, checkfreq = Inf, ncount = 60)
 
 \dontrun{
-minimax (formula = ~1/(1 + exp(-b *(x - a))), predvars = "x",
-         parvars = c("a", "b"),
-         family = binomial(), lx = -3, ux = 3,
-         lp = c(0, 1), up = c(1, 2.5), iter = 200, k = 3,
-         ICA.control= cont2, crt.minimax.control = cont1)
+  res2 <- minimax (formula = ~1/(1 + exp(-b *(x - a))), predvars = "x",
+                   parvars = c("a", "b"),
+                   family = binomial(), lx = -3, ux = 3,
+                   lp = c(0, 1), up = c(1, 2.5), iter = 200, k = 3,
+                   ICA.control= cont2, crt.minimax.control = cont1)
+  print(res2)
+  plot(res2)
 }
 
 ############################################
@@ -257,29 +259,31 @@ minimax (formula = ~1/(1 + exp(-b *(x - a))), predvars = "x",
 lower <- c(1, 4, 2, 4)
 upper <- c(1, 5, 3, 5)
 cont <- crt.minimax.control(optslist = list(maxeval = 100)) # to be faster
-res <- minimax(formula =  ~ V*S/(Km * (1 + I/Kic)+ S * (1 + I/Kiu)),
-               predvars = c("S", "I"),
-               parvars = c("V", "Km", "Kic", "Kiu"),
-               lx = c(0, 0), ux = c(30, 60), k = 4,
-               iter = 1, lp = lower, up = upper,
-               ICA.control= list(rseed = 100),
-               crt.minimax.control = cont)
+res3 <- minimax(formula =  ~ V*S/(Km * (1 + I/Kic)+ S * (1 + I/Kiu)),
+                predvars = c("S", "I"),
+                parvars = c("V", "Km", "Kic", "Kiu"),
+                lx = c(0, 0), ux = c(30, 60), k = 4,
+                iter = 1, lp = lower, up = upper,
+                ICA.control= list(rseed = 100),
+                crt.minimax.control = cont)
 \dontrun{
-res <- iterate(res, 100)
+  res3 <- iterate(res3, 100)
 }
-print(res)
-plot(res) # sensitivity plot
+print(res3)
+plot(res3) # sensitivity plot
 
 # Now consider grid points instead of assuming continuous parameter space
 # set n.grid to 5
 \dontrun{
-minimax(formula =  ~ V*S/(Km * (1 + I/Kic)+ S * (1 + I/Kiu)),
-        predvars = c("S", "I"),
-        parvars = c("V", "Km", "Kic", "Kiu"),
-        lx = c(0, 0), ux = c(30, 60),
-        k = 4, iter = 130, n.grid = 5, lp = lower, up = upper,
-        ICA.control= list(rseed = 100, checkfreq = Inf),
-        crt.minimax.control = cont)
+  res4 <- minimax(formula =  ~ V*S/(Km * (1 + I/Kic)+ S * (1 + I/Kiu)),
+                  predvars = c("S", "I"),
+                  parvars = c("V", "Km", "Kic", "Kiu"),
+                  lx = c(0, 0), ux = c(30, 60),
+                  k = 4, iter = 130, n.grid = 5, lp = lower, up = upper,
+                  ICA.control= list(rseed = 100, checkfreq = Inf),
+                  crt.minimax.control = cont)
+  print(res4)
+  plot(res4) # sensitivity plot
 }
 
 ############################################
@@ -312,18 +316,18 @@ LDOD <- function(V, Km, Kic, Kiu){
   return(list(x = x, w =rep(1/4, 4)))
 
 }
-args(LDOD)
+formalArgs(LDOD)
 \dontrun{
-minimax(formula =  ~ V*S/(Km * (1 + I/Kic)+ S * (1 + I/Kiu)),
-        predvars = c("S", "I"),
-        parvars = c("V", "Km", "Kic", "Kiu"),
-        lx = c(0, 0), ux = c(30, 60),
-        k = 4, iter = 300,
-        lp = lower, up = upper,
-        ICA.control= list(rseed = 100, checkfreq = Inf),
-        crt.minimax.control = cont,
-        standardized = TRUE,
-        localdes = LDOD)
+  minimax(formula =  ~ V*S/(Km * (1 + I/Kic)+ S * (1 + I/Kiu)),
+          predvars = c("S", "I"),
+          parvars = c("V", "Km", "Kic", "Kiu"),
+          lx = c(0, 0), ux = c(30, 60),
+          k = 4, iter = 300,
+          lp = lower, up = upper,
+          ICA.control= list(rseed = 100, checkfreq = Inf),
+          crt.minimax.control = cont,
+          standardized = TRUE,
+          localdes = LDOD)
 }
 
 
@@ -338,7 +342,7 @@ minimax(formula =  ~ V*S/(Km * (1 + I/Kic)+ S * (1 + I/Kiu)),
 # An example of a model with two predictors
 ###########################################
 # For example, th cpp FIM function for the mixed inhibition model is named:
-args(FIM_mixed_inhibition)
+formalArgs(FIM_mixed_inhibition)
 
 # We should reparamterize the arguments to match the standard of the
 # argument 'fimfunc' (see 'Details').
@@ -349,21 +353,19 @@ myfim <- function(x, w, param){
   out <- FIM_mixed_inhibition(S = S, I = I, w = w, param = param)
   return(out)
 }
-args(myfim)
+formalArgs(myfim)
 
 # Finds minimax optimal design, exactly as before, but NOT using the
 # formula interface.
-res <- minimax(fimfunc = myfim,
-               lx = c(0, 0), ux = c(30, 60), k = 4,
-               iter = 1, lp = lower, up = upper,
-               ICA.control= list(rseed = 100),
-               crt.minimax.control = cont)
 \dontrun{
-res <- iterate(res, 100)
+  res5 <- minimax(fimfunc = myfim,
+                  lx = c(0, 0), ux = c(30, 60), k = 4,
+                  iter = 100, lp = lower, up = upper,
+                  ICA.control= list(rseed = 100),
+                  crt.minimax.control = cont)
+  print(res5)
+  plot(res5) # sensitivity plot
 }
-print(res)
-plot(res) # sensitivity plot
-
 #########################################
 # Standardized maximin D-optimal designs
 #########################################
@@ -374,16 +376,18 @@ LDOD2 <- function(param)
   LDOD(V = param[1], Km = param[2], Kic = param[3], Kiu = param[4])
 
 # compare these two:
-args(LDOD)
-args(LDOD2)
+formalArgs(LDOD)
+formalArgs(LDOD2)
 \dontrun{
-minimax(fimfunc = myfim,
-        lx = c(0, 0), ux = c(30, 60), k = 4,
-        iter = 300, lp = lower, up = upper,
-        ICA.control= list(rseed = 100, checkfreq = Inf),
-        crt.minimax.control = cont,
-        standardized = TRUE,
-        localdes = LDOD2)
+  res6 <- minimax(fimfunc = myfim,
+                  lx = c(0, 0), ux = c(30, 60), k = 4,
+                  iter = 300, lp = lower, up = upper,
+                  ICA.control= list(rseed = 100, checkfreq = Inf),
+                  crt.minimax.control = cont,
+                  standardized = TRUE,
+                  localdes = LDOD2)
+  res6
+  plot(res6)
 }
 
 }
