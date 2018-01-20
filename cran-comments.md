@@ -5,7 +5,7 @@
 * Rcmd check passed 
 
 ### travis-ci 
-*
+* Passed
 
 ### Win-builder
 * Passed with one Email NOTE
