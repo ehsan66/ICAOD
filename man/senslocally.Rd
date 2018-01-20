@@ -127,7 +127,7 @@ senslocally(formula =  ~ V*S/(Km * (1 + I/Kic)+ S * (1 + I/Kiu)),
             x = x0, w = w0,
             lx = c(0, 0), ux = c(30, 60),
             inipars = c(1.5, 5.2, 3.4, 5.6))
-
+\dontrun{
 # using package rgl for 3d plot:
 res<- senslocally(formula =  ~ V*S/(Km * (1 + I/Kic)+ S * (1 + I/Kiu)),
                   predvars = c("S", "I"),
@@ -137,7 +137,7 @@ res<- senslocally(formula =  ~ V*S/(Km * (1 + I/Kic)+ S * (1 + I/Kiu)),
                   inipars = c(1.5, 5.2, 3.4, 5.6),
                   plot_3d = "rgl")
 
-
+}
 }
 \references{
 Masoudi E, Holling H, Wong W.K. (2017). Application of Imperialist Competitive Algorithm to Find Minimax and Standardized Maximin Optimal Designs. Computational Statistics and Data Analysis, 113, 330-345. \cr

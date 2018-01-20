@@ -259,6 +259,7 @@ cont2 <- ICA.control(rseed = 100, checkfreq = Inf, ncount = 60)
 lower <- c(1, 4, 2, 4)
 upper <- c(1, 5, 3, 5)
 cont <- crt.minimax.control(optslist = list(maxeval = 100)) # to be faster
+\dontrun{
 res3 <- minimax(formula =  ~ V*S/(Km * (1 + I/Kic)+ S * (1 + I/Kiu)),
                 predvars = c("S", "I"),
                 parvars = c("V", "Km", "Kic", "Kiu"),
@@ -266,11 +267,12 @@ res3 <- minimax(formula =  ~ V*S/(Km * (1 + I/Kic)+ S * (1 + I/Kiu)),
                 iter = 1, lp = lower, up = upper,
                 ICA.control= list(rseed = 100),
                 crt.minimax.control = cont)
-\dontrun{
+
   res3 <- iterate(res3, 100)
+  print(res3)
+  plot(res3) # sensitivity plot
 }
-print(res3)
-plot(res3) # sensitivity plot
+
 
 # Now consider grid points instead of assuming continuous parameter space
 # set n.grid to 5

@@ -28,12 +28,11 @@ bayes(fimfunc = FIM_logistic, lx = -3, ux = 3, k =  5, iter = 500,
 norm1 <- normal(mu =  c(0, 1),
                 sigma = matrix(c(1, -0.17, -0.17, .5), nrow = 2),
                 lower =  c(-3, .1), upper = c(3, 2))
-
+\dontrun{
 # initializing
 res2 <- bayes(formula = ~1/(1 + exp(-b *(x - a))), predvars = "x", parvars = c("a", "b"),
               family = binomial(), lx = -3, ux = 3, k =  4, iter = 1, prior = norm1,
               ICA.control = list(rseed = 1366))
-\dontrun{
 res2 <- iterate(res2, 500)
 plot(res2)
 }
@@ -221,12 +220,10 @@ plot(res13)
 # A Semidefinite Programming based approach for finding
 # Bayesian optimal designs for nonlinear models
 uni1 <- uniform(lower = c(-.3, 6, .5), upper = c(.3, 8, 1))
-
+\dontrun{
 res14 <- bayes(formula = ~1/(1 + exp(-b *(x - a)))^s, predvars = "x",
                parvars = c("a", "b", "s"),
                lx = -1, ux = 1, prior = uni1, k = 5, iter = 1)
-
-\dontrun{
 res14 <- iterate(res14, 300)
 plot(res14)
 }
