@@ -52,6 +52,7 @@ LDOD <- function(theta0, theta1, theta2){
 }
 x0 <- c(0, 4.2494, 17.0324, 149.9090)
 w0 <- c(0.3204, 0.1207, 0.2293, 0.3296)
+\dontrun{
 sensminimax(formula = ~theta0 + theta1* log(x + theta2),
             predvars = c("x"),
             parvars = c("theta0", "theta1", "theta2"),
@@ -61,7 +62,7 @@ sensminimax(formula = ~theta0 + theta1* log(x + theta2),
             localdes = LDOD,
             standardized = TRUE,
             sens.minimax.control = list(answering.set = list(n_seg = 10)))
-
+}
 ################################################################
 # Not necessary!
 # The rest of the examples here are only for professional uses.
@@ -82,14 +83,14 @@ myfim1 <- function(x, w, param)
   FIM_power_logistic(x = x, w = w, param =param, s = .2)
 
 args(myfim1)
-
+\dontrun{
 # Verify minimax D-optimality of a design
 sensminimax(fimfunc = myfim1,
             x = c(-4.5515, 0.2130, 2.8075),
             w = c(0.4100, 0.3723, 0.2177),
             lx = -5, ux = 5,
             lp = c(0, 1), up = c(3, 1.5))
-
+}
 ##############################
 # A model with two predictors
 ##############################
@@ -108,14 +109,14 @@ myfim2 <- function(x, w, param){
   return(out)
 }
 args(myfim2)
-
+\dontrun{
 # Verifyng minimax D-optimality of a design
 sensminimax(fimfunc = myfim2,
             x = c(3.4614, 4.2801, 30, 30, 0, 3.1426, 0, 4.0373),
             w = rep(1/4, 4),
             lx = c(0, 0), ux = c(30, 60),
             lp = c(1, 4, 2, 4), up = c(1, 5, 3, 5))
-
+}
 
 #########################################
 # Standardized maximin D-optimal designs

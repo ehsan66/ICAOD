@@ -1,24 +1,21 @@
-# New Update 
+# This is New Update (Version 0.9.9)
 ## Test environments
 
-* local OS X install, R version 3.4.3 (2017-11-30)
+### local OS X install, R version 3.4.3 (2017-11-30)
+* Rcmd check passed 
 
-* travis-ci 
+### travis-ci 
+*
 
-* Win-builder
+### Win-builder
+* Passed with one Email NOTE
 
-* NO Reverse dependencies
+
+### Reverse dependencies
+* No dependencies has been found
 
 
-## R CMD check results
 
-+ 0 errors | 0 warnings | 1 note
 
-* This is a new update (second).
-
-## Reverse dependencies
-no dependencies has been found
-
----
 
 
