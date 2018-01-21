@@ -12,7 +12,7 @@ knitr::opts_chunk$set(
 )
 ```
 # Important:
-* The package has been prominently changed since version 0.9.9.
+* The package has been prominently changed since version 0.9.6.
 * Please use always to last version .
 * see ` ?ICAOD` on how to use the package.
 * For new models and optimality criteria please email the maintainer.
