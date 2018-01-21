@@ -25,8 +25,9 @@ sensbayes(formula = ~1/(1 + exp(-b *(x - a))),
           w =c(0.35767, 0.11032, 0.15621, 0.37580),
           lx = -3, ux = 3,prior = skew2,
           sens.bayes.control = list(cubature = list(tol = 1e-4, maxEval = 300)))
-}
 # took 5 Seconds on my system!
+}
+
 
 
 # Compare it with the following:
@@ -36,7 +37,7 @@ sensbayes(formula = ~1/(1 + exp(-b *(x - a))),
           x= c(-2.50914, -1.16780, -0.36904, 1.29227),
           w =c(0.35767, 0.11032, 0.15621, 0.37580),
           lx = -3, ux = 3,prior = skew2,
-          sens.bayes.control = list(cubature = list(tol = 1e-3, maxEval = 100)))
+          sens.bayes.control = list(cubature = list(tol = 1e-4, maxEval = 200)))
 # Look at the plot!
 # took 3 seconds on my system
 
@@ -52,7 +53,7 @@ sensbayes(formula = ~ theta1 + (theta2 - theta1)*(x^theta4)/(x^theta4 + theta3^t
           x = c(0.78990, 95.66297, 118.42964,147.55809, 500),
           w = c(0.23426, 0.17071, 0.17684, 0.1827, 0.23549),
           lx = .001, ux = 500,  prior = uniform(lb, ub))
-# took 180 seconds on my system
+# took 200 seconds on my system
 }
 
 # Re-adjust the tuning parameters to have it faster
