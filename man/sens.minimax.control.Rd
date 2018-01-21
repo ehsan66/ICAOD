@@ -53,8 +53,9 @@ Argument \code{optslist} will be passed to the argument \code{opts} of the funct
  A full description of all options is shown by the function \code{nloptr.print.options()} in package \code{\link[nloptr]{nloptr}}.
 }
 \note{
-When the value of ELB is negative, it means the maximum found by the optimization function set by \code{algorithm} is not global.
- In this case, please increase  the value of the parameter \code{maxeval} to find the global maximum and avoid negative meaningless value for ELB.
+When the value of ELB is larger than 1, it means the maximum found by the optimization function set by \code{algorithm} is not global.
+ In this case, please increase  the value of the parameter \code{maxeval} to find the global maximum of the derivative function over the design space and
+ and avoid false ELB.
 }
 \examples{
 sens.minimax.control()

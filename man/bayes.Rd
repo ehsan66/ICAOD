@@ -179,7 +179,8 @@ res3 <- bayes(formula = ~1/(1 + exp(-b *(x - a))), predvars = "x", parvars = c("
               ICA.control = list(rseed = 1366))
 
 res3 <- iterate(res3, 700)
-plot(res3)
+plot(res3, sens.bayes.control = list(cubature = list(maxEval = 3000, tol = 1e-4),
+                                     optslist = list(maxeval = 3000)))
 }
 
 
@@ -193,7 +194,8 @@ skew1 <- skewnormal(xi = c(0, 1),
 res4 <- bayes(formula = ~1/(1 + exp(-b *(x - a))), predvars = "x", parvars = c("a", "b"),
               family = binomial(), lx = -3, ux = 3, k =  4, iter = 700, prior = skew1,
               ICA.control = list(rseed = 1366, ncount = 60))
-plot(res4)
+plot(res4, sens.bayes.control = list(cubature = list(maxEval = 3000, tol = 1e-4),
+                                     optslist = list(maxeval = 3000)))
 }
 
 
@@ -207,7 +209,8 @@ skew2 <- skewnormal(xi = c(0, 1),
 res5 <- bayes(formula = ~1/(1 + exp(-b *(x - a))), predvars = "x", parvars = c("a", "b"),
               family = binomial(), lx = -3, ux = 3, k =  4, iter = 700, prior = skew2,
               ICA.control = list(rseed = 1366, ncount = 60))
-plot(res5)
+plot(res5, sens.bayes.control = list(cubature = list(maxEval = 3000, tol = 1e-4),
+                                     optslist = list(maxeval = 3000)))
 }
 
 ###############################################
@@ -243,7 +246,8 @@ res7 <- bayes(formula = ~ theta1 + (theta2 - theta1)*(x^theta4)/(x^theta4 + thet
               predvars = c("x"), parvars = c("theta1", "theta2", "theta3", "theta4"),
               lx = .001, ux = 500, k = 5, iter = 200, prior = uniform(lb, ub),
               ICA.control = list(rseed = 1366, ncount = 60))
-plot(res7)
+plot(res7, sens.bayes.control = list(cubature = list(maxEval = 500, tol = 1e-3),
+                                     optslist = list(maxeval = 500)))
 }
 
 #######################################################################
@@ -259,7 +263,8 @@ res8 <- bayes(fimfunc = myfim, lx = 0, ux = 1, k = 4,
               ICA.control = list(rseed = 1366))
 
 res8 <- iterate(res8, 200)
-plot(res8)
+plot(res8, sens.bayes.control = list(cubature = list(maxEval = 500, tol = 1e-3),
+                                     optslist = list(maxeval = 500)))
 }
 
 
@@ -274,7 +279,8 @@ myfim <- function(x, w, param)
 res9 <- bayes(fimfunc = myfim, lx = 0, ux = 1, k = 2,
               iter = 200, prior = uniform(c(-11, -11), c(11, 11)),
               ICA.control = list(rseed = 1366))
-plot(res9)
+plot(res9, sens.bayes.control = list(cubature = list(maxEval = 100, tol = 1e-3),
+                                   optslist = list(maxeval = 100)))
 }
 
 #################################
@@ -324,7 +330,8 @@ res12 <- bayes(formula = ~a/(1 + b * exp(-lambda*t))^h,
                prior = norm4,
                k = 5, iter = 400,
                ICA.control = list(rseed = 1366), npar = 4)
-plot(res12)
+plot(res12, sens.bayes.control = list(cubature = list(maxEval = 1000, tol = 1e-3),
+                                      optslist = list(maxeval = 1000)))
 }
 
 #################################
@@ -369,10 +376,10 @@ res15 <- bayes(formula = myformula1,
                lx = rep(0, 2), ux = rep(1, 2),
                prior = uniform(lower = lb, upper = ub),
                k = 7,iter = 1, ICA.control = list(rseed = 1366))
-
-
-res15 <- iterate(res15, 300)
-plot(res15)}
+res14 <- iterate(res14, 500)
+plot(res14, sens.bayes.control = list(cubature = list(maxEval = 5000, tol = 1e-4),
+                                      optslist = list(maxeval = 3000)))
+}
 
 #################################
 # Three parameter logistic model
@@ -389,8 +396,8 @@ res16 <- bayes(formula = ~ c + (1-c)/(1 + exp(-b *(x - a))), predvars = "x",
                k =  4, iter = 500, prior = norm5,
                ICA.control = list(rseed = 1366, ncount = 50),
                crt.bayes.control = list(cubature = list(maxEval = 2500, tol = 1e-4)))
-plot(res16, sens.bayes.control = list(cubature = list(maxEval = 1000, tol = 1e-4),
-                                      optslist = list(maxeval = 100)))
+plot(res16, sens.bayes.control = list(cubature = list(maxEval = 3000, tol = 1e-4),
+                                      optslist = list(maxeval = 3000)))
 # took 925 second on my system
 }
 

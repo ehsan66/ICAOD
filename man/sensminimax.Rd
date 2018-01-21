@@ -72,7 +72,7 @@ an object of class \code{sensminimax} that is a list contains:
  \item{\code{mu}}{Probability measure on the answering set. Corresponds to the rows of \code{optima} when the associated row in column \code{Answering_Set} is equal to 1.
    Only applicable for minimax or standardized maximin designs.}
  \item{\code{max_deriv}}{Global maximum of the sensitivity (derivative) function (\eqn{\epsilon} in 'Details').}
- \item{\code{ELB}}{D-efficiency lower bound. Can not be negative. See 'Note' or 'Details' in \code{\link{sens.minimax.control}}.}
+ \item{\code{ELB}}{D-efficiency lower bound. Can not be larger than 1. See 'Note' or 'Details' in \code{\link{sens.minimax.control}}.}
  \item{\code{merge_tol}}{Merging tolerance to create the answering set from the set of all local optima. See 'Details' in \code{\link{sens.minimax.control}}.
   Only applicable for minimax or standardized maximin designs.}
  \item{\code{crtval}}{Criterion value. Compare with column \code{Crtiterion_Value} in \code{optima} for minimax and standardized maximin designs.}
@@ -141,7 +141,7 @@ See, for more details, Masoudi et al. (2017).
  This function confirms the optimality assuming only a continuous parameter space \eqn{\Theta}.
 }
 \note{
-Theoretically, ELB can not be negative. But if so, it may have one of the following reasons:
+Theoretically, ELB can not be larger than 1. But if so, it may have one of the following reasons:
 \itemize{
 \item \code{max_deriv} is not a GLOBAL maximum.  Please increase  the value of the parameter \code{maxeval} in \code{\link{sens.minimax.control}} to find the global maximum.
 \item The sensitivity function is shifted below the y-axis because
