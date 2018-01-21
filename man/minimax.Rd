@@ -49,20 +49,20 @@ When set, optimal design protects the experimenter against the worst scenario ov
 
 \item{sens.minimax.control}{Control parameters to verify the general equivalence theorem. For details, see the function \code{\link{sens.minimax.control}}.}
 
-\item{crt.minimax.control}{Control parameters to optimize the minimax or standardized maximin criterion at a given design over a \strong{continuous} parameter space (when \code{n.grid > 0}).
+\item{crt.minimax.control}{Control parameters to optimize the minimax or standardized maximin criterion at a given design over a \strong{continuous} parameter space (when \code{n.grid = 0}).
 For details, see the function \code{\link{crt.minimax.control}}.}
 
-\item{standardized}{maximin standardized design? When \code{standardized = TRUE}, the argument \code{localdes} must be given.
+\item{standardized}{Maximin standardized design? When \code{standardized = TRUE}, the argument \code{localdes} must be given.
 Defaults to \code{FALSE}. See 'Details' of \code{\link{minimax}}.}
 
 \item{initial}{A matrix of the  initial designs that will be used as initial solutions (countries).
 Every row is a design, i.e.  a concatenation of \code{x} and \code{w}. Will be coerced to a \code{matrix} if necessary.  See 'Details' of \code{\link{minimax}}.}
 
-\item{localdes}{A function that takes the parameter values  as input and returns the design points and weights of the locally optimal design.
+\item{localdes}{A function that takes the parameter values  as inputs and returns the design points and weights of the locally optimal design.
 Required when \code{standardized = "TRUE"}. See 'Details' of \code{\link{minimax}}.}
 
 \item{npar}{Number of model parameters.  Used when \code{fimfunc} is given instead of \code{formula} to specify the number of model parameters.
-If not given, the sensitivity (derivative) plot may be shifted below the y-axis. When \code{NULL}, it will be set here to \code{length(lp)}.}
+If not specified truly, the sensitivity (derivative) plot may be shifted below the y-axis. When \code{NULL}, it will be set here to \code{length(lp)}.}
 
 \item{plot_3d}{Which package should be used to plot the sensitivity (derivative) function for two-dimensional design space. Defaults to \code{"lattice"}.}
 }
@@ -98,12 +98,12 @@ an object of class \code{minimax} that is a list including three sub-lists:
 
 \code{sens} contains information about the design verification by the general equivalence theorem. See \code{sensminimax} for more details.
 It is only available every \code{ICA.control$checkfreq} iterations
-and the last iteration if   \code{ICA.control$checkfreq != 0}. Otherwise, \code{NULL}.
+and the last iteration if   \code{ICA.control$checkfreq >= 0}. Otherwise, \code{NULL}.
 
  \code{param} is a vector of parameters that is the global minimum of
   the minimax criterion or the global maximum of the standardized maximin criterion over the parameter space, given \code{x}, \code{w}.
 
-\code{nfeval} does not count the function evaluations from checking the equivalence theorem.
+\code{nfeval} does not count the function evaluations from checking the general equivalence theorem.
 }
 \description{
 Finds minimax and standardized maximin D-optimal designs for nonlinear models.
@@ -112,14 +112,14 @@ Finds minimax and standardized maximin D-optimal designs for nonlinear models.
   over the space of the Cartesian product of the given uncertainty intervals, denoted by \eqn{\Theta}.
   Sometimes, \eqn{\Theta} is  called 'region of uncertainty', that is the parameter space.
 
-Please note that if you are looking for a design
+If you are looking for a design
    that is \strong{in average} robust with respect to the parameter space, then you should apply
-   Bayesian optimal designs (continuous parameter space) or robust designs (discrete parameter space) (see functions \code{\link{bayes}} and \code{\link{robust}}).\cr
+   Bayesian optimal designs (continuous parameter space) or robust designs (discrete parameter space). See,  functions \code{\link{bayes}} and \code{\link{robust}}.\cr
 
   In general, although standardized criteria have some good theoretical features,
    we recommend applying them \strong{only}
   when the user can provide a closed-form for
-  locally D-optimal designs for the given model by the argument \code{localdes}.
+  locally D-optimal designs for the model of interest by the argument \code{localdes}.
 }
 \details{
 Let \eqn{\Xi} be the space of all  approximate designs with
@@ -158,24 +158,25 @@ User can also apply the argument  \code{fimfunc} to provide the FIM her/himself,
  In this case,
 argument \code{fimfunc} takes a \code{function} that has three arguments as follows:
  \enumerate{
-  \item \code{x} as a vector of design points. For design points with more than one dimension,
+  \item \code{x} a vector of design points. For design points with more than one dimension,
    it is a concatenation of the design points, but \strong{dimension-wise}.
    For example, let the model has three predictors   \eqn{(I, S, Z)}.
     Then,  (three-dimensional) design points of a two-point optimal design are
    \eqn{\{\mbox{point1} = (I_1, S_1, Z_1), \mbox{point2} = (I_2, S_2, Z_2)\}}{{point1 = (I1, S1, Z1), point2 = (I2, S2, Z2)}}.
     Then, the argument \code{x} is equivalent to
     \code{x = c(I1, I2, S1, S2, Z1, Z2)}.
-  \item \code{w} as a vector corresponding design weights.
-  \item \code{param} as a vector of parameter values associated with \code{lp} and \code{up}.
+  \item \code{w} a vector that includes the design weights associated with \code{x}.
+  \item \code{param} a vector of parameter values associated with \code{lp} and \code{up}.
 }
  The output must be the Fisher information matrix with number of rows equal to \code{length(param)}. See 'Examples'.
+
+
 
  Minimax optimal designs can have very different criterion values depending on the nominal set of parameter values.
  Accordingly, it is desirable to standardize the criterion and control for the potentially widely varying magnitude of the criterion (Dette, 1997).
  Evaluating a standardized maximin criterion requires knowing locally optimal designs.
-We strongly advise setting \code{standardized = 'TRUE'}, only when analytical solutions for the model of interest is available.
-When \code{standardized = 'TRUE'}, the user must  provide the closed-form of the locally optimal design (support points \code{x} and weights \code{w}) as a function of the model parameters.
-
+We strongly advise setting \code{standardized = 'TRUE'}, only when analytical solutions for the locally D-optimal designs is available.
+When \code{standardized = 'TRUE'}, the user must  provide the closed-form of the locally optimal design (support points \code{x} and weights \code{w}) as a function of the model parameters.\cr
 \code{localdes} takes a function with the following arguments.
 \itemize{
 \item If \code{formula} is given (\code{!missing(formula)}):
@@ -189,15 +190,14 @@ When \code{standardized = 'TRUE'}, the user must  provide the closed-form of the
     }
 }
 The function must return a list with components \code{x} and \code{w} (they match the same arguments in the function \code{fimfunc}).
-  See 'Examples'.
-
+  See 'Examples'.\cr
 The standardized D-criterion is equal to the  D-efficiency and it must be between 0 and 1, theoretically.
  However, in practice, it may take values larger than one because the function given via \code{localdes} does not
-  return the true (accurate) locally optimal designs for some called parameters from \eqn{\Theta}.
+  return the true (accurate) locally optimal designs for some requested parameter values from \eqn{\Theta}.
  In this case, the function \code{minimax}
 stops and returns a set of values for the model parameters.
  The user here must investigate the accuracy of the locally D-optimal designs by
-  checking the output of the function set by the argument \code{localdes} at this set of parameter values.
+  checking the output of the function set via the argument \code{localdes} given this set of parameter values.
 
 
 

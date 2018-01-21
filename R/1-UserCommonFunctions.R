@@ -11,16 +11,18 @@
 #'@param damp Damp ratio for revolution rate.  \code{revol_rate} is decreased in every iteration by \code{damp}. Defaults to \code{0.99}.
 #'@param uniting_threshold If the distance between two imperialists is less than the product of the uniting threshold by the largest distance in the search space, ICA unites the empires. Defaults to \code{0.02}.
 #' @param equal_weight Should the weights of design points assumed to be equal? Defaults to \code{FALSE}. If \code{TRUE}, it reduces the dimension of the search space and produces a design that gives equal weight to all of its support points.
-#' @param sym   Should the design points be symmetric around \code{sym_point}? Defaults to \code{FALSE}.
+#' @param sym   Should the design points be symmetric around \code{sym_point}? Defaults to \code{FALSE}. When \code{TRUE}, \code{sym_point} must be given.
 #' @param sym_point  If \code{sym = TRUE}, the design points will be symmetric around \code{sym_point}. See 'Details'.
-#' @param stop_rule  Character; can be \code{stop_rule = 'maxiter'} or \code{stop_rule = 'equivalence'}
-#'  Denotes the type of stopping rule. See 'Details'.
+#' @param stop_rule  Either  \code{'maxiter'} or \code{'equivalence'}.
+#'  Denotes the type of stopping rule.  See 'Details'. Defaults to \code{'maxiter'}.
 #' @param stoptol If \code{stop_rule = 'equivalence'}, algorithm stops when  ELB is larger than  \code{stoptol}. Defaults to \code{0.99}.
-#' @param checkfreq The algorithm checks the general equivalence theorem (finds ELB and plots the sensitivity (derivative) function, if \code{plot_sens == TRUE})
+#' @param checkfreq The algorithm checks the general equivalence theorem. It plots the sensitivity or derivative function and calculates the efficiency lower bound ELB,
+#'  if \code{plot_sens == TRUE},
 #'       every \code{checkfreq} iterations.
-#'       When \code{checkfreq = 0}, no check will be made. When \code{checkfreq = Inf} (default), only the output design is checked.
+#'       When \code{checkfreq = 0}, no check will be made. When \code{checkfreq = Inf}, only the output design will be verified.
+#'       Defaults to \code{0}.
 #' @param plot_cost Plot the iteration (evolution) of algorithm? Defaults to \code{TRUE}.
-#' @param plot_sens  Plot the sensitivity (derivative) plot at every \code{checkfreq}. Defaults to \code{TRUE}.
+#' @param plot_sens  Plot the sensitivity (derivative) function at every \code{checkfreq}. Defaults to \code{TRUE}.
 #' @param plot_3d Character. Which package should be used to plot the sensitivity plot for models with two explanatory variables?
 #' @param trace Print the information in every iteration? Defaults to \code{TRUE}.
 #' @param rseed Random seed. Defaults to \code{NULL}.
@@ -30,18 +32,18 @@
 #'   If \code{stope_rule = 'equivalence'}, the algorithm stops when either ELB  is greater than \code{stoptol} or reaches \code{maxiter}.
 #'   In this case, you must specify the check frequency by \code{checkfreq}.
 #'   Note that checking equivalence theorem is a very time consuming process, especially for Bayesian and minimax problems.
-#'   We advise using this option only for locally optimal designs.
+#'   We advise using this option only for locally, multiple objective and robust optimal designs.
 #'
 #'  Assume the 2PL model of the form \eqn{ P(Y=1) = \frac{1}{1+exp(-b(x - a))}}{P(Y=1) = 1/(1+exp(-b(x - a)))} and
 #'  let the parameters \eqn{a} and \eqn{b}
 #'   belong to
-#'   \eqn{[a_L, a_U]}{[aL, aU]} and \eqn{[b_L, b_U]}{[bL, bU]}, respectively.
-#'   It can be proved that the optimal design
-#'   is symmetric about \eqn{a_M = \frac{a_L + a_U}{2}}{aM= (aL + aU)/2}.
-#'   In this case, to find accurate symmetric design and
-#'    reduce the dimension of search space, one can set \code{sym = TRUE} and
-#'    provide the value of the \eqn{a_M}{aM} by \code{sym_point}.
-#'    In this case, the output design will be symmetric around \code{sym_point}.
+#'   \eqn{[a_L, a_U]} and \eqn{[b_L, b_U]}, respectively.
+#'   It can be shown that the optimal design for this model
+#'   is symmetric about \eqn{a_M = \frac{a_L + a_U}{2}}{a_M= (a_L + a_U)/2}.
+#'   For this model, to find accurate symmetric designs, one can set \code{sym = TRUE} and
+#'    provide the value of the \eqn{a_M} via \code{sym_point}.
+#'    In this case, the output design will be symmetric around the point \code{sym_point}.
+#'   The length of  \code{sym_point} must be equal to the number of model predictors, here is \code{1}.
 #'
 #'
 #'

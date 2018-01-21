@@ -11,15 +11,20 @@ sens.bayes.control(cubature = list(tol = 1e-06, maxEval = 1e+05, absError =
 \arguments{
 \item{cubature}{A list that will be passed to the arguments of the \code{\link[cubature]{hcubature}} function. See 'Details'.}
 
-\item{x0}{Vector of starting values for the optimization (from design space). Defaults to \code{NULL}.}
+\item{x0}{Vector of starting values for maximizing the sensitivity (derivative) function over the design space \eqn{x}.
+It will be passed to the optimization function \code{\link[nloptr]{nloptr}}.}
 
 \item{optslist}{A list will be passed to \code{opts} argument of the function \code{\link[nloptr]{nloptr}} to find the maximum of the sensitivity function over the design space. See 'Details'.}
 
 \item{...}{Further arguments will be passed to \code{\link{nl.opts}} from package \code{\link[nloptr]{nloptr}}.}
 }
+\value{
+A list of control parameters for verifying the general equivalence theorem with respect to the Bayesian optimality criteria.
+}
 \description{
-The function \code{sens.bayes.control} returns a list of \code{\link[cubature]{hcubature}}  control parameters for  approximating the integrals in the sensitivity (derivative) function in Bayesian criteria
-and \code{\link[nloptr]{nloptr}} control parameters to find maximum of the sensitivity function and calculate the ELB.
+The function \code{sens.bayes.control} returns a list of \code{\link[cubature]{hcubature}}  control parameters for  approximating the integrals in the sensitivity (derivative) function of Bayesian criteria
+and also \code{\link[nloptr]{nloptr}} control parameters to find maximum of the sensitivity (derivative) function over the design space
+ and calculate the efficiency lower bound (ELB).
 }
 \details{
 \code{cubature} is a list that its components will be passed to the function \code{\link[cubature]{hcubature}}.
@@ -30,13 +35,29 @@ Its components are:
   \item{\code{absError}}{The maximum absolute error tolerated. Defaults to \code{0}.}
 }
 
-Argument \code{optslist} will be passed to the argument \code{opts} of the function \code{\link[nloptr]{nloptr}} to find the maximum of the sensitivity function over the design space:
+ELB is a measure of  proximity of a design to the optimal design without knowing the latter.
+Given a design, let \eqn{\epsilon} be the global maximum
+ of the sensitivity (derivative) function with respect the vector of the model predictors \eqn{x} over the design space.
+ELB is given by \deqn{ELB = p/(p + \epsilon),}
+where \eqn{p} is the number of model parameters. Obviously,
+calculating ELB requires finding \eqn{\epsilon} and therefore,
+a maximization problem to be solved. The function \code{\link[nloptr]{nloptr}}
+is used here to solve this maximization problem. The arguments \code{x0} and \code{optslist}
+will be passed to this function as follows:
+
+Argument \code{x0} provides the user initial values for this maximization problem
+ and will be passed to the argument with the same name
+of the function  \code{\link[nloptr]{nloptr}}.
+
+
+Argument \code{optslist} will be passed to the argument \code{opts} of the function \code{\link[nloptr]{nloptr}}.
+\code{optslist} is a \code{list} and the most important components are listed as follows:
  \describe{
   \item{\code{stopval}}{Stop minimization when an objective value <= \code{stopval} is found. Setting stopval to \code{-Inf} disables this stopping criterion (default).}
   \item{\code{algorithm}}{Defaults to \code{NLOPT_GN_DIRECT_L}. DIRECT-L is a deterministic-search algorithm based on systematic division of the search domain into smaller and smaller hyperrectangles.}
   \item{\code{xtol_rel}}{Stop when an optimization step (or an estimate of the optimum) changes every parameter by less than \code{xtol_rel} multiplied by the absolute value of the parameter. Criterion is disabled if \code{xtol_rel} is non-positive. Defaults to \code{1e-8}.}
   \item{\code{ftol_rel}}{Stop when an optimization step (or an estimate of the optimum) changes the objective function value by less than \code{ftol_rel} multiplied by the absolute value of the function value. Criterion is disabled if \code{ftol_rel} is non-positive. Defaults to \code{1e-10}.}
-  \item{\code{maxeval}}{Stop when the number of function evaluations exceeds maxeval. Criterion is disabled if maxeval is non-positive. Defaults to \code{2000}. See below.}
+  \item{\code{maxeval}}{Stop when the number of function evaluations exceeds maxeval. Criterion is disabled if maxeval is non-positive. Defaults to \code{6000}. See below.}
 }
  A full description of all options is shown by the function \code{nloptr.print.options()} in package \code{\link[nloptr]{nloptr}}.
 }

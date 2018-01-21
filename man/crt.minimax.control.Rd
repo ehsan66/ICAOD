@@ -8,17 +8,21 @@ crt.minimax.control(x0 = NULL, optslist = list(stopval = -Inf, algorithm =
   "NLOPT_GN_DIRECT_L", xtol_rel = 1e-05, ftol_rel = 1e-08, maxeval = 1000), ...)
 }
 \arguments{
-\item{x0}{Vector of starting values for the optimization problem (must be from parameter space).}
+\item{x0}{Vector of starting values for the optimization problem (must be from the parameter space).}
 
-\item{optslist}{A list. It will be passed to \code{opts} argument of the function \code{\link[nloptr]{nloptr}}. See 'Details'.}
+\item{optslist}{A list. It will be passed to the argument \code{opts} of the function \code{\link[nloptr]{nloptr}}. See 'Details'.}
 
 \item{...}{Further arguments will be passed to \code{\link{nl.opts}} from package \code{\link[nloptr]{nloptr}}.}
 }
 \value{
-A list of control parameters for \code{\link[nloptr]{nloptr}}.
+A list of control parameters for the function \code{\link[nloptr]{nloptr}}.
 }
 \description{
-The function \code{crt.minimax.control} returns a list of \code{\link[nloptr]{nloptr}} control parameters for optimizing the minimax criterion over the parameter space.
+The function \code{crt.minimax.control} returns a list of \code{\link[nloptr]{nloptr}} control parameters for optimizing the minimax criterion over the parameter space.\cr
+The key tuning parameter here is \strong{\code{maxeval}.}
+Its value should be increased when either the dimension or the size of the parameter space becomes larger
+ to avoid pre-mature convergence in the inner optimization problem over the parameter space.
+ The user should find a trade-off between accuracy and speed for his/her example.
 }
 \details{
 Argument \code{optslist} will be passed to the argument \code{opts} of the function \code{\link[nloptr]{nloptr}}:
@@ -30,16 +34,6 @@ Argument \code{optslist} will be passed to the argument \code{opts} of the funct
   \item{\code{maxeval}}{Stop when the number of function evaluations exceeds maxeval. Criterion is disabled if maxeval is non-positive. Defaults to \code{1000}. See below.}
 }
  A full description of all options is shown by \code{nloptr.print.options()} in package \code{\link[nloptr]{nloptr}}.
-
- A key parameter in minimax or standardized maximin optimal design problems  is \code{maxeval}.
- Its value should be increased when 1) dimension of the parameter space and 2) size of the parameter space become larger
- to avoid pre-mature convergence in the inner optimization problem over the parameter space.
- The user should find a trad-off between accuracy and speed for his/her example.
-}
-\note{
-Please try larger value for \code{maxeval} when the sensitivity plot
- insists on not verifying optimality of the output design,
-  after being sure of the true number of design points and increasing \code{ncount} in \code{\link{ICA.control}}.
 }
 \examples{
 crt.minimax.control(optslist = list(maxeval = 2000))

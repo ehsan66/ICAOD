@@ -508,7 +508,6 @@ bayes_inner <- function(fimfunc = NULL,
                         plot_3d = c("lattice", "rgl"),
                         ...) {
   time1 <- proc.time()
-
   fimfunc_formula <- check_common_args(fimfunc = fimfunc, formula = formula,
                                        predvars = predvars, parvars = parvars,
                                        family = family, lx =lx, ux = ux,

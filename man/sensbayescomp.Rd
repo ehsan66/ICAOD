@@ -48,15 +48,16 @@ Compound or combined DP-criterion  is the product of the efficiencies of a desig
 
 \item{sens.bayes.control}{Control parameters to verify the general equivalence theorem. For details, see \code{\link{sens.bayes.control}}.}
 
-\item{crt.bayes.control}{Control parameters to approximate the integral in the Bayesian criterion at a given design over the parameter space.
+\item{crt.bayes.control}{Control parameters to approximate the integral in  Bayesian criterion at a given design over the parameter space.
 For details, see \code{\link{crt.bayes.control}}.}
 
 \item{plot_3d}{Which package should be used to plot the sensitivity (derivative) function for two-dimensional design space. Defaults to \code{"lattice"}.}
 
-\item{plot_sens}{Plot the sensitivity (derivative) function? Defaults to \code{plot_sens = TRUE}.}
+\item{plot_sens}{Plot the sensitivity (derivative) function? Defaults to \code{TRUE}.}
 
 \item{npar}{Number of model parameters.  Used when \code{fimfunc} is given instead of \code{formula} to specify the number of model parameters.
-If not given, the sensitivity (derivative) plot may be shifted below the y-axis. When \code{NULL}, it will be set here to \code{length(lp)}.}
+If not specified truly, the sensitivity (derivative) plot may be shifted below the y-axis. When \code{NULL}, it will be set to \code{length(parvars)} or
+\code{prior$npar} when \code{missing(formula)}.}
 
 \item{calculate_criterion}{Evaluate the D-criterion? See 'Details' of \code{\link{sensminimax}}.}
 
@@ -71,14 +72,17 @@ when \eqn{\boldsymbol{x}}{x} belong to the support of \eqn{\xi^*}{\xi*} (be equa
 Therefore, the user can look at the sensitivity plot and the ELB and decide whether the
 design is optimal or close enough to the true optimal design (ELB tells us that without knowing the latter).
 }
+\details{
+\strong{Sometimes, the CPU time can be considerably reduced
+by choosing less conservative values for the tuning parameters \code{tol} and \code{maxEval} in
+the function \code{\link{sens.bayes.control}}.}
+The user should find a trade-off between accuracy and speed for his/her problem.
+}
 \note{
 Having accurate plots for the sensitivity (derivative) function
  and calculating ELB to a high precision is the primary goal here,
   although the process may take too long (even hours) due to
 requesting very accurate integral approximations.
- The user can always considerably reduce the CPU time
-by adjusting less conservative tuning parameters, i.e. \code{tol} and \code{maxEval}, in
-the function \code{\link{sens.bayes.control}}.
 }
 \examples{
 ##########################################

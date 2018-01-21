@@ -7,13 +7,17 @@
 crt.bayes.control(cubature = list(tol = 1e-05, maxEval = 50000, absError = 0))
 }
 \arguments{
-\item{cubature}{A list that will be passed to the arguments of the \code{\link[cubature]{hcubature}} function. See 'Details'.}
+\item{cubature}{A list that will be passed to the arguments of the function \code{\link[cubature]{hcubature}}. See 'Details'.}
 }
 \value{
 A list of control parameters for \code{\link[cubature]{hcubature}}.
 }
 \description{
-The function \code{crt.bayes.control} returns a list of \code{\link[cubature]{hcubature}}  control parameters for  approximating the integrals in the Bayesian criteria.
+The function \code{crt.bayes.control} returns a list of \code{\link[cubature]{hcubature}}  control parameters
+ for  approximating the integrals in  Bayesian criteria. The key tuning parameters here
+ are \strong{\code{tol}} and \strong{\code{maxEval}}. Their value affect the algorithm speed and
+ the accuracy of the results.
+ The user should find a trade-off between accuracy and speed for his/her example.
 }
 \details{
 \code{cubature} is a list that its components will be passed to the function \code{\link[cubature]{hcubature}}.

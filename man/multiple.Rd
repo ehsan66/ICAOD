@@ -73,12 +73,12 @@ an object of class \code{minimax} that is a list including three sub-lists:
 
 \code{sens} contains information about the design verification by the general equivalence theorem. See \code{sensminimax} for more details.
 It is only available every \code{ICA.control$checkfreq} iterations
-and the last iteration if   \code{ICA.control$checkfreq != 0}. Otherwise, \code{NULL}.
+and the last iteration if   \code{ICA.control$checkfreq >= 0}. Otherwise, \code{NULL}.
 
  \code{param} is a vector of parameters that is the global minimum of
   the minimax criterion or the global maximum of the standardized maximin criterion over the parameter space, given \code{x}, \code{w}.
 
-\code{nfeval} does not count the function evaluations from checking the equivalence theorem.
+\code{nfeval} does not count the function evaluations from checking the general equivalence theorem.
 }
 \description{
 The 4-parameter Hill model is of the form

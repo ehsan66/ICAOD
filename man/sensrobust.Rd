@@ -44,9 +44,10 @@ This can be a family function, a call to a family function or a character string
 
 \item{calculate_criterion}{Evaluate the D-criterion? See 'Details' of \code{\link{sensminimax}}.}
 
-\item{plot_3d}{Which package should be used to plot the sensitivity (derivative) function for models with two predictors. Defaults to \code{plot_3d = "lattice"}.}
+\item{plot_3d}{Which package should be used to plot the sensitivity (derivative) function for models with two predictors.
+Either \code{"rgl"} or \code{"lattice"} (default).}
 
-\item{plot_sens}{Plot the sensitivity (derivative) function? Defaults to \code{plot_sens = TRUE}.}
+\item{plot_sens}{Plot the sensitivity (derivative) function? Defaults to \code{TRUE}.}
 
 \item{npar}{Number of model parameters.  Used when \code{fimfunc} is given instead of \code{formula} to specify the number of model parameters.
 If not given, the sensitivity plot may be shifted below the y-axis. When \code{NULL}, it will be set here to \code{length(inipars)}.}
@@ -57,13 +58,13 @@ If not given, the sensitivity plot may be shifted below the y-axis. When \code{N
 an object of class \code{sensminimax} that is a list contains:
  \describe{
  \item{\code{type}}{Argument \code{type} that is required for print methods.}
- \item{\code{optima}}{A \code{matrix} that stores all the local optima over the parameter space. The cost  (criterion) values are stored in a column named \code{Criterion_Value}.
+ \item{\code{optima}}{A  \code{matrix} that stores all the local optima over the parameter space given the best design of the iteration. The cost  (criterion) values are stored in a column named \code{Criterion_Value}.
  The last column (\code{Answering_Set}) shows if the optimum, based on a merging tolerance \code{merge_tol}, belongs to the answering set (1) or not (0).
    Only applicable for minimax or standardized maximin designs.}
  \item{\code{mu}}{Probability measure on the answering set. Corresponds to the rows of \code{optima} when the associated row in column \code{Answering_Set} is equal to 1.
    Only applicable for minimax or standardized maximin designs.}
  \item{\code{max_deriv}}{Global maximum of the sensitivity (derivative) function (\eqn{\epsilon} in 'Details').}
- \item{\code{ELB}}{D-efficiency lower bound. Can not be larger than 1. See 'Note' or 'Details' in \code{\link{sens.minimax.control}}.}
+ \item{\code{ELB}}{D-efficiency lower bound. Can not be larger than 1. See 'Note' in \code{\link{sensminimax}} or 'Details' in \code{\link{sens.minimax.control}}.}
  \item{\code{merge_tol}}{Merging tolerance to create the answering set from the set of all local optima. See 'Details' in \code{\link{sens.minimax.control}}.
   Only applicable for minimax or standardized maximin designs.}
  \item{\code{crtval}}{Criterion value. Compare with column \code{Crtiterion_Value} in \code{optima} for minimax and standardized maximin designs.}
@@ -87,7 +88,7 @@ if the following inequality holds for all \eqn{\boldsymbol{x} \in \chi}{x belong
           with equality at all support points of \eqn{\xi^*}{\xi*}.
            Here, \eqn{p} is the number of model parameters.
 
-#' ELB is a measure of  proximity of a design to the optimal design without knowing the latter.
+ ELB is a measure of  proximity of a design to the optimal design without knowing the latter.
 Given a design, let \eqn{\epsilon} be the global maximum
  of the sensitivity (derivative) function over \eqn{x \in \chi}{x belong to \chi}.
 ELB is given by \deqn{ELB = p/(p + \epsilon),}

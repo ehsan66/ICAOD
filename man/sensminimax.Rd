@@ -40,10 +40,10 @@ When a parameter is known (has a fixed value), set its associated lower and uppe
 
 \item{fimfunc}{A function. Returns the FIM as a \code{matrix}. Required when \code{formula} is missing. See 'Details' of \code{\link{minimax}}.}
 
-\item{standardized}{maximin standardized design? When \code{standardized = TRUE}, the argument \code{localdes} must be given.
+\item{standardized}{Maximin standardized design? When \code{standardized = TRUE}, the argument \code{localdes} must be given.
 Defaults to \code{FALSE}. See 'Details' of \code{\link{minimax}}.}
 
-\item{localdes}{A function that takes the parameter values  as input and returns the design points and weights of the locally optimal design.
+\item{localdes}{A function that takes the parameter values  as inputs and returns the design points and weights of the locally optimal design.
 Required when \code{standardized = "TRUE"}. See 'Details' of \code{\link{minimax}}.}
 
 \item{sens.minimax.control}{Control parameters to verify the general equivalence theorem. For details, see the function \code{\link{sens.minimax.control}}.}
@@ -53,12 +53,13 @@ Required when \code{standardized = "TRUE"}. See 'Details' of \code{\link{minimax
 \item{crt.minimax.control}{Control parameters to optimize the minimax or standardized maximin criterion at a given design over a \strong{continuous} parameter space.
 For details, see the function \code{\link{crt.minimax.control}}. Only applicable when \code{calculate_criterion = TRUE}.}
 
-\item{plot_3d}{Which package should be used to plot the sensitivity (derivative) function for models with two predictors. Defaults to \code{plot_3d = "lattice"}.}
+\item{plot_3d}{Which package should be used to plot the sensitivity (derivative) function for models with two predictors.
+Either \code{"rgl"} or \code{"lattice"} (default).}
 
-\item{plot_sens}{Plot the sensitivity (derivative) function? Defaults to \code{plot_sens = TRUE}.}
+\item{plot_sens}{Plot the sensitivity (derivative) function? Defaults to \code{TRUE}.}
 
 \item{npar}{Number of model parameters.  Used when \code{fimfunc} is given instead of \code{formula} to specify the number of model parameters.
-If not given, the sensitivity (derivative) plot may be shifted below the y-axis. When \code{NULL}, it will be set here to \code{length(lp)}.}
+If not specified truly, the sensitivity (derivative) plot may be shifted below the y-axis. When \code{NULL}, it will be set here to \code{length(lp)}.}
 
 \item{silent}{Do not print anything? Defaults to \code{FALSE}.}
 }
@@ -66,13 +67,13 @@ If not given, the sensitivity (derivative) plot may be shifted below the y-axis.
 an object of class \code{sensminimax} that is a list contains:
  \describe{
  \item{\code{type}}{Argument \code{type} that is required for print methods.}
- \item{\code{optima}}{A \code{matrix} that stores all the local optima over the parameter space. The cost  (criterion) values are stored in a column named \code{Criterion_Value}.
+ \item{\code{optima}}{A  \code{matrix} that stores all the local optima over the parameter space given the best design of the iteration. The cost  (criterion) values are stored in a column named \code{Criterion_Value}.
  The last column (\code{Answering_Set}) shows if the optimum, based on a merging tolerance \code{merge_tol}, belongs to the answering set (1) or not (0).
    Only applicable for minimax or standardized maximin designs.}
  \item{\code{mu}}{Probability measure on the answering set. Corresponds to the rows of \code{optima} when the associated row in column \code{Answering_Set} is equal to 1.
    Only applicable for minimax or standardized maximin designs.}
  \item{\code{max_deriv}}{Global maximum of the sensitivity (derivative) function (\eqn{\epsilon} in 'Details').}
- \item{\code{ELB}}{D-efficiency lower bound. Can not be larger than 1. See 'Note' or 'Details' in \code{\link{sens.minimax.control}}.}
+ \item{\code{ELB}}{D-efficiency lower bound. Can not be larger than 1. See 'Note' in \code{\link{sensminimax}} or 'Details' in \code{\link{sens.minimax.control}}.}
  \item{\code{merge_tol}}{Merging tolerance to create the answering set from the set of all local optima. See 'Details' in \code{\link{sens.minimax.control}}.
   Only applicable for minimax or standardized maximin designs.}
  \item{\code{crtval}}{Criterion value. Compare with column \code{Crtiterion_Value} in \code{optima} for minimax and standardized maximin designs.}
@@ -84,7 +85,7 @@ It plots the sensitivity (derivative) function of the minimax or
  standardized maximin D-optimal criterion
 at a given approximate (continuous) design and also
  calculates its efficiency lower bound (ELB) with respect
-to these optimality criteria. The user can confirm or reject
+to the optimality criterion. The user can confirm or reject
  the optimality of a design by looking at the sensitivity plot.
  ELB shows the proximity of a design to the true optimal design without knowing the latter.
  See, for more details, Masoudi et al. (2017).
@@ -94,18 +95,18 @@ Let the unknown parameters belong to \eqn{\Theta},
  that is  a Cartesian product of (user-given) intervals for the unknown model parameters.
 A design \eqn{\xi^*}{\xi*} is minimax D-optimal among all designs on \eqn{\chi} if and only if there exists a probability measure \eqn{\mu^*}{\mu*} on
    \deqn{A(\xi^*) = \left\{\nu \in \Theta \mid -log|M(\xi^*, \nu)| = \max_{\theta \in \Theta} -log|M(\xi^*, \theta)| \right\},}{
-     A(\xi*) = {\nu belongs to \Theta | -log|M(\xi*, \nu)| = maxization with respect to \theta over \Theta on function -log|M(\xi*, \theta)|} ,}
+     A(\xi*) = {\nu belongs to \Theta where -log|M(\xi*, \nu) = maxima of function -log|M(\xi*, \theta)| with respect to \theta over \Theta} ,}
        such that the following inequality holds for all \eqn{\boldsymbol{x} \in \chi}{x belong to \chi}
         \deqn{c(\boldsymbol{x}, \mu^*, \xi^*) = \int_{A(\xi^*)} tr M^{-1}(\xi^*, \nu)I(\boldsymbol{x}, \nu)\mu^* d(\nu)-p \leq 0,}{
          c(x, \mu*, \xi*) = integration over A(\xi*) with integrand  tr M^-1(\xi*, \nu)I(x, \nu)\mu* d(\nu)-p <= 0,}
           with equality at all support points of \eqn{\xi^*}{\xi*}.
            Here, \eqn{p} is the number of model parameters. \eqn{c(\boldsymbol{x}, \mu^*, \xi^*)}{c(x, \mu*, \xi*)} is called \strong{sensitivity} or \strong{derivative} function.
-The set \eqn{A(\xi^*)}{A(\xi*)} is sometimes called the \bold{answering set} of
+The set \eqn{A(\xi^*)}{A(\xi*)} is sometimes called \bold{answering set} of
  \eqn{\xi^*}{\xi*} and the measure \eqn{\mu^*}{\mu*} is a subgradient of the
    non-differentiable criterion evaluated at \eqn{M(\xi^*,\nu)}{M(\xi*,\nu)}.\cr
 For standardized maximin D-optimal designs, the answering set \eqn{N(\xi^*)}{N(\xi*)} is
    \deqn{N(\xi^*) = \left\{\boldsymbol{\nu} \in \Theta \mid \mbox{eff}_D(\xi^*, \boldsymbol{\nu}) = \min_{\boldsymbol{\theta} \in \Theta} \mbox{eff}_D(\xi^*, \boldsymbol{\theta}) \right\}.
-     }{N(\xi*) = \{\nu belongs to \Theta  |eff_D(\xi*, \nu) = minimum over \Theta eff_D(\xi*, \theta) \},} where
+     }{N(\xi*) = \{\nu belongs to \Theta  where eff_D(\xi*, \nu) = minima of function eff_D(\xi*, \theta)  with respect to \theta over \Theta\},} where
      \eqn{\mbox{eff}_D(\xi, \boldsymbol{\theta}) =  (\frac{|M(\xi, \boldsymbol{\theta})|}{|M(\xi_{\boldsymbol{\theta}}, \boldsymbol{\theta})|})^\frac{1}{p}}{
      eff_D(\xi, \theta) =  (|M(\xi, \theta)|/|M(\xi_\theta, \theta)|)^(1/p)} and \eqn{\xi_\theta} is the locally D-optimal design with respect to \eqn{\theta}. \cr
      See 'Details' of \code{\link{sens.minimax.control}} on how to calculate the answering set \eqn{N(\xi^*)}{N(\xi*)} and \eqn{A(\xi^*)}{A(\xi*)}.
@@ -121,7 +122,7 @@ The argument  \code{x} is the vector of design points.
 
 ELB is a measure of  proximity of a design to the optimal design without knowing the latter.
 Given a design, let \eqn{\epsilon} be the global maximum
- of the sensitivity (derivative) function over \eqn{x \in \chi}{x belong to \chi}.
+ of the sensitivity (derivative) function with respect \eqn{x} where \eqn{x \in \chi}{x belong to \chi}.
 ELB is given by \deqn{ELB = p/(p + \epsilon),}
 where \eqn{p} is the number of model parameters. Obviously,
 calculating ELB requires finding \eqn{\epsilon} and
@@ -150,7 +151,7 @@ Please specify the correct number of model parameters via argument \code{npar}.
 }
  Please increase the value of the parameter
   \code{n_seg} in \code{\link{sens.minimax.control}}
-   for  models with large number of parameters or wide parameter space.
+   for  models with large number of parameters or large parameter space.
 }
 \examples{
 ##########################

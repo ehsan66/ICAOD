@@ -11,38 +11,63 @@ sens.minimax.control(answering.set = list(n_seg = 6, merge_tol = 0.005),
 \arguments{
 \item{answering.set}{A list of control parameters to find the answering set in minimax and standardized maximin optimal design problems. See 'Details'.}
 
-\item{x0}{Vector of starting values for the optimization (from design space).}
+\item{x0}{Vector of starting values for maximizing the sensitivity (derivative) function over the design space \eqn{x}.
+It will be passed to the optimization function \code{\link[nloptr]{nloptr}}.}
 
 \item{optslist}{A list. It will be passed to the argument \code{opts}  of the function \code{\link[nloptr]{nloptr}} to find the maximum of the sensitivity function over the design space. See 'Details'.}
 
 \item{...}{Further arguments will be passed to \code{\link{nl.opts}} from package \code{\link[nloptr]{nloptr}}.}
 }
 \value{
-A list of control parameters for checking the general equivalence theorem.
+A list of control parameters for verifying the general equivalence theorem.
 }
 \description{
-The function \code{sens.minimax.control} returns a list of control parameters required for checking the general equivalence theorem (finding ELB and plotting the sensitivity or derivative function)
- for minimax, standardized maximin, locally, robust and multiple objective designs.
+It returns a list of control parameters required for
+verifying the general equivalence theorem that is
+plotting the sensitivity (derivative) function of the optimality criterion
+  at a given approximate (continuous) design and also
+ calculating the efficiency lower bound (ELB).
 }
 \details{
-Given a design, answering set is a subset of all local optima of the optimality criterion over the parameter space (only in minimax and standardized maximin problems).
- Answering set (and its associated measure) is the basis of the creation of the sensitivity (derivative) functions in  minimax and standardized maximin problems.
+Given a design, answering set is a subset of all local optima of the optimality criterion over the parameter space
+  (only in minimax and standardized maximin problems).
+ Answering set (and its associated measure) is the basis of the creation of
+  the sensitivity (derivative) functions in  minimax and standardized maximin problems.
  That means, calculating the ELB or plotting the sensitivity (derivative) function requires a known answering set.
- Unfortunately, there is no theoretical rule on how to choose the number of points in the answering set and they would have to be found by trial and error.
+ Unfortunately, there is no theoretical rule on how to choose the number of elements of the answering set and they would have to be found by trial and error.
  Given a design, we find the answering set in two steps:
  \itemize{
  \item{Step 1: }{Find all local maxima of the minimax criterion (or local minima of the standardized maximin criterion) over the parameter space.
   Here, we divide the parameter space into \code{(n_seg + 1)^p} segments (p is the number of unknown model parameters) and use the endpoints as initial values for local searches directed by function \code{optim} (\code{"L-BFGS-B"} method).}
  \item{Step 2: }{Pick the ones nearest to the global minimum (or maximum in standardized maximin problems) subject to a merging tolerance \code{merge_tol} (default \code{0.005}).}
 }
-Obviously, the answering set is a subset of all local minimax (or local minima in standardized maximin problems), given a design.
+Obviously, the answering set is a subset of all local maxima (or local minima in standardized maximin problems), given a design.
 Therefore, it is very important to be able to find all the local maxima (or the local minima) to create the true answering set with no missing elements.
- Otherwise, even when the design is optimal, the sensitivity (derivative) plot may not verify the optimality of the design.
-We advise not changing the default value of the parameter \code{merge_tol} as it worked for many examples.
+ Otherwise, even when the design is optimal, the sensitivity (derivative) plot may not verify the optimality of the design.\cr
+  \strong{Please increase the value of \code{n_seg} for  models with large number of unknown parameters or large parameter space.}\cr
+
+We advise not changing the default value of the parameter \code{merge_tol} as it has been tested for many examples.
  Finding all local optimal of a function is not an easy task and is the main reason
   that checking general equivalence theorem (even plotting) in minimax and standardized maximin problems is very time-consuming.
 
-Argument \code{optslist} will be passed to the argument \code{opts} of the function \code{\link[nloptr]{nloptr}} to find the maximum of the sensitivity function over the design space and calculate the ELB:
+
+ELB is a measure of  proximity of a design to the optimal design without knowing the latter.
+Given a design, let \eqn{\epsilon} be the global maximum
+ of the sensitivity (derivative) function with respect the vector of the model predictors \eqn{x} over the design space.
+ELB is given by \deqn{ELB = p/(p + \epsilon),}
+where \eqn{p} is the number of model parameters. Obviously,
+calculating ELB requires finding \eqn{\epsilon} and therefore,
+a maximization problem to be solved. The function \code{\link[nloptr]{nloptr}}
+is used here to solve this maximization problem. The arguments \code{x0} and \code{optslist}
+will be passed to this function as follows:
+
+Argument \code{x0} provides the user initial values for this maximization problem
+ and will be passed to the argument with the same name
+of the function  \code{\link[nloptr]{nloptr}}.
+
+
+Argument \code{optslist} will be passed to the argument \code{opts} of the function \code{\link[nloptr]{nloptr}}.
+\code{optslist} is a \code{list} and the most important components are listed as follows:
  \describe{
   \item{\code{stopval}}{Stop minimization when an objective value <= \code{stopval} is found. Setting stopval to \code{-Inf} disables this stopping criterion (default).}
   \item{\code{algorithm}}{Defaults to \code{NLOPT_GN_DIRECT_L}. DIRECT-L is a deterministic-search algorithm based on systematic division of the search domain into smaller and smaller hyperrectangles.}

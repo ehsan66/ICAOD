@@ -45,13 +45,13 @@ When \eqn{\delta < 0 }, then \eqn{\theta_2 > 0} or when \eqn{\delta > 0}, then \
 an object of class \code{sensminimax} that is a list contains:
  \describe{
  \item{\code{type}}{Argument \code{type} that is required for print methods.}
- \item{\code{optima}}{A \code{matrix} that stores all the local optima over the parameter space. The cost  (criterion) values are stored in a column named \code{Criterion_Value}.
+ \item{\code{optima}}{A  \code{matrix} that stores all the local optima over the parameter space given the best design of the iteration. The cost  (criterion) values are stored in a column named \code{Criterion_Value}.
  The last column (\code{Answering_Set}) shows if the optimum, based on a merging tolerance \code{merge_tol}, belongs to the answering set (1) or not (0).
    Only applicable for minimax or standardized maximin designs.}
  \item{\code{mu}}{Probability measure on the answering set. Corresponds to the rows of \code{optima} when the associated row in column \code{Answering_Set} is equal to 1.
    Only applicable for minimax or standardized maximin designs.}
  \item{\code{max_deriv}}{Global maximum of the sensitivity (derivative) function (\eqn{\epsilon} in 'Details').}
- \item{\code{ELB}}{D-efficiency lower bound. Can not be larger than 1. See 'Note' or 'Details' in \code{\link{sens.minimax.control}}.}
+ \item{\code{ELB}}{D-efficiency lower bound. Can not be larger than 1. See 'Note' in \code{\link{sensminimax}} or 'Details' in \code{\link{sens.minimax.control}}.}
  \item{\code{merge_tol}}{Merging tolerance to create the answering set from the set of all local optima. See 'Details' in \code{\link{sens.minimax.control}}.
   Only applicable for minimax or standardized maximin designs.}
  \item{\code{crtval}}{Criterion value. Compare with column \code{Crtiterion_Value} in \code{optima} for minimax and standardized maximin designs.}

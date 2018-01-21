@@ -40,7 +40,7 @@ This can be a family function, a call to a family function or a character string
 
 \item{ICA.control}{ICA control parameters. For details, see \code{\link{ICA.control}}.}
 
-\item{crt.bayes.control}{Control parameters to approximate the integral in the Bayesian criterion at a given design over the parameter space.
+\item{crt.bayes.control}{Control parameters to approximate the integral in  Bayesian criterion at a given design over the parameter space.
 For details, see \code{\link{crt.bayes.control}}.}
 
 \item{sens.bayes.control}{Control parameters to verify the general equivalence theorem. For details, see \code{\link{sens.bayes.control}}.}
@@ -49,7 +49,8 @@ For details, see \code{\link{crt.bayes.control}}.}
 Every row is a design, i.e.  a concatenation of \code{x} and \code{w}. Will be coerced to a \code{matrix} if necessary.  See 'Details' of \code{\link{minimax}}.}
 
 \item{npar}{Number of model parameters.  Used when \code{fimfunc} is given instead of \code{formula} to specify the number of model parameters.
-If not given, the sensitivity (derivative) plot may be shifted below the y-axis. When \code{NULL}, it will be set here to \code{length(lp)}.}
+If not specified truly, the sensitivity (derivative) plot may be shifted below the y-axis. When \code{NULL}, it will be set to \code{length(parvars)} or
+\code{prior$npar} when \code{missing(formula)}.}
 
 \item{plot_3d}{Which package should be used to plot the sensitivity (derivative) function for two-dimensional design space. Defaults to \code{"lattice"}.}
 }
@@ -82,9 +83,9 @@ an object of class \code{bayes} that is a list including three sub-lists:
 }
 \code{sens}  contains information about design verification by the general equivalence theorem.
  See \code{sensbayes} for more Details. It is only available every \code{ICA.control$checkfreq} iterations
- and the last iteration if   \code{ICA.control$checkfreq != 0}. Otherwise, \code{NULL}.
+ and the last iteration if   \code{ICA.control$checkfreq >= 0}. Otherwise, \code{NULL}.
 
- \code{nfeval} does not count the function evaluations from checking the equivalence theorem.
+ \code{nfeval} does not count the function evaluations from checking the general equivalence theorem.
 }
 \description{
 Finds (pseudo) Bayesian D-optimal designs for nonlinear models.
@@ -117,8 +118,9 @@ The user can apply the available prior (object \code{cprior}) creators that are 
 
 Use \code{\link{plot}} function to verify the general equivalence theorem for the output design.
 
-To increase the speed of the algorithm, change the tuning parameters \code{tol} and \code{maxEval} via
-the argument  \code{crt.bayes.control}.
+\strong{To increase the speed of the algorithm, change the tuning parameters \code{tol} and \code{maxEval} via
+the argument  \code{crt.bayes.control}.}
+In this case, the user should find a trade-off between accuracy and speed for his/her example.
 
 If some of the parameters are fixed in a model, they should be set
 to their values via the argument \code{paravars}. In this case,
@@ -297,8 +299,7 @@ res10 <- bayes(formula = ~a - b * exp(-lambda * t ^h),
                parvars = c("a=1", "b=1", "lambda", "h=1"),
                lx = .00001, ux = 20,
                prior = uniform(.5, 2.5), k = 5, iter = 400,
-               ICA.control = list(rseed = 1366), npar = 4)
-# you must provide npar here
+               ICA.control = list(rseed = 1366))
 plot(res10)
 }
 
@@ -310,7 +311,7 @@ res11 <- bayes(formula = ~a - b * exp(-lambda * t ^h),
                predvars = c("t"),
                parvars = c("a=1", "b=1", "lambda", "h=1"),
                lx = .00001, ux = 20, prior = norm3, k = 4, iter = 1,
-               ICA.control = list(rseed = 1366), npar = 4)
+               ICA.control = list(rseed = 1366))
 
 \dontrun{
 res11 <- iterate(res11, 400)
@@ -329,7 +330,7 @@ res12 <- bayes(formula = ~a/(1 + b * exp(-lambda*t))^h,
                lx = .00001, ux = 10,
                prior = norm4,
                k = 5, iter = 400,
-               ICA.control = list(rseed = 1366), npar = 4)
+               ICA.control = list(rseed = 1366))
 plot(res12, sens.bayes.control = list(cubature = list(maxEval = 1000, tol = 1e-3),
                                       optslist = list(maxeval = 1000)))
 }
@@ -342,7 +343,7 @@ res13 <- bayes(formula = ~a + exp(-b*x), predvars = "x",
                lx = 0.0001, ux = 1,
                prior = uniform(lower = 1, upper = 20),
                iter = 1, k = 3,
-               ICA.control= list(rseed = 100), npar = 2)
+               ICA.control= list(rseed = 100))
 \dontrun{
 res13 <- iterate(res13, 300)
 plot(res13)

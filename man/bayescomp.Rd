@@ -47,7 +47,7 @@ See 'Examples'.}
 
 \item{ICA.control}{ICA control parameters. For details, see \code{\link{ICA.control}}.}
 
-\item{crt.bayes.control}{Control parameters to approximate the integral in the Bayesian criterion at a given design over the parameter space.
+\item{crt.bayes.control}{Control parameters to approximate the integral in  Bayesian criterion at a given design over the parameter space.
 For details, see \code{\link{crt.bayes.control}}.}
 
 \item{sens.bayes.control}{Control parameters to verify the general equivalence theorem. For details, see \code{\link{sens.bayes.control}}.}
@@ -56,7 +56,8 @@ For details, see \code{\link{crt.bayes.control}}.}
 Every row is a design, i.e.  a concatenation of \code{x} and \code{w}. Will be coerced to a \code{matrix} if necessary.  See 'Details' of \code{\link{minimax}}.}
 
 \item{npar}{Number of model parameters.  Used when \code{fimfunc} is given instead of \code{formula} to specify the number of model parameters.
-If not given, the sensitivity (derivative) plot may be shifted below the y-axis. When \code{NULL}, it will be set here to \code{length(lp)}.}
+If not specified truly, the sensitivity (derivative) plot may be shifted below the y-axis. When \code{NULL}, it will be set to \code{length(parvars)} or
+\code{prior$npar} when \code{missing(formula)}.}
 
 \item{plot_3d}{Which package should be used to plot the sensitivity (derivative) function for two-dimensional design space. Defaults to \code{"lattice"}.}
 }
@@ -89,9 +90,9 @@ an object of class \code{bayes} that is a list including three sub-lists:
 }
 \code{sens}  contains information about design verification by the general equivalence theorem.
  See \code{sensbayes} for more Details. It is only available every \code{ICA.control$checkfreq} iterations
- and the last iteration if   \code{ICA.control$checkfreq != 0}. Otherwise, \code{NULL}.
+ and the last iteration if   \code{ICA.control$checkfreq >= 0}. Otherwise, \code{NULL}.
 
- \code{nfeval} does not count the function evaluations from checking the equivalence theorem.
+ \code{nfeval} does not count the function evaluations from checking the general equivalence theorem.
 }
 \description{
 Finds compound Bayesian DP-optimal designs that meets the dual goal of the parameter estimation and

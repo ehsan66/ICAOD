@@ -169,8 +169,7 @@ res10 <- bayes(formula = ~a - b * exp(-lambda * t ^h),
                parvars = c("a=1", "b=1", "lambda", "h=1"),
                lx = .00001, ux = 20,
                prior = uniform(.5, 2.5), k = 5, iter = 400,
-               ICA.control = list(rseed = 1366), npar = 4)
-# you must provide npar here
+               ICA.control = list(rseed = 1366))
 plot(res10)
 }
 
@@ -182,7 +181,7 @@ res11 <- bayes(formula = ~a - b * exp(-lambda * t ^h),
                predvars = c("t"),
                parvars = c("a=1", "b=1", "lambda", "h=1"),
                lx = .00001, ux = 20, prior = norm3, k = 4, iter = 1,
-               ICA.control = list(rseed = 1366), npar = 4)
+               ICA.control = list(rseed = 1366))
 
 \dontrun{
 res11 <- iterate(res11, 400)
@@ -201,7 +200,7 @@ res12 <- bayes(formula = ~a/(1 + b * exp(-lambda*t))^h,
                lx = .00001, ux = 10,
                prior = norm4,
                k = 5, iter = 400,
-               ICA.control = list(rseed = 1366), npar = 4)
+               ICA.control = list(rseed = 1366))
 plot(res12, sens.bayes.control = list(cubature = list(maxEval = 1000, tol = 1e-3),
                                       optslist = list(maxeval = 1000)))
 }
@@ -214,7 +213,7 @@ res13 <- bayes(formula = ~a + exp(-b*x), predvars = "x",
                lx = 0.0001, ux = 1,
                prior = uniform(lower = 1, upper = 20),
                iter = 1, k = 3,
-               ICA.control= list(rseed = 100), npar = 2)
+               ICA.control= list(rseed = 100))
 \dontrun{
 res13 <- iterate(res13, 300)
 plot(res13)

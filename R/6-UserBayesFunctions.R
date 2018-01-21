@@ -6,9 +6,12 @@
 #' @param prior An object of class \code{cprior}. User can also use one of the functions
 #'  \code{\link{uniform}}, \code{\link{normal}},
 #' \code{\link{skewnormal}} or \code{\link{student}}  to create the  prior. See 'Details' of \code{\link{bayes}}.
-#' @param crt.bayes.control Control parameters to approximate the integral in the Bayesian criterion at a given design over the parameter space.
+#' @param crt.bayes.control Control parameters to approximate the integral in  Bayesian criterion at a given design over the parameter space.
 #'  For details, see \code{\link{crt.bayes.control}}.
 #' @param sens.bayes.control Control parameters to verify the general equivalence theorem. For details, see \code{\link{sens.bayes.control}}.
+#' @param npar Number of model parameters.  Used when \code{fimfunc} is given instead of \code{formula} to specify the number of model parameters.
+#'   If not specified truly, the sensitivity (derivative) plot may be shifted below the y-axis. When \code{NULL}, it will be set to \code{length(parvars)} or
+#'   \code{prior$npar} when \code{missing(formula)}.
 #' @export
 #' @description
 #'  Finds (pseudo) Bayesian D-optimal designs for nonlinear models.
@@ -42,8 +45,9 @@
 #'
 #' Use \code{\link{plot}} function to verify the general equivalence theorem for the output design.
 #'
-#' To increase the speed of the algorithm, change the tuning parameters \code{tol} and \code{maxEval} via
-#' the argument  \code{crt.bayes.control}.
+#' \strong{To increase the speed of the algorithm, change the tuning parameters \code{tol} and \code{maxEval} via
+#' the argument  \code{crt.bayes.control}.}
+#' In this case, the user should find a trade-off between accuracy and speed for his/her example.
 #'
 #' If some of the parameters are fixed in a model, they should be set
 #' to their values via the argument \code{paravars}. In this case,
@@ -78,9 +82,9 @@
 #' }
 #' \code{sens}  contains information about design verification by the general equivalence theorem.
 #'  See \code{sensbayes} for more Details. It is only available every \code{ICA.control$checkfreq} iterations
-#'  and the last iteration if   \code{ICA.control$checkfreq != 0}. Otherwise, \code{NULL}.
+#'  and the last iteration if   \code{ICA.control$checkfreq >= 0}. Otherwise, \code{NULL}.
 #'
-#'  \code{nfeval} does not count the function evaluations from checking the equivalence theorem.
+#'  \code{nfeval} does not count the function evaluations from checking the general equivalence theorem.
 #'
 #' @example inst/examples/bayes_examples.R
 #' @seealso \code{\link{sensbayes}}
@@ -104,9 +108,12 @@ bayes <- function(formula,
                   npar = NULL,
                   plot_3d = c("lattice", "rgl")) {
 
-
-  if (is.null(npar))
-    npar <- prior$npar
+  if (is.null(npar)){
+    if (!missing(formula))
+      npar <- length(parvars)
+    else
+      npar <- prior$npar
+  }
   if (!is.numeric(npar))
     stop("'npar' is the number of parameters and must be numeric")
   output <-  bayes_inner(fimfunc = fimfunc,
@@ -160,9 +167,11 @@ bayes <- function(formula,
 #'  \eqn{c(\boldsymbol{x},\xi^*)}{c(x, \xi*)} is
 #'   called \strong{sensitivity} or \strong{derivative} function.
 #'
-#'  The user can always considerably reduce the CPU time
-#' by adjusting less conservative tuning parameters, i.e. \code{tol} and \code{maxEval}, in
-#' the function \code{\link{sens.bayes.control}}. See 'Examples'.
+#'  \strong{Sometimes, the CPU time can be considerably reduced
+#' by choosing less conservative values for the tuning parameters \code{tol} and \code{maxEval} in
+#' the function \code{\link{sens.bayes.control}}.}
+#' The user should find a trade-off between accuracy and speed for his/her problem.
+#'  See 'Examples'.
 #' @note
 #' Having accurate plots for the sensitivity (derivative) function
 #'  and calculating ELB to a high precision is the primary goal here,
@@ -186,8 +195,12 @@ sensbayes <- function(formula,
                       silent = FALSE){
 
 
-  if (is.null(npar))
-    npar <- prior$npar
+  if (is.null(npar)){
+    if (!missing(formula))
+      npar <- length(parvars)
+    else
+      npar <- prior$npar
+  }
   if (!is.numeric(npar))
     stop("'npar' is the number of parameters and must be numeric")
   output <- sensbayes_inner (formula = formula,
@@ -273,8 +286,12 @@ bayescomp <- function(formula,
                       npar = NULL,
                       plot_3d = c("lattice", "rgl")) {
 
-  if (is.null(npar))
-    npar <- prior$npar
+  if (is.null(npar)){
+    if (!missing(formula))
+      npar <- length(parvars)
+    else
+      npar <- prior$npar
+  }
   if (!is.numeric(npar))
     stop("'npar' is the number of parameters and must be numeric")
   if (is.formula(prob)){
@@ -328,14 +345,18 @@ bayescomp <- function(formula,
 #'@inheritParams bayescomp
 #'@inherit sensbayes return
 #'@export
+#'@details
+#'  \strong{Sometimes, the CPU time can be considerably reduced
+#' by choosing less conservative values for the tuning parameters \code{tol} and \code{maxEval} in
+#' the function \code{\link{sens.bayes.control}}.}
+#' The user should find a trade-off between accuracy and speed for his/her problem.
 #' @note
 #' Having accurate plots for the sensitivity (derivative) function
 #'  and calculating ELB to a high precision is the primary goal here,
 #'   although the process may take too long (even hours) due to
 #' requesting very accurate integral approximations.
-#'  The user can always considerably reduce the CPU time
-#' by adjusting less conservative tuning parameters, i.e. \code{tol} and \code{maxEval}, in
-#' the function \code{\link{sens.bayes.control}}.
+#'
+#'
 #'
 #' @seealso \code{\link{bayescomp}}
 #'@example inst/examples/sensbayescomp_examples.R
@@ -356,8 +377,12 @@ sensbayescomp <- function(formula,
                           silent = FALSE){
 
 
-  if (is.null(npar))
-    npar <- prior$npar
+  if (is.null(npar)){
+    if (!missing(formula))
+      npar <- length(parvars)
+    else
+      npar <- prior$npar
+  }
   if (!is.numeric(npar))
     stop("'npar' is the number of parameters and must be numeric")
   if (is.formula(prob)){
@@ -488,7 +513,7 @@ plot.bayes <- function(x, iter = NULL,
       crt.bayes.control <- arg$crt.bayes.control
       Psi_x_bayes  <- arg$Psi_funcs$Psi_x_bayes
       Psi_xy_bayes  <- arg$Psi_funcs$Psi_xy_bayes
-      } else {
+    } else {
 
       crt.bayes.control <- do.call("crt.bayes.control", crt.bayes.control)
       temp_psi <- create_Psi_bayes(type = arg$type, prior = arg$prior, FIM = arg$FIM, lp = arg$prior$lower,
@@ -644,12 +669,15 @@ print.sensbayes <- function(x,  ...){
 ######################################################################################################*
 #' @title Control Parameters for Verifying General Equivalence Theorem for Bayesian Designs
 #'
-#' @description The function \code{sens.bayes.control} returns a list of \code{\link[cubature]{hcubature}}  control parameters for  approximating the integrals in the sensitivity (derivative) function in Bayesian criteria
-#' and \code{\link[nloptr]{nloptr}} control parameters to find maximum of the sensitivity function and calculate the ELB.
+#' @description The function \code{sens.bayes.control} returns a list of \code{\link[cubature]{hcubature}}  control parameters for  approximating the integrals in the sensitivity (derivative) function of Bayesian criteria
+#' and also \code{\link[nloptr]{nloptr}} control parameters to find maximum of the sensitivity (derivative) function over the design space
+#'  and calculate the efficiency lower bound (ELB).
 #' @param cubature A list that will be passed to the arguments of the \code{\link[cubature]{hcubature}} function. See 'Details'.
-#' @param x0 Vector of starting values for the optimization (from design space). Defaults to \code{NULL}.
+#' @param x0 Vector of starting values for maximizing the sensitivity (derivative) function over the design space \eqn{x}.
+#' It will be passed to the optimization function \code{\link[nloptr]{nloptr}}.
 #' @param optslist A list will be passed to \code{opts} argument of the function \code{\link[nloptr]{nloptr}} to find the maximum of the sensitivity function over the design space. See 'Details'.
 #' @param ... Further arguments will be passed to \code{\link{nl.opts}} from package \code{\link[nloptr]{nloptr}}.
+#' @return A list of control parameters for verifying the general equivalence theorem with respect to the Bayesian optimality criteria.
 #' @details
 #' \code{cubature} is a list that its components will be passed to the function \code{\link[cubature]{hcubature}}.
 #' Its components are:
@@ -659,15 +687,32 @@ print.sensbayes <- function(x,  ...){
 #'   \item{\code{absError}}{The maximum absolute error tolerated. Defaults to \code{0}.}
 #' }
 #'
-#' Argument \code{optslist} will be passed to the argument \code{opts} of the function \code{\link[nloptr]{nloptr}} to find the maximum of the sensitivity function over the design space:
+#' ELB is a measure of  proximity of a design to the optimal design without knowing the latter.
+#' Given a design, let \eqn{\epsilon} be the global maximum
+#'  of the sensitivity (derivative) function with respect the vector of the model predictors \eqn{x} over the design space.
+#' ELB is given by \deqn{ELB = p/(p + \epsilon),}
+#' where \eqn{p} is the number of model parameters. Obviously,
+#' calculating ELB requires finding \eqn{\epsilon} and therefore,
+#' a maximization problem to be solved. The function \code{\link[nloptr]{nloptr}}
+#' is used here to solve this maximization problem. The arguments \code{x0} and \code{optslist}
+#' will be passed to this function as follows:
+#'
+#' Argument \code{x0} provides the user initial values for this maximization problem
+#'  and will be passed to the argument with the same name
+#' of the function  \code{\link[nloptr]{nloptr}}.
+#'
+#'
+#' Argument \code{optslist} will be passed to the argument \code{opts} of the function \code{\link[nloptr]{nloptr}}.
+#' \code{optslist} is a \code{list} and the most important components are listed as follows:
 #'  \describe{
 #'   \item{\code{stopval}}{Stop minimization when an objective value <= \code{stopval} is found. Setting stopval to \code{-Inf} disables this stopping criterion (default).}
 #'   \item{\code{algorithm}}{Defaults to \code{NLOPT_GN_DIRECT_L}. DIRECT-L is a deterministic-search algorithm based on systematic division of the search domain into smaller and smaller hyperrectangles.}
 #'   \item{\code{xtol_rel}}{Stop when an optimization step (or an estimate of the optimum) changes every parameter by less than \code{xtol_rel} multiplied by the absolute value of the parameter. Criterion is disabled if \code{xtol_rel} is non-positive. Defaults to \code{1e-8}.}
 #'   \item{\code{ftol_rel}}{Stop when an optimization step (or an estimate of the optimum) changes the objective function value by less than \code{ftol_rel} multiplied by the absolute value of the function value. Criterion is disabled if \code{ftol_rel} is non-positive. Defaults to \code{1e-10}.}
-#'   \item{\code{maxeval}}{Stop when the number of function evaluations exceeds maxeval. Criterion is disabled if maxeval is non-positive. Defaults to \code{2000}. See below.}
+#'   \item{\code{maxeval}}{Stop when the number of function evaluations exceeds maxeval. Criterion is disabled if maxeval is non-positive. Defaults to \code{6000}. See below.}
 #' }
 #'  A full description of all options is shown by the function \code{nloptr.print.options()} in package \code{\link[nloptr]{nloptr}}.
+
 #' @note  When the value of ELB is larger than 1, it means the maximum found by the optimization function set by \code{algorithm} is not global.
 #'  In this case, please increase  the value of the parameter \code{maxeval} to find the global maximum of the sensitivity (derivative) function and avoid false ELB.
 #'
@@ -725,8 +770,12 @@ sens.bayes.control <- function(cubature = list(tol = 1e-6,
 ######################################################################################################*
 #' @title Control Parameters for Evaluating Bayesian Criteria
 #'
-#' @description The function \code{crt.bayes.control} returns a list of \code{\link[cubature]{hcubature}}  control parameters for  approximating the integrals in the Bayesian criteria.
-#' @param cubature A list that will be passed to the arguments of the \code{\link[cubature]{hcubature}} function. See 'Details'.
+#' @description The function \code{crt.bayes.control} returns a list of \code{\link[cubature]{hcubature}}  control parameters
+#'  for  approximating the integrals in  Bayesian criteria. The key tuning parameters here
+#'  are \strong{\code{tol}} and \strong{\code{maxEval}}. Their value affect the algorithm speed and
+#'  the accuracy of the results.
+#'  The user should find a trade-off between accuracy and speed for his/her example.
+#' @param cubature A list that will be passed to the arguments of the function \code{\link[cubature]{hcubature}}. See 'Details'.
 #'
 #' @details
 #' \code{cubature} is a list that its components will be passed to the function \code{\link[cubature]{hcubature}}.
