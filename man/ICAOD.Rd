@@ -30,7 +30,7 @@ The optimization of the outer problem (over the design space) is done using a me
 imperialist competitive algorithm (ICA). The user can always adjust its tuning parameters
 through the function \code{\link{ICA.control}}. Based on our experience,
 the most important parameter here is the number of countries, equivalent to
-the number of particles in PSO algorithm and that can be adjusted by argument \code{ncount}.
+the number of particles in the PSO algorithm and that can be regulated via the argument \code{ncount}.
 
 Depending on the strategy dealing with the unknown model parameters,
 each type of optimal design problem may have an inner problem.
@@ -42,7 +42,7 @@ each type of optimal design problem may have an inner problem.
  \item{\code{\link{bayes}}: }{equivalent to an integral approximation over the multiple prior distribution of the unknown model parameters (by function \code{\link[cubature]{hcubature}}).
  The integration tuning parameters can be adjusted by the function \code{crt.bayes.control}. The most important ones are \code{maxEval} and \code{tol}.}
  \item{\code{\link{bayes}}: }{equivalent to an optimization problem over the parameter space that is the cartesian product of some intervals for the model unknown parameters  (by function \code{\link[nloptr]{nloptr}}).
- The optimization tuning parameters can be adjusted by the function \code{crt.minimax.control}.  The most important tuning parameter is \code{maxeval}.
+ The optimization tuning parameters can be regulated by the function \code{crt.minimax.control}.  The most important tuning parameter is \code{maxeval}.
  The convergence of the algorithm for minimax and standardized maximin designs requires solving global multi-optima optimization
 problems over the parameter space. Therefore, the parameter \code{maxeval} plays a very important role to avoid getting trapped in the local optima of the inner problem.}
 }
@@ -56,7 +56,7 @@ Because the output design in this package is always an \strong{approximate} or \
  to the true-optimal design based on derivative plot and efficiency lower bound.
 
 For each type of design,
-the user can use the following functions to verify the optimality her/his output design:
+the user can use the following functions to verify the optimality of her/his output design:
 
 \itemize{
 \item{\code{\link{senslocally}}}
