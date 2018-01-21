@@ -1,4 +1,4 @@
-# This is New Update (Version 0.9.9)
+# This is New Update (Version 0.9.6)
 ## Test environments
 
 ### local OS X install, R version 3.4.3 (2017-11-30)
