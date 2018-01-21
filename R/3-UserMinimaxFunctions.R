@@ -340,14 +340,14 @@ minimax <- function(formula, predvars, parvars, family = gaussian(),
 #'  \item{\code{mu}}{Probability measure on the answering set. Corresponds to the rows of \code{optima} when the associated row in column \code{Answering_Set} is equal to 1.
 #'    Only applicable for minimax or standardized maximin designs.}
 #'  \item{\code{max_deriv}}{Global maximum of the sensitivity (derivative) function (\eqn{\epsilon} in 'Details').}
-#'  \item{\code{ELB}}{D-efficiency lower bound. Can not be negative. See 'Note' or 'Details' in \code{\link{sens.minimax.control}}.}
+#'  \item{\code{ELB}}{D-efficiency lower bound. Can not be larger than 1. See 'Note' or 'Details' in \code{\link{sens.minimax.control}}.}
 #'  \item{\code{merge_tol}}{Merging tolerance to create the answering set from the set of all local optima. See 'Details' in \code{\link{sens.minimax.control}}.
 #'   Only applicable for minimax or standardized maximin designs.}
 #'  \item{\code{crtval}}{Criterion value. Compare with column \code{Crtiterion_Value} in \code{optima} for minimax and standardized maximin designs.}
 #'  \item{\code{time}}{Required CPU time (rough approximation).}
 #'  }
 #' @note
-#' Theoretically, ELB can not be negative. But if so, it may have one of the following reasons:
+#' Theoretically, ELB can not be larger than 1. But if so, it may have one of the following reasons:
 #' \itemize{
 #' \item \code{max_deriv} is not a GLOBAL maximum.  Please increase  the value of the parameter \code{maxeval} in \code{\link{sens.minimax.control}} to find the global maximum.
 #' \item The sensitivity function is shifted below the y-axis because
@@ -526,7 +526,7 @@ locally <- function(formula, predvars, parvars, family = gaussian(),
 #'
 #' @note
 #'
-#' Theoretically, ELB can not be negative. But if so, it may have one of the following reasons:
+#' Theoretically, ELB can not be larger than 1. But if so, it may have one of the following reasons:
 #' \itemize{
 #' \item \code{max_deriv} is not a GLOBAL maximum.  Please increase  the value of the parameter \code{maxeval} in \code{\link{sens.minimax.control}} to find the global maximum.
 #' \item The sensitivity function is shifted below the y-axis because
@@ -702,7 +702,7 @@ robust <- function(formula, predvars, parvars, family = gaussian(),
 #'
 #' @note
 #'
-#' Theoretically, ELB can not be negative. But if so, it may have one of the following reasons:
+#' Theoretically, ELB can not be larger than 1. But if so, it may have one of the following reasons:
 #' \itemize{
 #' \item \code{max_deriv} is not a GLOBAL maximum.  Please increase  the value of the parameter \code{maxeval} in \code{\link{sens.minimax.control}} to find the global maximum.
 #' \item The sensitivity function is shifted below the y-axis because
@@ -934,7 +934,7 @@ multiple <- function(minDose, maxDose,
 #'  The reason is that for the c-optimal criterion the generalized inverse of the Fisher information matrix is not stable and depends
 #'  on the tolerance value (\code{tol}).
 #'
-#'  Theoretically, ELB can not be negative. But if so, it may have one of the following reasons:
+#'  Theoretically, ELB can not be larger than 1. But if so, it may have one of the following reasons:
 #' \itemize{
 #' \item \code{max_deriv} is not a GLOBAL maximum.  Please increase  the value of the parameter \code{maxeval} in \code{\link{sens.minimax.control}} to find the global maximum.
 #' \item The sensitivity function is shifted below the y-axis because
@@ -1359,8 +1359,9 @@ crt.minimax.control <- function (x0 = NULL,
 #' }
 #'  A full description of all options is shown by the function \code{nloptr.print.options()} in package \code{\link[nloptr]{nloptr}}.
 #'
-#' @note  When the value of ELB is negative, it means the maximum found by the optimization function set by \code{algorithm} is not global.
-#'  In this case, please increase  the value of the parameter \code{maxeval} to find the global maximum and avoid negative meaningless value for ELB.
+#' @note  When the value of ELB is larger than 1, it means the maximum found by the optimization function set by \code{algorithm} is not global.
+#'  In this case, please increase  the value of the parameter \code{maxeval} to find the global maximum of the derivative function over the design space and
+#'  and avoid false ELB.
 #'
 #' @export
 #' @examples

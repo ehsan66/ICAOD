@@ -668,8 +668,8 @@ print.sensbayes <- function(x,  ...){
 #'   \item{\code{maxeval}}{Stop when the number of function evaluations exceeds maxeval. Criterion is disabled if maxeval is non-positive. Defaults to \code{2000}. See below.}
 #' }
 #'  A full description of all options is shown by the function \code{nloptr.print.options()} in package \code{\link[nloptr]{nloptr}}.
-#' @note  When the value of ELB is negative, it means the maximum found by the optimization function set by \code{algorithm} is not global.
-#'  In this case, please increase  the value of the parameter \code{maxeval} to find the global maximum and avoid negative meaningless value for ELB.
+#' @note  When the value of ELB is larger than 1, it means the maximum found by the optimization function set by \code{algorithm} is not global.
+#'  In this case, please increase  the value of the parameter \code{maxeval} to find the global maximum of the sensitivity (derivative) function and avoid false ELB.
 #'
 #' @export
 #' @examples
