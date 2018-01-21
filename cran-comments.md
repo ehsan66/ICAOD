@@ -1,5 +1,5 @@
 # Re-submitted
-* Thanks for the comment dear Uwe Ligges. 
+* Thanks for the comments dear Uwe Ligges. 
 ####### The Title field should be in title case, current version then in title case: 'Optimal Designs for Nonlinear Models'
 * Done!
 
