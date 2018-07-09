@@ -5,7 +5,8 @@
 \title{Verifying Optimality of Bayesian Compound DP-optimal Designs}
 \usage{
 sensbayescomp(formula, predvars, parvars, family = gaussian(), x, w, lx, ux,
-  fimfunc = NULL, prior = list(), prob, alpha,
+  fimfunc = NULL, prior = list(), prob, alpha, crt_method = c("cubature",
+  "quadrature"), sens_method = c("cubature", "quadrature"),
   sens.bayes.control = list(), crt.bayes.control = list(),
   plot_3d = c("lattice", "rgl"), plot_sens = TRUE, npar = NULL,
   calculate_criterion = TRUE, silent = FALSE)

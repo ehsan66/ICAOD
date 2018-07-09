@@ -5,9 +5,10 @@
 \title{Bayesian D-Optimal Designs}
 \usage{
 bayes(formula, predvars, parvars, family = gaussian(), prior, lx, ux, iter, k,
-  fimfunc = NULL, ICA.control = list(), crt.bayes.control = list(),
-  sens.bayes.control = list(), initial = NULL, npar = NULL,
-  plot_3d = c("lattice", "rgl"))
+  fimfunc = NULL, ICA.control = list(), crt_method = c("cubature",
+  "quadrature"), sens_method = c("cubature", "quadrature"),
+  crt.bayes.control = list(), sens.bayes.control = list(), initial = NULL,
+  npar = NULL, plot_3d = c("lattice", "rgl"))
 }
 \arguments{
 \item{formula}{A nonlinear model \code{\link[stats]{formula}}.

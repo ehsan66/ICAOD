@@ -5,10 +5,11 @@
 \title{Verifying Optimality of Bayesian D-optimal Designs}
 \usage{
 sensbayes(formula, predvars, parvars, family = gaussian(), x, w, lx, ux,
-  fimfunc = NULL, prior = list(), sens.bayes.control = list(),
-  crt.bayes.control = list(), plot_3d = c("lattice", "rgl"),
-  plot_sens = TRUE, npar = NULL, calculate_criterion = TRUE,
-  silent = FALSE)
+  fimfunc = NULL, prior = list(), crt_method = c("cubature",
+  "quadrature"), sens_method = c("cubature", "quadrature"),
+  sens.bayes.control = list(), crt.bayes.control = list(),
+  plot_3d = c("lattice", "rgl"), plot_sens = TRUE, npar = NULL,
+  calculate_criterion = TRUE, silent = FALSE)
 }
 \arguments{
 \item{formula}{A nonlinear model \code{\link[stats]{formula}}.
