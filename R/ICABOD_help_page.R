@@ -61,7 +61,7 @@
 #'  \item{\code{\link{sensmultiple}}}
 #'  \item{\code{\link{sensbayescomp}}}
 #' }
-#'
+#' Functions for computing different relative efficiencies are also available.
 #' @references
 #' Masoudi E, Holling H, Wong W.K. (2017). Application of Imperialist Competitive Algorithm to Find Minimax and Standardized Maximin Optimal Designs. Computational Statistics and Data Analysis, 113, 330-345. <doi:10.1016/j.csda.2016.06.014>
 #' @docType package
