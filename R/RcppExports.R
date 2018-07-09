@@ -201,3 +201,16 @@ FIM_power_logistic <- function(x, w, param, s) {
     .Call('_ICAOD_FIM_power_logistic', PACKAGE = 'ICAOD', x, w, param, s)
 }
 
+#' Fisher information matrix for the sigmoid emax model.
+#'
+#' The mean of response variable is .
+#' @param x vector of design points.
+#' @param w vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w)} should be 1.
+#' @param param vector of model parameters \eqn{(\theta_1, \theta_2,\theta_3, \theta_4)}{(\theta1, \theta2,\theta3, \theta4)}.
+#' @return Fisher information matrix of design.
+#' @family FIM
+#' @export
+FIM_sig_emax <- function(x, w, param) {
+    .Call('_ICAOD_FIM_sig_emax', PACKAGE = 'ICAOD', x, w, param)
+}
+

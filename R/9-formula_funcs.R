@@ -249,27 +249,27 @@ create_prob <- function(prob, parvars, predvars){
 
 
 
-prob <- function(x, param){
-  npoint <- length(x)/2
-  x1 <- x[1:npoint]
-  x2 <- x[(npoint+1):(npoint*2)]
-  out <- 1-1/(1+exp(param[1] + param[2] * x1 + param[3] * x2 + param[4] * x1 * x2))
-  return(out)
-}
+# prob <- function(x, param){
+#   npoint <- length(x)/2
+#   x1 <- x[1:npoint]
+#   x2 <- x[(npoint+1):(npoint*2)]
+#   out <- 1-1/(1+exp(param[1] + param[2] * x1 + param[3] * x2 + param[4] * x1 * x2))
+#   return(out)
+# }
 
 
-prob_formula <- function(x, param){
-  npoints <- length(x)
-  x1 <- x[1:(npoints/2*1)]
-  x2 <- x[((npoints/2*1) +  1):(npoints/2*2)]
-  b0 <- param[1]
-  b1 <- param[2]
-  b2 <- param[3]
-  b3 <- param[4]
-
-  out <-  1 - 1/(1 + exp(b0 + b1 * x1 + b2 * x2 + b3 * x1 * x2))
-  return(out)
-}
+# prob_formula <- function(x, param){
+#   npoints <- length(x)
+#   x1 <- x[1:(npoints/2*1)]
+#   x2 <- x[((npoints/2*1) +  1):(npoints/2*2)]
+#   b0 <- param[1]
+#   b1 <- param[2]
+#   b2 <- param[3]
+#   b3 <- param[4]
+#
+#   out <-  1 - 1/(1 + exp(b0 + b1 * x1 + b2 * x2 + b3 * x1 * x2))
+#   return(out)
+# }
 
 ######################################################################################################*
 ######################################################################################################*
