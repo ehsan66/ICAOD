@@ -1,13 +1,13 @@
 Package: ICAOD
 Title: Optimal Designs for Nonlinear Models
-Version: 0.9.6
+Version: 0.9.7
 Authors@R: c(person("Ehsan", "Masoudi", role = c("aut", "cre"),  email = "ehsan.masoudi@wwu.de"),  person("Heinz", "Holling", role = "aut"),  person("Weng Kee", "Wong", role = "aut"))
 Description: Finds optimal designs for nonlinear models using a metaheuristic algorithm called imperialist competitive algorithm ICA. See, for details, Masoudi et al. (2017) <doi:10.1016/j.csda.2016.06.014>.
 Depends: R (>= 3.1.3)
 License: GPL (>= 2)
 LazyData: true
-LinkingTo: Rcpp, RcppEigen
-Imports: Rcpp,  nloptr, stats, graphics, grDevices, cubature, sn, mnormt, methods
+LinkingTo: Rcpp, RcppEigen, 
+Imports: Rcpp,  nloptr, stats, graphics, grDevices, cubature, sn, mnormt, methods, mvQuad
 Suggests: rgl, lattice, knitr, rmarkdown
 BugReports: https://github.com/ehsan66/ICAOD/issues
 URL: https://github.com/ehsan66/ICAOD

@@ -1,4 +1,9 @@
-# ICAOD 0.9.9
+# ICAOD .9.6.7
+# A bug fixed in minimax designs
+# Adding efficiency functions
+
+
+# ICAOD 0.9.6
 * Still beta version
 * A formula interface is added
 * A prominent change since this version
