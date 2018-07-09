@@ -168,6 +168,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// FIM_sig_emax
+Eigen::MatrixXd FIM_sig_emax(const std::vector<double> x, const std::vector<double> w, const std::vector<double> param);
+RcppExport SEXP _ICAOD_FIM_sig_emax(SEXP xSEXP, SEXP wSEXP, SEXP paramSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const std::vector<double> >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const std::vector<double> >::type w(wSEXP);
+    Rcpp::traits::input_parameter< const std::vector<double> >::type param(paramSEXP);
+    rcpp_result_gen = Rcpp::wrap(FIM_sig_emax(x, w, param));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_ICAOD_det2", (DL_FUNC) &_ICAOD_det2, 2},
@@ -182,6 +195,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_ICAOD_FIM_loglin", (DL_FUNC) &_ICAOD_FIM_loglin, 3},
     {"_ICAOD_FIM_mixed_inhibition", (DL_FUNC) &_ICAOD_FIM_mixed_inhibition, 4},
     {"_ICAOD_FIM_power_logistic", (DL_FUNC) &_ICAOD_FIM_power_logistic, 4},
+    {"_ICAOD_FIM_sig_emax", (DL_FUNC) &_ICAOD_FIM_sig_emax, 3},
     {NULL, NULL, 0}
 };
 
