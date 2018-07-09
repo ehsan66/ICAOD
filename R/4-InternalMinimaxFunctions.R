@@ -111,6 +111,7 @@ Calculate_Cost_minimax <- function(mat, fixed_arg){
     cost <- -cost
     #inner_optima_store <- matrix(NA, nrow = length(cost))
   }
+
   nfeval <-  sum(sapply(store, "[[", "counts"))
   return(list(cost = cost, nfeval = nfeval, inner_optima = inner_optima_store))
 }
@@ -392,11 +393,9 @@ create_optim_func <- function(type, lp_nofixed, up_nofixed, crt.minimax.control,
     if (is.null(crt.minimax.control$x0))
       x0 <- (lower + upper)/2 else
         x0 <- crt.minimax.control$x0
-#cat("\n", x)
-#cat("\n", w)
-      out_nloptr <- nloptr::nloptr(x0= x0, eval_f = fn, lb = lower, ub = upper, opts = crt.minimax.control$optslist,
+      out_nloptr <- nloptr::nloptr(x0= x0, eval_f = fn, lb = lower, ub = upper,
+                                   opts = crt.minimax.control$optslist,
                                    q = c(x, w), fixedpar = fixedpar, fixedpar_id = fixedpar_id, npred = npred)
-
       out <- find_on_points(fn = fn,
                             points = vertices_inner,
                             q = c(x, w),
@@ -480,7 +479,7 @@ create_optim_func <- function(type, lp_nofixed, up_nofixed, crt.minimax.control,
 }
 #############################################################################################################*
 #############################################################################################################*
-create_criterion_minimax <- function(FIM, type, lp, up, localdes = NULL, npar, robpars = NULL, crt_type, multipars = NULL){
+create_criterion_minimax <- function(FIM, type, lp, up, localdes = NULL, npar, robpars = NULL, crt_type, multipars = NULL, compound = NULL){
   if (crt_type == "D"){
     if (type == "minimax") {
       crfunc_minimax <- function(param, q, npred) {
@@ -540,7 +539,6 @@ create_criterion_minimax <- function(FIM, type, lp, up, localdes = NULL, npar, r
           if (any(is.nan(eff)))
             stop("The criterion (D-efficiency) value is 'NaN' for", paste("iniparam = c(", paste(round(param[which(is.nan(eff))[1],], 5), collapse = ","), ").",sep = ""),
                  "\nCheck the Fisher information matrix, number of design points, lx, ux and .... for possible unmatched design parameters.")
-          browser()
           if (any(round(eff, 7) > 1))
             stop("Efficiency value ", eff[which(round(eff , 7) > 1)[1]],
                  " is greater than one. This results in a wrong conclusion that the non-optimal design is better than the true optimal design when ",
@@ -584,9 +582,8 @@ create_criterion_minimax <- function(FIM, type, lp, up, localdes = NULL, npar, r
         w <- q[w_ind]
         locally_det <-
           -det2(FIM(x = x, w = w, param = param), logarithm = TRUE) + 5000 * (sum(w) - 1) ^ 2
-        if (locally_det == -1e24)
-          ## becuase for locally the 'locally_det' will be -1e24 and spoil the algorithm!
-          locally_det <- 1e24
+        # if (!is.finite(locally_det))
+        #   locally_det <- 1e+24
         return(locally_det)
       }
     }
@@ -623,6 +620,39 @@ create_criterion_minimax <- function(FIM, type, lp, up, localdes = NULL, npar, r
     temp1<- create_multiple_minimax(model = "4pl", FIM = FIM, multipars = multipars)
     crfunc <- temp1$crfunc
   }
+
+  if (crt_type == "DPA"){
+    crfunc <- function(param, q, npred){
+      lq <- length(q) # q is the design points and weights
+      pieces <- lq / (npred + 1)
+      x_ind <- 1:(npred * pieces)
+      w_ind <- (x_ind[length(x_ind)] + 1):lq
+      x <- q[x_ind]
+      w <- q[w_ind]
+      if (compound$alpha != 0)
+        bcrfunc1 <- -(compound$alpha/4  * det2(FIM(x = x, w = w, param = param),logarithm= TRUE) +
+                        (1 -compound$alpha) * log(sum(w * compound$prob(x = x, param = param)))) else
+                          bcrfunc1 <-  -log(sum(w * compound$prob(x = x, param = param)))
+
+      return(bcrfunc1)
+    }
+    if (crt_type == "DPM")
+
+      crfunc <- function(param, q, npred){
+        lq <- length(q) # q is the design points and weights
+        pieces <- lq / (npred + 1)
+        x_ind <- 1:(npred * pieces)
+        w_ind <- (x_ind[length(x_ind)] + 1):lq
+        x <- q[x_ind]
+        w <- q[w_ind]
+
+        bcrfunc1 <- -(compound$alpha/4  * det2(FIM(x = x, w = w, param = param),logarithm= TRUE) +
+                        (1 -compound$alpha) * log(min(prob(x = x, param = param))))
+        return(bcrfunc1)
+      }
+
+  }
+
   if (type != "locally" &  type != "robust" ){
     # here we search if one of the parameters are fixed. then we pass it to the optimization function in the inner problem because otherwise it may casue an error.
     any_fixed <- sapply(1:length(lp), function(i) lp [i] == up[i]) # is a vector
@@ -711,7 +741,7 @@ insert_fixed <- function(fixedpar, fixedpar_id, param){
   return(param_out)
 }
 
-create_psy_minimax <- function(crt_type, multipars){
+create_psy_minimax <- function(crt_type, multipars, compound){
   if (crt_type == "D"){
     Psi_Mu <- function(mu, FIM,  x, w,  answering, PenaltyCoeff){
       # mu is a vector of measure that usually Psi_mu is optimized with respect to.
@@ -780,8 +810,7 @@ create_psy_minimax <- function(crt_type, multipars){
       Psi_Point_answering <- matrix(NA, 1,  n_mu)
       i <- 1 ## we need Psi at only point x, so we have only one row
       for(j in 1:n_mu){
-        Psi_Point_answering[i,j]  <-
-          mu[j] *
+        Psi_Point_answering[i,j]  <- mu[j] *
           sum(diag(solve(FIM(x = x, w = w, param = answering[j, ]), tol = .Machine$double.xmin) %*%
                      FIM(x = x1, w = 1, param = answering[j, ])
           ))
@@ -828,6 +857,67 @@ create_psy_minimax <- function(crt_type, multipars){
     Psi_xy <- NULL
   }
 
+
+  if (crt_type == "DPA" || crt_type == "DPAM"){
+
+    Psi_x <- function(x1, mu, FIM,  x, w,  answering){
+
+      if(length(mu) != dim(answering)[1])
+        stop("The number of measures is not equal to the number of elements of answering set.")
+      if(typeof(FIM) != "closure")
+        stop("'FIM' must be of type 'closure'.")
+
+      n_mu <- dim(answering)[1]
+
+      Psi_Point_answering <- matrix(NA, 1,  n_mu)
+      i <- 1
+      for(j in 1:n_mu){
+        FIM_x <- FIM(x = x, w = w, par = answering[j, ])
+        FIM_x1 <- FIM(x = x1, w = 1, par = answering[j, ])
+        if (crt_type == "DPA")
+          if (compound$alpha != 0)
+            Psi_Point_answering[i,j] <- mu[j] * compound$alpha/compound$npar * sum(diag(solve(FIM_x) %*% FIM_x1)) +
+          (1-compound$alpha) * (prob(x1, answering[j, ])- sum(w * compound$prob(x, answering[j, ])))/sum(w * compound$prob(x, answering[j, ])) else
+            Psi_Point_answering[i,j] <- mu[j] * (prob(x1, answering[j, ])- sum(w * compound$prob(x, answering[j, ])))/sum(w * compound$prob(x, answering[j, ]))
+        if (crt_type == "DPM")
+          Psi_Point_answering[i,j] <- mu[j] * compound$alpha/compound$npar * sum(diag(solve(FIM_x) %*% FIM_x1)) +
+          (1-compound$alpha) * (compound$prob(x1, answering[, j])- min(compound$prob(x, answering[, j])))/min(compound$prob(x, answering[j, ]))
+      }
+      PsiAtEachPoint <- round(rowSums(Psi_Point_answering) - compound$alpha, 5)
+      PsiFunction <- PsiAtEachPoint[1]
+      return(PsiFunction)
+    }
+
+    Psi_xy <- function(x1,y1,  mu, FIM,  x, w,  answering){
+
+      if(length(mu) != dim(answering)[1])
+        stop("The number of measures is not equal to the number of elements of answering set.")
+      if(typeof(FIM) != "closure")
+        stop("'FIM' must be of type 'closure'.")
+
+      n_mu <- dim(answering)[1]
+
+      Psi_Point_answering <- matrix(NA, 1,  n_mu)
+      i <- 1
+      for(j in 1:n_mu){
+        FIM_x <- FIM(x = x, w = w, par = answering[j, ])
+        FIM_x1 <- FIM(x = c(x1, y1), w = 1, par = answering[j, ])
+        if (crt_type == "DPA")
+          if (compound$alpha != 0)
+            Psi_Point_answering[i,j] <- mu[j] * compound$alpha/compound$npar * sum(diag(solve(FIM_x) %*% FIM_x1)) + (1-compound$alpha) * (prob(c(x1, y1), answering[j, ])- sum(w * compound$prob(x, answering[j, ])))/sum(w * compound$prob(x, answering[j, ])) else
+            Psi_Point_answering[i,j] <- mu[j] * (prob(c(x1, y1), answering[j, ])- sum(w * compound$prob(x, answering[j, ])))/sum(w * compound$prob(x, answering[j, ]))
+
+        if (crt_type == "DPM")
+          Psi_Point_answering[i,j] <- mu[j] * compound$alpha/compound$npar * sum(diag(solve(FIM_x) %*% FIM_x1)) +
+          (1-compound$alpha) * (compound$prob(c(x1, y1), answering[, j])- min(compound$prob(x, answering[, j])))/min(compound$prob(x, answering[j, ]))
+      }
+      PsiAtEachPoint <- round(rowSums(Psi_Point_answering) - compound$alpha, 5)
+      PsiFunction <- PsiAtEachPoint[1]
+      return(-PsiFunction)
+    }
+    ## add later if you decide to find minimax compund optimal design
+    Psi_Mu <- NULL
+  }
   Psi_x_minus_minimax <- function(x1, mu, FIM,  x, w,  answering){
     -Psi_x(x1 = x1, mu = mu, FIM = FIM,  x = x, w = w,  answering = answering)
   }
@@ -1028,9 +1118,10 @@ minimax_inner <- function(formula,
                           localdes = NULL,
                           npar,
                           robpars = list(),
-                          crt_type = c("D", "multiple"),
+                          crt_type = c("D", "multiple", "DPA"),
                           multipars = list(),
                           plot_3d = c("lattice", "rgl"),
+                          compound = list(prob = NULL, alpha = NULL, npar = NULL),
                           ...) {
   time1 <- proc.time()
   #   param_set: a matrix that denotes the fixed values for the parameters and is required when inner_space = "discrete". Each row of the matrix is the values of the components of the parameters,
@@ -1112,8 +1203,8 @@ minimax_inner <- function(formula,
 
 
   #if (type == "minimax" || type == "standardized" || type == "locally" ){
-  temp1 <- create_criterion_minimax(FIM = fimfunc2, type = type[1], localdes = localdes_par, lp = lp, up = up, npar = npar, robpars = robpars, crt_type = crt_type[1], multipars = multipars)
-  temp2 <- create_criterion_minimax(FIM = fimfunc_sens, type = type[1], localdes = localdes_par, lp = lp, up = up, npar = npar, robpars = robpars, crt_type = crt_type[1], multipars = multipars)
+  temp1 <- create_criterion_minimax(FIM = fimfunc2, type = type[1], localdes = localdes_par, lp = lp, up = up, npar = npar, robpars = robpars, crt_type = crt_type[1], multipars = multipars, compound = compound)
+  temp2 <- create_criterion_minimax(FIM = fimfunc_sens, type = type[1], localdes = localdes_par, lp = lp, up = up, npar = npar, robpars = robpars, crt_type = crt_type[1], multipars = multipars, compound = compound)
   #}
   #if (type == "robust")
   #  create_criterion_ave(FIM, prob, parset)
@@ -1125,7 +1216,7 @@ minimax_inner <- function(formula,
   initial <- check_initial(initial = initial, ld = temp3$ld, ud = temp3$ud)
   #############################################################################*
   # Psi_Mu, Psi_x, Psi_xy
-  Psi_funcs <- create_psy_minimax(crt_type = crt_type, multipars = multipars)
+  Psi_funcs <- create_psy_minimax(crt_type = crt_type, multipars = multipars, compound = compound)
 
   #############################################################################*
   ## making the arg list
@@ -1142,7 +1233,8 @@ minimax_inner <- function(formula,
               lp_nofixed = temp1$lp_nofixed, up_nofixed = temp1$up_nofixed,
               robpars = robpars, Psi_funcs = Psi_funcs,
               plot_3d = plot_3d[1],
-              localdes = localdes)
+              localdes = localdes,
+              compound = compound)
   if (type == "locally")
     arg$inipars <- lp
 
@@ -1188,10 +1280,11 @@ sensminimax_inner <- function (formula,
                                crt.minimax.control = list(),
                                calculate_criterion = TRUE,
                                robpars = list(),
-                               crt_type = c("D", "multiple"),
+                               crt_type = c("D", "multiple", "DPA"),
                                multipars = list(),
                                silent = FALSE,
                                calculate_sens = TRUE,
+                               compound = list(prob = NULL, alpha = NULL, npar = NULL),
                                ...){
   #calculate_sens is for when you call the function from plot and only
   #want to calculate the criterion!
@@ -1254,7 +1347,7 @@ sensminimax_inner <- function (formula,
     crt.minimax.control$inner_space <- "continuous"
     if (type == "minimax" || type == "standardized" || type == "locally" )
       checkminimax <- check_minimax_args(lp = lp, up = up, type = type[1], localdes = localdes, localdes_par = localdes_par, parvars = parvars, fimfunc = fimfunc, crt.minimax.control = crt.minimax.control)
-    temp2 <- create_criterion_minimax(FIM = fimfunc_sens, type = type[1], localdes = localdes_par, lp = lp, up = up, npar = npar, robpars = robpars, crt_type = crt_type[1], multipars = multipars)
+    temp2 <- create_criterion_minimax(FIM = fimfunc_sens, type = type[1], localdes = localdes_par, lp = lp, up = up, npar = npar, robpars = robpars, crt_type = crt_type[1], multipars = multipars, compound = compound)
 
     ###############################################################################*
     # required for finding the answering set for verification
@@ -1273,7 +1366,7 @@ sensminimax_inner <- function (formula,
     }
     ######################################################################*
     # Psi_Mu, Psi_x, Psi_xy
-    Psi_funcs <- create_psy_minimax(crt_type = crt_type, multipars = multipars)
+    Psi_funcs <- create_psy_minimax(crt_type = crt_type, multipars = multipars, compound = compound)
     varlist <-list(fixedpar = temp2$fixedpar, fixedpar_id = temp2$fixedpar_id,
                    npred =  length(lx),
                    crfunc_sens = temp2$crfunc,
@@ -1285,6 +1378,7 @@ sensminimax_inner <- function (formula,
                    npar = npar,
                    Psi_x_minus_minimax = Psi_funcs$Psi_x_minus_minimax, Psi_x = Psi_funcs$Psi_x,
                    Psi_xy = Psi_funcs$Psi_xy, Psi_Mu = Psi_funcs$Psi_Mu)
+    browser()
   }
   if (calledfrom[1] ==  "iter")
     if (is.null(varlist) || is.null(npar))

@@ -462,7 +462,6 @@ locally <- function(formula, predvars, parvars, family = gaussian(),
   }
   if (k < length(inipars))
     stop("\"k\" must be larger than the number of parameters to avoid singularity")
-
   # if (is.null(npar))
   #   npar <- length(inipars)
   ## you must provide npar
@@ -1023,6 +1022,11 @@ sensmultiple <- function (dose, w,
                            silent = silent)
   return(out)
 }
+
+######################################################################################################*
+######################################################################################################*
+
+
 
 ######################################################################################################*
 ######################################################################################################*
@@ -1594,7 +1598,7 @@ iterate.minimax <- function(object, iter){
     counts <- out$counts
     return(list(minima =minima, counts = counts))
   }
-  optim_func <- create_optim_func(type = type, lp_nofixed = arg$lp_nofixed, up_nofixed = arg$lp_nofixed,
+  optim_func <- create_optim_func(type = type, lp_nofixed = arg$lp_nofixed, up_nofixed = arg$up_nofixed,
                                   crt.minimax.control = crt.minimax.control,
                                   discrete_set = discrete_set, robpars = arg$robpars,
                                   inipars = arg$inipars)

@@ -158,7 +158,7 @@ fim <- function(x, w, param, grad, mu, family, paramvectorized = FALSE){
   if (!paramvectorized){
     grad_des <- attributes(grad(points = x, param = param))$gradient
     mu_des <- mu(points = x, param = param)
-    var_des   <- family$variance(mu_des)
+    var_des <- family$variance(mu_des)
 
     #grad_des_w <- grad_des %*% diag(x=sqrt(w/var_des), nrow = length(w))
     #FIM_mat <- grad_des_w %*% t(grad_des_w)
@@ -171,7 +171,6 @@ fim <- function(x, w, param, grad, mu, family, paramvectorized = FALSE){
   }else{
     npoint <- length(w)
     x_mat <- matrix(x, nrow = npoint)
-
     ## a list as length of length(w)
     # each row of [[i]] is the gradient with respect to each value of the set of parameters
     # the number of rows is each value of the parameters
@@ -197,6 +196,11 @@ fim <- function(x, w, param, grad, mu, family, paramvectorized = FALSE){
 
   ## it is a list if design FIM matrices when  the param is a matrix (vectorized with respect to the parameters)
   # or a design matrix when param is vector
+
+  # for (i in 1:dim(param)[1]){
+  #   if(any(abs(FIM_logistic(x = x, w=w,param[i, ]) - FIM_mat[[i]]) > 1e-12))
+  #     browser()
+  # }
   return(FIM_mat)
 }
 ######################################################################################################*
