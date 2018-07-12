@@ -89,7 +89,6 @@
 #' @example inst/examples/bayes_examples.R
 #' @seealso \code{\link{sensbayes}}
 #' @importFrom cubature hcubature
-#' @importFrom mvQuad createNIGrid quadrature rescale
 #' @importFrom stats gaussian
 #' @importFrom stats binomial
 bayes <- function(formula,
@@ -103,8 +102,6 @@ bayes <- function(formula,
                   k,
                   fimfunc = NULL,
                   ICA.control =  list(),
-                  crt_method = c("cubature", "quadrature"),
-                  sens_method = c("cubature", "quadrature"),
                   crt.bayes.control = list(),
                   sens.bayes.control = list(),
                   initial = NULL,
@@ -127,8 +124,8 @@ bayes <- function(formula,
                          lx = lx,
                          ux = ux,
                          type = "D",
-                         crt_method = crt_method[1],
-                         sens_method = sens_method[1],
+                         crt_method = "cubature",
+                         sens_method = "cubature",
                          iter = iter,
                          k = k,
                          npar = npar,
@@ -190,8 +187,6 @@ sensbayes <- function(formula,
                       lx, ux,
                       fimfunc = NULL,
                       prior = list(),
-                      crt_method = c("cubature", "quadrature"),
-                      sens_method = c("cubature", "quadrature"),
                       sens.bayes.control = list(),
                       crt.bayes.control = list(),
                       plot_3d = c("lattice", "rgl"),
@@ -209,6 +204,7 @@ sensbayes <- function(formula,
   }
   if (!is.numeric(npar))
     stop("'npar' is the number of parameters and must be numeric")
+  browser()
   output <- sensbayes_inner (formula = formula,
                              predvars = predvars, parvars = parvars,
                              family =  family,
@@ -224,8 +220,8 @@ sensbayes <- function(formula,
                              const = list(ui = NULL, ci = NULL, coef = NULL),
                              compound = list(prob = NULL, alpha = NULL),
                              varlist = list(),
-                             crt_method = crt_method[1],
-                             sens_method = sens_method[1],
+                             crt_method = "cubature",
+                             sens_method = "cubature",
                              calledfrom = "sensfuncs",
                              npar = npar,
                              calculate_criterion = calculate_criterion,
@@ -237,9 +233,9 @@ sensbayes <- function(formula,
 #' @title   Bayesian Compound DP-Optimal Designs
 #'
 #' @description
-#'  Finds compound Bayesian DP-optimal designs that meets the dual goal of the parameter estimation and
+#'  Finds compound Bayesian DP-optimal designs that meet the dual goal of parameter estimation and
 #'   increasing the probability of a particular outcome in a binary response  model.
-#'A compound Bayesian DP-optimal design maximizes  the product of the efficiencies of a design \eqn{\xi} with respect to D- and average P-optimality, weighted by a pre-defined mixing constant
+#'A compound Bayesian DP-optimal design maximizes  the product of the Bayesian efficiencies of a design \eqn{\xi} with respect to D- and average P-optimality, weighted by a pre-defined mixing constant
 #' \eqn{0 \leq \alpha \leq 1}{0 <= \alpha <= 1}.
 #'
 #' @inheritParams bayes
@@ -258,14 +254,14 @@ sensbayes <- function(formula,
 #'    \eqn{\pi(\theta)} is a user-given  prior distribution for the vector of unknown parameters \eqn{\theta} and
 #'    \eqn{p(x_i, \theta)} is the ith probability of success
 #' given by \eqn{x_i} in a binary response model.
-#'   A Bayesian compound DP-optimal criterion maximizes over \eqn{\Xi}
+#'   A  compound Bayesian DP-optimal design maximizes over \eqn{\Xi}
 #' \deqn{\int_{\theta \in \Theta} \frac{\alpha}{q}\log|M(\xi, \theta)| + (1- \alpha)
 #'\log \left( \sum_{i=1}^k w_ip(x_i, \theta) \right) \pi(\theta) d\theta.}{
 #' integration over \Theta \alpha/q log|M(\xi, \theta)| + (1- \alpha)
 #'log ( \sum w_i p(x_i, \theta)) \pi(\theta) d\theta.
 #'}
 #'
-#' Use \code{\link{plot}} function to verify the general equivalence theorem for the output design.
+#' Use \code{\link{plot}} function to verify the general equivalence theorem for the output design or change \code{checkfreq} in \code{\link{ICA.control}}..
 #'
 #' To increase the speed of the algorithm, change the tuning parameters \code{tol} and \code{maxEval} via the
 #' argument \code{crt.bayes.control}.
@@ -288,8 +284,6 @@ bayescomp <- function(formula,
                       k,
                       fimfunc = NULL,
                       ICA.control =  list(),
-                      crt_method = c("cubature", "quadrature"),
-                      sens_method = c("cubature", "quadrature"),
                       crt.bayes.control = list(),
                       sens.bayes.control = list(),
                       initial = NULL,
@@ -321,8 +315,8 @@ bayescomp <- function(formula,
                          lx = lx,
                          ux = ux,
                          type = "DPA",
-                         crt_method = crt_method[1],
-                         sens_method = sens_method[1],
+                         crt_method = "cubature",
+                         sens_method = "cubature",
                          iter = iter,
                          k = k,
                          npar = npar,
@@ -344,7 +338,7 @@ bayescomp <- function(formula,
 ######################################################################################################*
 #'@title Verifying Optimality of Bayesian Compound DP-optimal Designs
 #'@description
-#'  This function plot the sensitivity (derivative) function given an approximate (continuous) design and calculate the efficiency lower bound (ELB) for Bayesian D-optimal designs.
+#'  This function plot the sensitivity (derivative) function given an approximate (continuous) design and calculate the efficiency lower bound (ELB) for Bayesian DP-optimal designs.
 #' Let \eqn{\boldsymbol{x}}{x} belongs to \eqn{\chi} that denotes the design space.
 #' Based on the general equivalence theorem, generally, a design \eqn{\xi^*}{\xi*} is optimal if and only if the value of its sensitivity (derivative) function
 #' be non-positive for all \eqn{\boldsymbol{x}}{x} in \eqn{\chi} and it only reaches zero
@@ -379,8 +373,6 @@ sensbayescomp <- function(formula,
                           fimfunc = NULL,
                           prior = list(),
                           prob, alpha,
-                          crt_method = c("cubature", "quadrature"),
-                          sens_method = c("cubature", "quadrature"),
                           sens.bayes.control = list(),
                           crt.bayes.control = list(),
                           plot_3d = c("lattice", "rgl"),
@@ -416,8 +408,8 @@ sensbayescomp <- function(formula,
                              sens.bayes.control = sens.bayes.control,
                              crt.bayes.control = crt.bayes.control,
                              type = "DPA",
-                             crt_method = crt_method[1],
-                             sens_method = sens_method[1],
+                             crt_method = "cubature",
+                             sens_method = "cubature",
                              plot_3d = plot_3d[1],
                              plot_sens =  plot_sens,
                              const = list(ui = NULL, ci = NULL, coef = NULL),
@@ -431,42 +423,82 @@ sensbayescomp <- function(formula,
 }
 ######################################################################################################*
 ######################################################################################################*
-# beff <- function(fim, xopt, wopt, x, w, prior, control = list()){
-#   ### relative efficieny of x with respect to xopt
-#   if (is.null(control$tol))
-#     control$tol = 1e-5
-#   if (is.null(control$maxEval))
-#     control$maxEval = 50000
-#   truncated_standard <- cubature::hcubature(f = function(param) prior$fn(t(param)),
-#                                             lowerLimit = prior$lower,
-#                                             upperLimit = prior$upper,
-#                                             vectorInterface = TRUE)$integral
-#
-#
-#   cr_integrand <- function(param, x, w){
-#     bcrfunc1 <- apply(param, 2,
-#                       FUN = function(col_par)-det2(fim(x = x, w = w, param = col_par), logarithm = TRUE)) * prior$fn(t(param))
-#     dim(bcrfunc1) <- c(1, length(bcrfunc1))
-#     return(bcrfunc1)
-#   }
-#
-#
-#   crfunc_bayesian_D  <- function(x, w, maxEval, tol) {
-#     out <- cubature::hcubature(f = cr_integrand, lowerLimit = prior$lower, upperLimit = prior$upper,
-#                                vectorInterface = TRUE,
-#                                x = x, w = w, tol = control$tol, maxEval = control$maxEval)
-#
-#     val <- out$integral
-#     return(list(val = val, fneval = out$functionEvaluations))
-#   }
-#
-#   releff<- crfunc_bayesian_D(x = xopt, w = wopt, maxEval = control$maxEval, tol = control$tol)$val/
-#     crfunc_bayesian_D(x = x, w = w, maxEval = control$maxEval, tol = control$tol)$val
-#   return(releff)
-# }
 ######################################################################################################*
 ######################################################################################################*
+LLTMbayes <- function(prior,
+                      Q = NULL,
+                      lx,
+                      ux,
+                      iter,
+                      k,
+                      ICA.control =  list(),
+                      crt.bayes.control = list(),
+                      sens.bayes.control = list(),
+                      initial = NULL,
+                      npar = NULL,
+                      plot_3d = c("lattice", "rgl")
+                      ,c) {
 
+  npar <- prior$npar
+  if (!is.numeric(npar))
+    stop("'npar' is the number of parameters and must be numeric")
+  # browser()
+  # i <- 1
+  # for (i in 1:nrow(Q)){
+  #   pars <- paste("b", 0:(ncol(W)-1), sep = "")
+  #   exp_char <- paste("exp(theta", paste(" - ", pars, "*", Q[i,], collapse = ""), ")", sep =  "")
+  #   exp_char <- paste("formula1 = ~ ", exp_char, "/(1 + ", exp_char, ")", sep = "")
+  #   formula1 <- NA # to not prduce warning in rcmd check
+  #   eval(parse(text = exp_char))
+  #
+  #   paravars <- pars
+  #   predvars <- "theta"
+  #   cre
+  # }
+
+  #
+  #   formula = ~ exp(theta - b1 * x1 - b0)/(1 + exp(theta - b1 * x1 - b0))
+  #   parvars = c("b0", "b1")
+  #   predvars = c("theta", "x1")
+  Q <- cbind(1, Q)
+  wlambda <- function(x, w, param, q){
+    # x is the design points that are the values for the ability parameters
+    #qparam <- apply(q * param, 2, sum)
+    qparam <- -sum(q * param)
+    # argument of lambda for each param vector
+    arg_lambda <- sapply(1:length(qparam), function(k)sum(w * exp(qparam[k] + x)/(1 + exp(qparam[k] + x))^2))
+  }
+
+  fim_LLTM <- function(x, w, param){
+    Qmat <- Q
+    nitems <- nrow(Qmat)
+    param <- c(c, param)
+    lmat <- lapply(1:nitems, FUN = function(j)wlambda(q = Qmat[j, ],x = x, w = w, param = param) * Qmat[j, ] %*% t(Qmat[j, ]))
+    lmat <- apply(simplify2array(lmat), c(1, 2), sum)
+    return(lmat)
+  }
+
+  output <-  bayes_inner(fimfunc =   fim_LLTM,
+                         lx = lx,
+                         ux = ux,
+                         type = "D",
+                         method = "cubature",
+                         iter = iter,
+                         k = k,
+                         npar = npar,
+                         prior = prior,
+                         compound = list(prob = NULL, alpha = NULL),
+                         multiple.control = list(),
+                         ICA.control =  ICA.control,
+                         crt.bayes.control = crt.bayes.control,
+                         sens.bayes.control = sens.bayes.control,
+                         initial = initial,
+                         plot_3d = plot_3d[1],
+                         const = list(ui = NULL, ci = NULL, coef = NULL))
+
+
+  return(output)
+}
 ######################################################################################################*
 ######################################################################################################*
 
@@ -500,8 +532,6 @@ sensbayescomp <- function(formula,
 plot.bayes <- function(x, iter = NULL,
                        sensitivity = TRUE,
                        calculate_criterion = FALSE,
-                       sens_method = NULL,
-                       crt_method = NULL,
                        sens.bayes.control = list(),
                        crt.bayes.control = list(),
                        silent = FALSE,
@@ -525,17 +555,6 @@ plot.bayes <- function(x, iter = NULL,
   if (totaliter > length(x$evol))
     stop("'iter' is larger than the maximum number of iterations")
 
-  if (is.null(sens_method))
-    sens_method  <- arg$sens_method
-  if (is.null(crt_method))
-    crt_method  <- arg$crt_method
-
-  if (!crt_method %in% c("cubature", "quadrature"))
-    stop("'crt_method' can only be 'cubature' or 'quadrature'")
-  if (!sens_method %in% c("cubature", "quadrature"))
-    stop("'sens_method' can only be 'cubature' or 'quadrature'")
-
-
   if (calculate_criterion || sensitivity){
     if (is.null(sens.bayes.control)){
       sens.bayes.control <- arg$sens.bayes.control}
@@ -554,7 +573,7 @@ plot.bayes <- function(x, iter = NULL,
                                    truncated_standard = arg$truncated_standard,
                                    const = arg$const, sens.bayes.control = sens.bayes.control,
                                    compound = arg$compound,
-                                   method = sens_method[1])
+                                   method = "cubature")
       Psi_x_bayes  <- temp_psi$Psi_x_bayes
       Psi_xy_bayes  <- temp_psi$Psi_xy_bayes
     }
@@ -579,8 +598,8 @@ plot.bayes <- function(x, iter = NULL,
                                 plot_3d = plot_3d[1],
                                 plot_sens = TRUE,
                                 const = arg$const,
-                                sens_method = sens_method,
-                                crt_method = crt_method,
+                                sens_method = arg$sens_method,
+                                crt_method = arg$crt_method,
                                 compound = arg$compound,### you dont need compund here
                                 varlist = sens_varlist,
                                 calledfrom =  "plot",
@@ -760,8 +779,6 @@ print.sensbayes <- function(x,  ...){
 sens.bayes.control <- function(cubature = list(tol = 1e-6,
                                                maxEval = 100000,
                                                absError = 0),
-                               quadrature = list(type = NULL, level = NULL,
-                                                 ndConstruction = "product"),
                                x0 = NULL,
                                optslist = list(stopval = -Inf,
                                                algorithm = "NLOPT_GN_DIRECT_L",
@@ -786,7 +803,6 @@ sens.bayes.control <- function(cubature = list(tol = 1e-6,
   if (is.null(optslist$maxeval))
     outlist$maxeval <- 2000
 
-
   ### cubature part
   cubature_out <- do.call(control.cubature, cubature)
   if (is.null(cubature$tol))
@@ -796,15 +812,7 @@ sens.bayes.control <- function(cubature = list(tol = 1e-6,
   if (is.null(cubature$absError))
     cubature_out$absError <- 0
 
-  quadrature_out <- do.call(control.quadrature, quadrature)
-  if (is.null(quadrature$type))
-    quadrature_out$type <- "GLe"
-  if (is.null(quadrature$level))
-    quadrature_out$level <- 8
-  if (is.null(quadrature$lndConstruction))
-    quadrature_out$ndConstruction <- "product"
-
-  return(list(x0 = x0, optslist = outlist, cubature = cubature_out, quadrature = quadrature_out))
+  return(list(x0 = x0, optslist = outlist, cubature = cubature_out))
 }
 ######################################################################################################*
 ######################################################################################################*
@@ -816,7 +824,6 @@ sens.bayes.control <- function(cubature = list(tol = 1e-6,
 #'  the accuracy of the results.
 #'  The user should find a trade-off between accuracy and speed for his/her example.
 #' @param cubature A list that will be passed to the arguments of the function \code{\link[cubature]{hcubature}}. See 'Details'.
-#' @param quadrature A list that will be passed to the arguments of the function \code{\link[createNIGrid]{mvQuad}}. See 'Details'.
 #' @details
 #' \code{cubature} is a list that its components will be passed to the function \code{\link[cubature]{hcubature}}.
 #' Its components are:
@@ -836,9 +843,7 @@ sens.bayes.control <- function(cubature = list(tol = 1e-6,
 #' crt.bayes.control(cubature = list(tol = 1e-4))
 #' @return A list of control parameters for \code{\link[cubature]{hcubature}}.
 #' @export
-crt.bayes.control <- function(cubature = list(tol = 1e-5, maxEval = 50000, absError = 0),
-                              quadrature = list(type = NULL, level = NULL,
-                                                ndConstruction = "product")){
+crt.bayes.control <- function(cubature = list(tol = 1e-5, maxEval = 50000, absError = 0)){
   cubature_out <- do.call(control.cubature, cubature)
   if (is.null(cubature$tol))
     cubature_out$tol <- 1e-5
@@ -846,18 +851,10 @@ crt.bayes.control <- function(cubature = list(tol = 1e-5, maxEval = 50000, absEr
     cubature_out$maxEval <- 50000
   if (is.null(cubature$absError))
     cubature_out$absError <- 0
-  ## quadrature
-
-  quadrature_out <- do.call(control.quadrature, quadrature)
-  if (is.null(quadrature$type))
-    quadrature_out$type <- "GLe"
-  if (is.null(quadrature$level))
-    quadrature_out$level <- 8
-  if (is.null(quadrature$lndConstruction))
-    quadrature_out$ndConstruction <- "product"
 
 
-  return(list(cubature = cubature_out, quadrature = quadrature_out))
+
+  return(list(cubature = cubature_out))
 }
 ######################################################################################################*
 ######################################################################################################*
@@ -876,7 +873,7 @@ crt.bayes.control <- function(cubature = list(tol = 1e-5, maxEval = 50000, absEr
 
 
 # @importFrom nloptr directL you have it in minimax
-# @importFrom mvQuad createNIGrid
+#@importFrom mvQuad createNIGrid
 ## @importFrom sn dmsn dmst dmsc
 # @importFrom LaplacesDemon dmvl dmvt dmvc dmvpe
 iterate.bayes <- function(object, iter){

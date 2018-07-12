@@ -2,20 +2,21 @@
 % Please edit documentation in R/RcppExports.R
 \name{FIM_sig_emax}
 \alias{FIM_sig_emax}
-\title{Fisher information matrix for the sigmoid emax model.}
+\title{Fisher Information Matrix for the Sigmoid Emax Model}
 \usage{
 FIM_sig_emax(x, w, param)
 }
 \arguments{
-\item{x}{vector of design points.}
+\item{x}{Vector of design points.}
 
-\item{w}{vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w)} should be 1.}
+\item{w}{Vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w) = 1}.}
 
-\item{param}{vector of model parameters \eqn{(\theta_1, \theta_2,\theta_3, \theta_4)}{(\theta1, \theta2,\theta3, \theta4)}.}
+\item{param}{Vector of values for the model parameters \code{c(b1, b2, b3, b4)}.
+The mean of response variable is .}
 }
 \value{
-Fisher information matrix of design.
+Fisher information matrix.
 }
 \description{
-The mean of response variable is .
+It provides the cpp function for FIM for the model \code{~b1+(b2-b1)*(x^b4)/(x^b4+b3^b4)}
 }

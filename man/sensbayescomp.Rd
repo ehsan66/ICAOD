@@ -64,7 +64,7 @@ If not specified truly, the sensitivity (derivative) plot may be shifted below t
 \item{silent}{Do not print anything? Defaults to \code{FALSE}.}
 }
 \description{
-This function plot the sensitivity (derivative) function given an approximate (continuous) design and calculate the efficiency lower bound (ELB) for Bayesian D-optimal designs.
+This function plot the sensitivity (derivative) function given an approximate (continuous) design and calculate the efficiency lower bound (ELB) for Bayesian DP-optimal designs.
 Let \eqn{\boldsymbol{x}}{x} belongs to \eqn{\chi} that denotes the design space.
 Based on the general equivalence theorem, generally, a design \eqn{\xi^*}{\xi*} is optimal if and only if the value of its sensitivity (derivative) function
 be non-positive for all \eqn{\boldsymbol{x}}{x} in \eqn{\chi} and it only reaches zero

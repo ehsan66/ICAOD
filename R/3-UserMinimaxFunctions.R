@@ -1025,8 +1025,240 @@ sensmultiple <- function (dose, w,
 
 ######################################################################################################*
 ######################################################################################################*
+#' @title Locally DP-Optimal Designs
+#' @inheritParams minimax
+#' @inheritParams bayescomp
+#' @param inipars Vector. Initial values for the unknown parameters. It will be passed to the information matrix and also probability function.
+#' @param k Number of design points. When \code{alpha = 0}, then \code{k} can be less than the number of parameters.
+#' @param npar Number of model parameters.  Used when \code{fimfunc} is given instead of \code{formula} to specify the number of model parameters.
+#'   If not given, the sensitivity plot may be shifted below the y-axis. When \code{NULL}, it will be set here to \code{length(inipars)}.
+#' @export
+#' @inherit locally return
+#' @description
+#'  Finds compound locally DP-optimal designs that meet the dual goal of parameter estimation and
+#'   increasing the probability of a particular outcome in a binary response model.
+#'A compound locally DP-optimal design maximizes  the product of the efficiencies of a design \eqn{\xi} with respect to D- and average P-optimality, weighted by a pre-defined mixing constant
+#' \eqn{0 \leq \alpha \leq 1}{0 <= \alpha <= 1}.
+#' @details
+#' Let \eqn{\Xi} be the space of all  approximate designs with
+#'  \eqn{k} design points (support points) at \eqn{x_1, x_2, ...,  x_k}
+#'   from  design space \eqn{\chi} with
+#'  corresponding weights  \eqn{w_1,... ,w_k}.
+#'  Let \eqn{M(\xi, \theta)} be the Fisher information
+#'   matrix (FIM) of a \eqn{k-}point design \eqn{\xi},
+#'    \eqn{\theta_0} is a user-given vector of initial estimates for the  unknown parameters \eqn{\theta} and
+#'    \eqn{p(x_i, \theta)} is the ith probability of success
+#' given by \eqn{x_i} in a binary response model.
+#'   A compound locally DP-optimal design   maximizes over \eqn{\Xi}
+#' \deqn{ \frac{\alpha}{q}\log|M(\xi, \theta_0)| + (1- \alpha)
+#'\log \left( \sum_{i=1}^k w_ip(x_i, \theta_0) \right).}{
+#'  \alpha/q log|M(\xi, \theta_0)| + (1- \alpha)
+#'log ( \sum w_i p(x_i, \theta_0)).
+#'}
+#'
+#' Use \code{\link{plot}} function to verify the general equivalence theorem for the output design or change \code{checkfreq} in \code{\link{ICA.control}}.
+#'
+#' One can adjust the tuning parameters in \code{\link{ICA.control}} to set a stopping rule
+#' based on the general equivalence theorem. See "Examples" in \code{\link{locally}}.
+#' @example inst/examples/locallycomp_examples.R
+#' @references  McGree, J. M., Eccleston, J. A., and Duffull, S. B. (2008). Compound optimal design criteria for nonlinear models. Journal of Biopharmaceutical Statistics, 18(4), 646-661.
+locallycomp <- function(formula, predvars, parvars, family = gaussian(),
+                        lx, ux,
+                        alpha,
+                        prob,
+                        iter, k,
+                        inipars,
+                        fimfunc = NULL,
+                        ICA.control = list(),
+                        sens.minimax.control = list(),
+                        initial = NULL,
+                        npar = length(inipars),
+                        plot_3d = c("lattice", "rgl")){
 
 
+  if (!missing(formula)){
+    if (length(inipars) != length(parvars))
+      stop("lengtb of 'inipars' is not equal to the length of 'parvars'")
+  }
+  if (alpha !=0)
+    if (k < length(inipars))
+      stop("\"k\" must be larger than the number of parameters to avoid singularity")
+
+  if (is.formula(prob)){
+    prob <- create_prob(prob = prob, predvars = predvars, parvars = parvars)
+  }else{
+    if (!is.function(prob))
+      stop("'prob' must be either a function or a formula")
+    if (!formalArgs(prob) %in% c("x", "param"))
+      stop("arguments of 'prob' must be 'x' and 'param'")
+  }
+  out <- minimax_inner(formula = formula,
+                       predvars = predvars, parvars = parvars, family = family,
+                       lx = lx, ux = ux, lp = inipars, up = inipars, iter = iter, k = k,
+                       fimfunc = fimfunc,
+                       ICA.control = ICA.control,
+                       sens.minimax.control = sens.minimax.control,
+                       crt.minimax.control = list(inner_space = "locally"),
+                       type = "locally",
+                       initial = initial,
+                       localdes = NULL,
+                       npar = npar,
+                       robpars = list(),
+                       crt_type = "DPA",
+                       multipars = list(),
+                       plot_3d = plot_3d[1],
+                       compound = list(prob = prob, alpha = alpha, npar = npar))
+
+  return(out)
+}
+######################################################################################################*
+######################################################################################################*
+#' @title Verifying Optimality of Locally DP-optimal Designs
+#' @inheritParams sensminimax
+#' @inheritParams sensbayescomp
+#' @param inipars Vector. Initial values for the unknown parameters.
+#' Must match \code{parvars} or argument \code{param} of the function provided in \code{fimfunc}.
+#' @param npar Number of model parameters.  Used when \code{fimfunc} is given instead of \code{formula} to specify the number of model parameters.
+#'   If not given, the sensitivity plot may be shifted below the y-axis. When \code{NULL}, it will be set here to \code{length(inipars)}.
+#'@description
+#'  This function plot the sensitivity (derivative) function given an approximate (continuous) design and calculate the efficiency lower bound (ELB) for locally DP-optimal designs.
+#' Let \eqn{\boldsymbol{x}}{x} belongs to \eqn{\chi} that denotes the design space.
+#' Based on the general equivalence theorem, generally, a design \eqn{\xi^*}{\xi*} is optimal if and only if the value of its sensitivity (derivative) function
+#' be non-positive for all \eqn{\boldsymbol{x}}{x} in \eqn{\chi} and it only reaches zero
+#' when \eqn{\boldsymbol{x}}{x} belong to the support of \eqn{\xi^*}{\xi*} (be equal to one of the design point).
+#' Therefore, the user can look at the sensitivity plot and the ELB and decide whether the
+#' design is optimal or close enough to the true optimal design (ELB tells us that without knowing the latter).
+#'
+#' @export
+#' @inherit senslocally return
+#' @example inst/examples/senslocallycomp_examples.R
+#' @references  McGree, J. M., Eccleston, J. A., and Duffull, S. B. (2008). Compound optimal design criteria for nonlinear models. Journal of Biopharmaceutical Statistics, 18(4), 646-661.
+senslocallycomp <- function (formula, predvars, parvars,
+                             alpha,
+                             prob,
+                             family = gaussian(),
+                             x, w,
+                             lx, ux,
+                             inipars,
+                             fimfunc = NULL,
+                             sens.minimax.control = list(),
+                             calculate_criterion = TRUE,
+                             plot_3d = c("lattice", "rgl"),
+                             plot_sens = TRUE,
+                             npar = length(inipars),
+                             silent = FALSE){
+
+
+  if (!missing(formula)){
+    if (length(inipars) != length(parvars))
+      stop("lengtb of 'inipars' is not equal to the length of 'parvars'")
+  }
+
+  if (is.formula(prob)){
+    prob <- create_prob(prob = prob, predvars = predvars, parvars = parvars)
+  }else{
+    if (!is.function(prob))
+      stop("'prob' must be either a function or a formula")
+    if (!formalArgs(prob) %in% c("x", "param"))
+      stop("arguments of 'prob' must be 'x' and 'param'")
+  }
+
+
+  out <- sensminimax_inner(formula = formula, predvars = predvars, parvars = parvars,
+                           family = family,
+                           x = x, w = w,
+                           lx = lx, ux = ux,
+                           lp = inipars, up = inipars,
+                           fimfunc = fimfunc,
+                           sens.minimax.control =  sens.minimax.control,
+                           type = "locally",
+                           localdes = NULL,
+                           plot_3d = plot_3d[1],
+                           plot_sens = plot_sens,
+                           varlist = list(),
+                           calledfrom = "sensfuncs",
+                           npar = npar,
+                           crt.minimax.control = list(inner_space = "locally"),
+                           calculate_criterion = calculate_criterion,
+                           robpars = list(),
+                           crt_type = "DPA",
+                           multipars = list(),
+                           silent = silent,
+                           compound = list(prob = prob, alpha = alpha, npar = npar))
+  return(out)
+}
+######################################################################################################*
+######################################################################################################*
+LLTMlocally <- function(Q,
+                        lx, ux,  iter, k,
+                        inipars,
+                        ICA.control = list(),
+                        sens.minimax.control = list(),
+                        initial = NULL,
+                        npar = length(inipars),
+                        plot_3d = c("lattice", "rgl"),
+                        c){
+
+
+  if (length(inipars) != dim(Q)[2])
+    stop("length of 'inipars must be equal to the number of columns of 'Q' matrix")
+
+  Q <- cbind(1, Q)
+  wlambda <- function(x, w, param, q){
+    # x is the design points that are the values for the ability parameters
+    #qparam <- apply(q * param, 2, sum)
+    qparam <- -sum(q * param)
+    # argument of lambda for each param vector
+    arg_lambda <- sapply(1:length(qparam), function(k)sum(w * exp(qparam[k] + x)/(1 + exp(qparam[k] + x))^2))
+  }
+
+  fim_LLTM <- function(x, w, param){
+    Qmat <- Q
+    nitems <- nrow(Qmat)
+    param <- c(c, param)
+    lmat <- lapply(1:nitems, FUN = function(j)wlambda(q = Qmat[j, ],x = x, w = w, param = param) * Qmat[j, ] %*% t(Qmat[j, ]))
+
+    if (length(param)==1)
+      lmat <- matrix(sum(simplify2array(lmat)), nrow = 1) else
+        lmat <- apply(simplify2array(lmat), c(1, 2), sum)
+
+    return(lmat)
+  }
+
+  # fim_LLTM2 <- function(x, w, param){
+  #   Qmat <- Q
+  #   nitems <- nrow(Qmat)
+  #
+  #   if (length(x) != nitems)
+  #     stop("number of design points should be equal to the number of weights")
+  #   lmat <- lapply(1:nitems, FUN = function(j)w[j]*exp(x[j] - sum(Qmat[j, ] * param))/(1+exp(x[j] - sum(Qmat[j, ] * param)))^2 * Qmat[j, ] %*% t(Qmat[j, ]))
+  #
+  #   #lmat <- lapply(1:nitems, FUN = function(j)wlambda(q = Qmat[j, ],x = x, w = w, param = param) * Qmat[j, ] %*% t(Qmat[j, ]))
+  #   # argument of lambda for each param vector
+  #
+  #   if (length(param)==1)
+  #     lmat <- matrix(sum(simplify2array(lmat)), nrow = 1) else
+  #       lmat <- apply(simplify2array(lmat), c(1, 2), sum)
+  #
+  #   return(lmat)
+  # }
+
+  out <- minimax_inner(fimfunc = fim_LLTM,
+                       lx = lx, ux = ux, lp = inipars, up = inipars, iter = iter, k = k,
+                       ICA.control = ICA.control,
+                       sens.minimax.control = sens.minimax.control,
+                       crt.minimax.control = list(inner_space = "locally"),
+                       type = "locally",
+                       initial = initial,
+                       localdes = NULL,
+                       npar = npar,
+                       robpars = list(),
+                       crt_type = "D",
+                       multipars = list(),
+                       plot_3d = plot_3d[1])
+
+  return(out)
+}
 
 ######################################################################################################*
 ######################################################################################################*

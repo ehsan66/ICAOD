@@ -647,7 +647,7 @@ create_criterion_minimax <- function(FIM, type, lp, up, localdes = NULL, npar, r
         w <- q[w_ind]
 
         bcrfunc1 <- -(compound$alpha/4  * det2(FIM(x = x, w = w, param = param),logarithm= TRUE) +
-                        (1 -compound$alpha) * log(min(prob(x = x, param = param))))
+                        (1 -compound$alpha) * log(min(compound$prob(x = x, param = param))))
         return(bcrfunc1)
       }
 
@@ -877,8 +877,8 @@ create_psy_minimax <- function(crt_type, multipars, compound){
         if (crt_type == "DPA")
           if (compound$alpha != 0)
             Psi_Point_answering[i,j] <- mu[j] * compound$alpha/compound$npar * sum(diag(solve(FIM_x) %*% FIM_x1)) +
-          (1-compound$alpha) * (prob(x1, answering[j, ])- sum(w * compound$prob(x, answering[j, ])))/sum(w * compound$prob(x, answering[j, ])) else
-            Psi_Point_answering[i,j] <- mu[j] * (prob(x1, answering[j, ])- sum(w * compound$prob(x, answering[j, ])))/sum(w * compound$prob(x, answering[j, ]))
+          (1-compound$alpha) * (compound$prob(x1, answering[j, ])- sum(w * compound$prob(x, answering[j, ])))/sum(w * compound$prob(x, answering[j, ])) else
+            Psi_Point_answering[i,j] <- mu[j] * (compound$prob(x1, answering[j, ])- sum(w * compound$prob(x, answering[j, ])))/sum(w * compound$prob(x, answering[j, ]))
         if (crt_type == "DPM")
           Psi_Point_answering[i,j] <- mu[j] * compound$alpha/compound$npar * sum(diag(solve(FIM_x) %*% FIM_x1)) +
           (1-compound$alpha) * (compound$prob(x1, answering[, j])- min(compound$prob(x, answering[, j])))/min(compound$prob(x, answering[j, ]))
@@ -904,8 +904,8 @@ create_psy_minimax <- function(crt_type, multipars, compound){
         FIM_x1 <- FIM(x = c(x1, y1), w = 1, par = answering[j, ])
         if (crt_type == "DPA")
           if (compound$alpha != 0)
-            Psi_Point_answering[i,j] <- mu[j] * compound$alpha/compound$npar * sum(diag(solve(FIM_x) %*% FIM_x1)) + (1-compound$alpha) * (prob(c(x1, y1), answering[j, ])- sum(w * compound$prob(x, answering[j, ])))/sum(w * compound$prob(x, answering[j, ])) else
-            Psi_Point_answering[i,j] <- mu[j] * (prob(c(x1, y1), answering[j, ])- sum(w * compound$prob(x, answering[j, ])))/sum(w * compound$prob(x, answering[j, ]))
+            Psi_Point_answering[i,j] <- mu[j] * compound$alpha/compound$npar * sum(diag(solve(FIM_x) %*% FIM_x1)) + (1-compound$alpha) * (compound$prob(c(x1, y1), answering[j, ])- sum(w * compound$prob(x, answering[j, ])))/sum(w * compound$prob(x, answering[j, ])) else
+            Psi_Point_answering[i,j] <- mu[j] * (compound$prob(c(x1, y1), answering[j, ])- sum(w * compound$prob(x, answering[j, ])))/sum(w * compound$prob(x, answering[j, ]))
 
         if (crt_type == "DPM")
           Psi_Point_answering[i,j] <- mu[j] * compound$alpha/compound$npar * sum(diag(solve(FIM_x) %*% FIM_x1)) +
@@ -915,7 +915,7 @@ create_psy_minimax <- function(crt_type, multipars, compound){
       PsiFunction <- PsiAtEachPoint[1]
       return(-PsiFunction)
     }
-    ## add later if you decide to find minimax compund optimal design
+    ## add later if you decide to find minimax compound optimal design
     Psi_Mu <- NULL
   }
   Psi_x_minus_minimax <- function(x1, mu, FIM,  x, w,  answering){
@@ -1378,7 +1378,7 @@ sensminimax_inner <- function (formula,
                    npar = npar,
                    Psi_x_minus_minimax = Psi_funcs$Psi_x_minus_minimax, Psi_x = Psi_funcs$Psi_x,
                    Psi_xy = Psi_funcs$Psi_xy, Psi_Mu = Psi_funcs$Psi_Mu)
-    browser()
+
   }
   if (calledfrom[1] ==  "iter")
     if (is.null(varlist) || is.null(npar))

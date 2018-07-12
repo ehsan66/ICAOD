@@ -117,7 +117,7 @@ create_criterion_bayes <- function(FIM, type, prior, compound, const, multiple, 
     if (type == "DPM")
 
       cr_integrand_DPM <- function(param, x, w){
-        bcrfunc1 <- apply(param, 2,  FUN = function(col_par)-(compound$alpha/4 * det2(FIM(x = x, w = w, param = col_par), logarithm = TRUE) + (1 -compound$alpha) * log(min(prob(x = x, param = col_par))))) * prior_func(t(param))
+        bcrfunc1 <- apply(param, 2,  FUN = function(col_par)-(compound$alpha/4 * det2(FIM(x = x, w = w, param = col_par), logarithm = TRUE) + (1 -compound$alpha) * log(min(compound$prob(x = x, param = col_par))))) * prior_func(t(param))
         if(any(is.infinite(bcrfunc1)))
           bcrfunc1[(is.infinite(bcrfunc1))] <- 0
         dim(bcrfunc1) <- c(1, length(bcrfunc1))
@@ -198,53 +198,54 @@ create_criterion_bayes <- function(FIM, type, prior, compound, const, multiple, 
   #############################################################################*
   ###quadrature methods
   if (method == "quadrature"){
-    if (type == "D"){
-      cr_integrand_D<- function(param, x, w){
-        bcrfunc1 <- -1 * sapply(FIM(x = x, w = w, param = param), det2, logarithm= TRUE) * prior_func(param)
-        if (dim(param)[1] != dim(bcrfunc1)[1])
-          bcrfunc1 <- t(bcrfunc1)
-        return(bcrfunc1)
-      }
-    }
-
-
-    if (type == "DPA")
-      cr_integrand_DPA <- function(param, x, w){
-        bcrfunc1 <- -(compound$alpha/4  * sapply(FIM(x = x, w = w, param = param), det2, logarithm= TRUE) +
-                        apply(param, 1, function(row_par)(1 -compound$alpha) * log(sum(w * compound$prob(x = x, param = row_par))))) * prior_func(param)
-        if(any(is.infinite(bcrfunc1)))
-          bcrfunc1[(is.infinite(bcrfunc1))] <- 0
-        if (dim(param)[1] != dim(bcrfunc1)[1])
-          bcrfunc1 <- t(bcrfunc1)
-        return(bcrfunc1)
-      }
-
-    cr_integrand <- switch(type, "D" = cr_integrand_D, "DPA" = cr_integrand_DPA, "DPM" = cr_integrand_DPM, "D_LLTM" = crt_LLTM)
-
-
-    nw <- createNIGrid(dim = npar, type = crt.bayes.control$quadrature$type,
-                       level = crt.bayes.control$quadrature$level,
-                       ndConstruction = crt.bayes.control$quadrature$ndConstruction)
-    rescale(nw, domain = matrix(c(prior$lower, prior$upper), ncol=2))
-
-    crfunc_bayesian  <- function(q, npred) {
-      lq <- length(q) # q is the design points and weights
-      pieces <- lq / (npred + 1)
-      x_ind <- 1:(npred * pieces)
-      w_ind <- (x_ind[length(x_ind)] + 1):lq
-      x <- q[x_ind]
-      w <- q[w_ind]
-
-      out <- quadrature(f = cr_integrand, grid = nw, x=x, w=w)
-
-      if (out == Inf || is.nan(out) || out == -Inf )
-        out <- 1e+20
-      if (const$use)
-        val <- out + 5000 * (sum(w) - 1)^2 + const$pen_func(x) else
-          val <- out + 5000 * (sum(w) - 1)^2
-      return(list(val = val, fneval = dim(nw$nodes)[1]))
-    }
-    crfunc <- crfunc_bayesian
+    # if (type == "D"){
+    #   cr_integrand_D<- function(param, x, w){
+    #     bcrfunc1 <- -1 * sapply(FIM(x = x, w = w, param = param), det2, logarithm= TRUE) * prior_func(param)
+    #     if (dim(param)[1] != dim(bcrfunc1)[1])
+    #       bcrfunc1 <- t(bcrfunc1)
+    #     return(bcrfunc1)
+    #   }
+    # }
+    #
+    #
+    # if (type == "DPA")
+    #   cr_integrand_DPA <- function(param, x, w){
+    #     bcrfunc1 <- -(compound$alpha/4  * sapply(FIM(x = x, w = w, param = param), det2, logarithm= TRUE) +
+    #                     apply(param, 1, function(row_par)(1 -compound$alpha) * log(sum(w * compound$prob(x = x, param = row_par))))) * prior_func(param)
+    #     if(any(is.infinite(bcrfunc1)))
+    #       bcrfunc1[(is.infinite(bcrfunc1))] <- 0
+    #     if (dim(param)[1] != dim(bcrfunc1)[1])
+    #       bcrfunc1 <- t(bcrfunc1)
+    #     return(bcrfunc1)
+    #   }
+    #
+    # cr_integrand <- switch(type, "D" = cr_integrand_D, "DPA" = cr_integrand_DPA, "DPM" = cr_integrand_DPM, "D_LLTM" = crt_LLTM)
+    #
+    #
+    # nw <- createNIGrid(dim = npar, type = crt.bayes.control$quadrature$type,
+    #                    level = crt.bayes.control$quadrature$level,
+    #                    ndConstruction = crt.bayes.control$quadrature$ndConstruction)
+    # rescale(nw, domain = matrix(c(prior$lower, prior$upper), ncol=2))
+    #
+    # crfunc_bayesian  <- function(q, npred) {
+    #   lq <- length(q) # q is the design points and weights
+    #   pieces <- lq / (npred + 1)
+    #   x_ind <- 1:(npred * pieces)
+    #   w_ind <- (x_ind[length(x_ind)] + 1):lq
+    #   x <- q[x_ind]
+    #   w <- q[w_ind]
+    #
+    #   out <- quadrature(f = cr_integrand, grid = nw, x=x, w=w)
+    #
+    #   if (out == Inf || is.nan(out) || out == -Inf )
+    #     out <- 1e+20
+    #   if (const$use)
+    #     val <- out + 5000 * (sum(w) - 1)^2 + const$pen_func(x) else
+    #       val <- out + 5000 * (sum(w) - 1)^2
+    #   return(list(val = val, fneval = dim(nw$nodes)[1]))
+    # }
+    # crfunc <- crfunc_bayesian
+    stop("quadrature methods are not implemented yet!")
   }
 
 
@@ -422,8 +423,8 @@ create_Psi_bayes <- function(type, prior, FIM, lp, up, npar, truncated_standard,
         M <- sapply(1:nitems, FUN = function(j) M_i(q = Q[j, ],x = x, w = w, param = param))
         M_x <- sapply(1:nitems, FUN = function(j) M_i(q = Q[j, ],x = x1, w = 1, param = param))
 
-
-        deriv_integrand <- sapply(1:ncol(param), FUN = function(j)sum(diag(solve(FIM_x[[j]])%*%FIM_x1[[j]]))) * prior_func(t(param))
+        deriv_integrand <- sapply(1:ncol(param), FUN = function(j)sum(diag(solve(M[[j]])%*%M_x[[j]]))) * prior_func(t(param))
+        #deriv_integrand <- sapply(1:ncol(param), FUN = function(j)sum(diag(solve(FIM_x[[j]])%*%FIM_x1[[j]]))) * prior_func(t(param))
 
         # deriv_integrand <- apply(param, 2, FUN = function(col_par)sum(diag(solve(FIM(x = x, w = w, par = col_par)) %*%
         #                                                                       FIM(x = x1, w = 1, par = col_par)))) * prior_func(t(param))
@@ -456,65 +457,65 @@ create_Psi_bayes <- function(type, prior, FIM, lp, up, npar, truncated_standard,
   }
   if (method == "quadrature"){
 
-    nw <- createNIGrid(dim = npar, type = sens.bayes.control$quadrature$type,
-                       level = sens.bayes.control$quadrature$level,
-                       ndConstruction = sens.bayes.control$quadrature$ndConstruction)
-    rescale(nw, domain = matrix(c(prior$lower, prior$upper), ncol=2))
+    # nw <- createNIGrid(dim = npar, type = sens.bayes.control$quadrature$type,
+    #                    level = sens.bayes.control$quadrature$level,
+    #                    ndConstruction = sens.bayes.control$quadrature$ndConstruction)
+    # rescale(nw, domain = matrix(c(prior$lower, prior$upper), ncol=2))
+    #
+    # if (type == "D"){
+    #   Psi_x_integrand_D  <- function(x1, param,  FIM, x, w, prior_func){
+    #
+    #     ## param: as matrix: EACH row is one set of parameters
+    #     ## return a matrix with 1 * length(param) dimension
+    #     FIM_x <- FIM(x = x, w = w, par = param)
+    #     FIM_x1 <- FIM(x = x1, w = 1, par = param)
+    #     deriv_integrand <- sapply(1:nrow(param), FUN = function(j)sum(diag(solve(FIM_x[[j]])%*%FIM_x1[[j]]))) * prior_func(param)
+    #
+    #     if (dim(param)[1] != dim(deriv_integrand)[1])
+    #       deriv_integrand  <- t(deriv_integrand)
+    #     return(deriv_integrand)
+    #   }
+    #
+    #   Psi_x_bayes <- function(x1,  x, w){
+    #     ## here x is a degenerate design that putt all its mass on x.
+    #     # x1 is one point
+    #     # This function is required to check the equivalence theorem by ploting and calculating the D-efficiency lower bound
+    #     # prior funtion
+    #     # FIM: is the Fisher information matrix
+    #     # x: vector of design points
+    #     # w: vector of design weights
+    #     # we have npar here beacuse in optimization we shorten lp and up when the lower bound and uper bound is the same
+    #     # truncated_standard: required for the prior because the prior is truncated
+    #
+    #     out <- quadrature(f = Psi_x_integrand_D, grid = nw, x=x, w=w, FIM = FIM, x1 = x1, prior_func = prior$fn)
+    #     return(out/truncated_standard  - npar)
+    #   }
+    #
+    #   Psi_xy_bayes <- function(x1, y1, x, w){
+    #
+    #
+    #     ## this function is used for plotting the equivalence theorem equation for model with two independent variables.
+    #     # the function is exactly as psy_x_bayes, only with two arument.
+    #     # 'Point' will be handeled by the FIM function of the models itself, see 'common_mulit_dimensional_design.R'
+    #     ## WARNINGS: do not change names of 'x1' and 'y1' here unless you check the vectorize in 'PlotPsi_x'
+    #     ## there we have 'Vectorize(FUN = Psi_x, vectorize.args=c("x1", "y1"))'
+    #
+    #     ## here x is a degenerate design that putt all its mass on x.
+    #     # x1 is one point
+    #     # This function is required to check the equivalence theorem by ploting and also find the D-efficiency lower bound
+    #     # prior funtion
+    #     # FIM: is the Fisher information matrix
+    #     # x: vector of design points
+    #     # w: vector of design weights
+    #     # we have npar here beacuse in optimization we shorten lp and up when the lower bound and uper bound is the same
+    #     # truncated_standard: required for the prior because the prior is truncated
+    #     browser()
+    #     out <- quadrature(f = Psi_x_integrand_D, grid = nw, x=x, w=w, FIM = FIM,  x1 = c(x1, y1), prior_func = prior$fn)
+    #     return(-(out/truncated_standard  - npar))
+    #   }
+    # }
 
-    if (type == "D"){
-      Psi_x_integrand_D  <- function(x1, param,  FIM, x, w, prior_func){
-
-        ## param: as matrix: EACH row is one set of parameters
-        ## return a matrix with 1 * length(param) dimension
-        FIM_x <- FIM(x = x, w = w, par = param)
-        FIM_x1 <- FIM(x = x1, w = 1, par = param)
-        deriv_integrand <- sapply(1:nrow(param), FUN = function(j)sum(diag(solve(FIM_x[[j]])%*%FIM_x1[[j]]))) * prior_func(param)
-
-        if (dim(param)[1] != dim(deriv_integrand)[1])
-          deriv_integrand  <- t(deriv_integrand)
-        return(deriv_integrand)
-      }
-
-      Psi_x_bayes <- function(x1,  x, w){
-        ## here x is a degenerate design that putt all its mass on x.
-        # x1 is one point
-        # This function is required to check the equivalence theorem by ploting and calculating the D-efficiency lower bound
-        # prior funtion
-        # FIM: is the Fisher information matrix
-        # x: vector of design points
-        # w: vector of design weights
-        # we have npar here beacuse in optimization we shorten lp and up when the lower bound and uper bound is the same
-        # truncated_standard: required for the prior because the prior is truncated
-
-        out <- quadrature(f = Psi_x_integrand_D, grid = nw, x=x, w=w, FIM = FIM, x1 = x1, prior_func = prior$fn)
-        return(out/truncated_standard  - npar)
-      }
-
-      Psi_xy_bayes <- function(x1, y1, x, w){
-
-
-        ## this function is used for plotting the equivalence theorem equation for model with two independent variables.
-        # the function is exactly as psy_x_bayes, only with two arument.
-        # 'Point' will be handeled by the FIM function of the models itself, see 'common_mulit_dimensional_design.R'
-        ## WARNINGS: do not change names of 'x1' and 'y1' here unless you check the vectorize in 'PlotPsi_x'
-        ## there we have 'Vectorize(FUN = Psi_x, vectorize.args=c("x1", "y1"))'
-
-        ## here x is a degenerate design that putt all its mass on x.
-        # x1 is one point
-        # This function is required to check the equivalence theorem by ploting and also find the D-efficiency lower bound
-        # prior funtion
-        # FIM: is the Fisher information matrix
-        # x: vector of design points
-        # w: vector of design weights
-        # we have npar here beacuse in optimization we shorten lp and up when the lower bound and uper bound is the same
-        # truncated_standard: required for the prior because the prior is truncated
-        browser()
-        out <- quadrature(f = Psi_x_integrand_D, grid = nw, x=x, w=w, FIM = FIM,  x1 = c(x1, y1), prior_func = prior$fn)
-        return(-(out/truncated_standard  - npar))
-      }
-    }
-
-
+  stop("not implemented yet!")
 
   }
   return(list(Psi_xy_bayes = Psi_xy_bayes, Psi_x_bayes = Psi_x_bayes))

@@ -95,9 +95,9 @@ an object of class \code{bayes} that is a list including three sub-lists:
  \code{nfeval} does not count the function evaluations from checking the general equivalence theorem.
 }
 \description{
-Finds compound Bayesian DP-optimal designs that meets the dual goal of the parameter estimation and
+Finds compound Bayesian DP-optimal designs that meet the dual goal of parameter estimation and
   increasing the probability of a particular outcome in a binary response  model.
-A compound Bayesian DP-optimal design maximizes  the product of the efficiencies of a design \eqn{\xi} with respect to D- and average P-optimality, weighted by a pre-defined mixing constant
+A compound Bayesian DP-optimal design maximizes  the product of the Bayesian efficiencies of a design \eqn{\xi} with respect to D- and average P-optimality, weighted by a pre-defined mixing constant
 \eqn{0 \leq \alpha \leq 1}{0 <= \alpha <= 1}.
 }
 \details{
@@ -110,14 +110,14 @@ Let \eqn{\Xi} be the space of all  approximate designs with
    \eqn{\pi(\theta)} is a user-given  prior distribution for the vector of unknown parameters \eqn{\theta} and
    \eqn{p(x_i, \theta)} is the ith probability of success
 given by \eqn{x_i} in a binary response model.
-  A Bayesian compound DP-optimal criterion maximizes over \eqn{\Xi}
+  A  compound Bayesian DP-optimal design maximizes over \eqn{\Xi}
 \deqn{\int_{\theta \in \Theta} \frac{\alpha}{q}\log|M(\xi, \theta)| + (1- \alpha)
 \log \left( \sum_{i=1}^k w_ip(x_i, \theta) \right) \pi(\theta) d\theta.}{
 integration over \Theta \alpha/q log|M(\xi, \theta)| + (1- \alpha)
 log ( \sum w_i p(x_i, \theta)) \pi(\theta) d\theta.
 }
 
-Use \code{\link{plot}} function to verify the general equivalence theorem for the output design.
+Use \code{\link{plot}} function to verify the general equivalence theorem for the output design or change \code{checkfreq} in \code{\link{ICA.control}}..
 
 To increase the speed of the algorithm, change the tuning parameters \code{tol} and \code{maxEval} via the
 argument \code{crt.bayes.control}.

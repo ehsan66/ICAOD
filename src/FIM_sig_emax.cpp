@@ -3,17 +3,14 @@
 
 
 
-//Adaptive Designs for Dose-Finding Studies Based on Sigmoid E max Model Draglin et al. 2007 equation 2a to 2h
-
 // roxygen
-//' Fisher information matrix for the sigmoid emax model.
-//'
+//' @title Fisher Information Matrix for the Sigmoid Emax Model
+//' @description It provides the cpp function for FIM for the model \code{~b1+(b2-b1)*(x^b4)/(x^b4+b3^b4)}
+//' @param x Vector of design points.
+//' @param w Vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w) = 1}.
+//' @param param Vector of values for the model parameters \code{c(b1, b2, b3, b4)}.
 //' The mean of response variable is .
-//' @param x vector of design points.
-//' @param w vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w)} should be 1.
-//' @param param vector of model parameters \eqn{(\theta_1, \theta_2,\theta_3, \theta_4)}{(\theta1, \theta2,\theta3, \theta4)}.
-//' @return Fisher information matrix of design.
-//' @family FIM
+//' @return Fisher information matrix.
 //' @export
 // [[Rcpp::export]]
 
