@@ -21,3 +21,7 @@ README.md
 NEWS.html
 .DS_Store
 cran-comments.md
+inst/.gitignore
+inst/.DS_Store
+src/.DS_Store
+R/.gitignore
