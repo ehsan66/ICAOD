@@ -12,24 +12,29 @@ ub <- c(1, 1)
 
 
 # set checkfreq = Inf to ask for equivalence theorem at final step.
-res.0 <- locallycomp(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4, family = binomial(),
-                     prob = prob4.4, lx = lb, ux = ub, alpha = 0, k = 1, inipars = p, iter = 10,
+res.0 <- locallycomp(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4,
+                     family = binomial(), prob = prob4.4, lx = lb, ux = ub,
+                     alpha = 0, k = 1, inipars = p, iter = 10,
                      ICA.control = ICA.control(checkfreq = Inf))
 
 \dontrun{
-res.25 <- locallycomp(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4, family = binomial(),
-                      prob = prob4.4, lx = lb, ux = ub, alpha = .25, k = 4, inipars = p, iter = 350,
+res.25 <- locallycomp(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4,
+                      family = binomial(), prob = prob4.4, lx = lb, ux = ub,
+                      alpha = .25, k = 4, inipars = p, iter = 350,
                       ICA.control = ICA.control(checkfreq = Inf))
 
-res.5 <- locallycomp(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4, family = binomial(),
-                     prob = prob4.4, lx = lb, ux = ub, alpha = .5, k = 4, inipars = p, iter = 350,
+res.5 <- locallycomp(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4,
+                     family = binomial(), prob = prob4.4, lx = lb, ux = ub,
+                     alpha = .5, k = 4, inipars = p, iter = 350,
                      ICA.control = ICA.control(checkfreq = Inf))
-res.75 <- locallycomp(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4, family = binomial(),
-                      prob = prob4.4, lx = lb, ux = ub, alpha = .75, k = 4, inipars = p, iter = 350,
+res.75 <- locallycomp(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4,
+                      family = binomial(), prob = prob4.4, lx = lb, ux = ub,
+                      alpha = .75, k = 4, inipars = p, iter = 350,
                       ICA.control = ICA.control(checkfreq = Inf))
 
-res.1 <- locallycomp(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4, family = binomial(),
-                     prob = prob4.4, lx = lb, ux = ub, alpha = 1, k = 4, inipars = p, iter = 350,
+res.1 <- locallycomp(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4,
+                     family = binomial(), prob = prob4.4, lx = lb, ux = ub,
+                     alpha = 1, k = 4, inipars = p, iter = 350,
                      ICA.control = ICA.control(checkfreq = Inf))
 
 #### computing the D-efficiency

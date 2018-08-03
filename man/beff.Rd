@@ -112,7 +112,8 @@ des4.1[[6]]$prior <- skewnormal(xi = c(0, 1),
                                 Omega = matrix(c(1, -0.17, -0.17, .5), nrow = 2),
                                 alpha = c(-1, 0), lower =  c(-3, .1), upper = c(3, 2))
 
-## now we want to find the relative efficiency of all Bayesian optimal designs assuming different priors (6 * 6)
+## now we want to find the relative efficiency of
+## all Bayesian optimal designs assuming different priors (6 * 6)
 eff4.1 <- matrix(NA, 6, 6)
 colnames(eff4.1) <- c("uni", "t", "norm1", "norm2", "skew1", "skew2")
 rownames(eff4.1) <- colnames(eff4.1)
@@ -128,8 +129,9 @@ for (i in 1:6)
                          wopt = des4.1[[i]]$w,
                          x = des4.1[[j]]$x,
                          w = des4.1[[j]]$w)
-# For example the first row represents Bayesian D-efficiencies of different Bayesian optimal design found assuming
-# different priors with respect to the Bayesian D-optimal design found under uniform prior distribution.
+# For example the first row represents Bayesian D-efficiencies of different
+# Bayesian optimal design found assuming different priors with respect to
+# the Bayesian D-optimal design found under uniform prior distribution.
 }
 
 #############################

@@ -101,31 +101,31 @@ wopt <- c(0.198, 0.618, 0.084, 0.1)
 
 # We want to verfiy the optimality of the optimal design by the general equivalence theorem.
 
-senslocallycomp(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4, family = binomial(),
-                prob = prob4.4, lx = lb, ux = ub, alpha = .25, inipars = p,
-                x = xopt, w = wopt)
+senslocallycomp(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4,
+                family = binomial(), prob = prob4.4, lx = lb, ux = ub,
+                alpha = .25, inipars = p, x = xopt, w = wopt)
 
 \dontrun{
 # is this design also optimal when alpha = .3
 
-senslocallycomp(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4, family = binomial(),
-                prob = prob4.4, lx = lb, ux = ub, alpha = .3, inipars = p,
-                x = xopt, w = wopt)
+senslocallycomp(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4,
+                family = binomial(), prob = prob4.4, lx = lb, ux = ub,
+                alpha = .3, inipars = p, x = xopt, w = wopt)
 
 # when alpha = .3
-senslocallycomp(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4, family = binomial(),
-                prob = prob4.4, lx = lb, ux = ub, alpha = .5, inipars = p,
-                x = xopt, w = wopt)
+senslocallycomp(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4,
+                family = binomial(), prob = prob4.4, lx = lb, ux = ub,
+                alpha = .5, inipars = p, x = xopt, w = wopt)
 # when alpha = .8
-senslocallycomp(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4, family = binomial(),
-                prob = prob4.4, lx = lb, ux = ub, alpha = .8, inipars = p,
-                x = xopt, w = wopt)
+senslocallycomp(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4,
+                family = binomial(), prob = prob4.4, lx = lb, ux = ub,
+                alpha = .8, inipars = p, x = xopt, w = wopt)
 
 
 # when alpha = .9
-senslocallycomp(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4, family = binomial(),
-                prob = prob4.4, lx = lb, ux = ub, alpha = .9, inipars = p,
-                x = xopt, w = wopt)
+senslocallycomp(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4,
+                family = binomial(), prob = prob4.4, lx = lb, ux = ub,
+                alpha = .9, inipars = p, x = xopt, w = wopt)
 
 ## As can be seen, the design looses efficiency as alpha increases.
 }
