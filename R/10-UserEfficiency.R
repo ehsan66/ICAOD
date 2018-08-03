@@ -2,16 +2,16 @@
 ######################################################################################################*
 #'@title Calculates Relative Efficiency for Locally Optimal Designs
 #' @description
-#' Given a vector of initial estimates for the parameters, this function calculates the D-and PA efficiency of a design \eqn{\xi_1} with respect to a design \eqn{\xi_2}.
+#' Given a vector of initial estimates for the parameters, this function calculates the D-and PA- efficiency of a design \eqn{\xi_1} with respect to a design \eqn{\xi_2}.
 #' Usually, \eqn{\xi_2} is an  optimal design.
 #'
 #'
 #' @details For a known \eqn{\theta_0}, relative D-efficiency is
-#' \deqn{exp(\frac{log|M(\xi, \theta_0)| - log|M(\xi*, \theta_0)|}{npar})}{
+#' \deqn{exp(\frac{log|M(\xi, \theta_0)| - log|M(\xi^*, \theta_0)|}{npar})}{
 #' exp\{(log|M(\xi, \theta_0)| - log|M(\xi*, \theta_0)|)/npar\}.}
 #' The relative P-efficiency is
-#' \deqn{\exp(\log(\sum_{i=1}^k w^*_ip(x^*_i, \theta_0) - \log(\sum_{i=1}^k w_ip(x_i, \theta_0))}{
-#' exp(log (\sum w*_i p(x*_i, \theta_0) - log(\sum w_i p(x_i, \theta_0)),
+#' \deqn{\exp(\log(\sum_{i=1}^k w_ip(x_i, \theta_0) - \log(\sum_{i=1}^k w^*_ip(x^*_i, \theta_0))}{
+#' exp(log (\sum w_i p(x_i, \theta_0) - log(\sum w*_i p(x*_i, \theta_0)),
 #' }
 #' where \eqn{x^*}{x*} and \eqn{w^*}{w*} are the support points and the corresponding weights of the optimal design, respectively.
 #'
@@ -26,9 +26,9 @@
 #'
 #' @export
 #' @inheritParams locallycomp
-#' @param x Vector of design (support) points. See 'Details' of \code{\link{leff}}.
+#' @param x Vector of design (support) points of \eqn{\xi_1}. See 'Details' of \code{\link{leff}}.
 #' @param w Vector of corresponding design weights for \code{x}.
-#' @param xopt Vector of design (support) points of optimal design. Similar to \code{x}.
+#' @param xopt Vector of design (support) points of optimal design (\eqn{\xi_2}). Similar to \code{x}.
 #' @param wopt Vector of corresponding design weights for \code{xopt}.
 #' @param type A character. \code{"D"} denotes D-efficiency and \code{"PA"} denotes average P-efficiency.
 #' @return A value between 0 and 1.
@@ -100,20 +100,14 @@ leff <- function(formula,
 ######################################################################################################*
 #' @title  Calculates Relative Efficiency for Bayesian Optimal Designs
 #' @description
-#' Given a prior distribution for the parameters, this function calculates the Bayesian D-and PA efficiency of a design \eqn{\xi_1} with respect to a design \eqn{\xi_2}.
+#' Given a prior distribution for the parameters, this function calculates the Bayesian D-and PA- efficiency of a design \eqn{\xi_1} with respect to a design \eqn{\xi_2}.
 #' Usually, \eqn{\xi_2} is an optimal design.
 #' This function is especially useful for investigating the robustness of Bayesian optimal designs under different prior distributions (See 'Examples').
 #'
 #' @inheritParams leff
 #' @inheritParams bayes
-#' @details For a known prior \eqn{\pi(\theta}), relative Bayesian D-efficiency is
-#' \deqn{exp(\frac{log|M(\xi, \theta_0)| - log|M(\xi*, \theta_0)|}{npar})}{
-#' exp\{(log|M(\xi, \theta_0)| - log|M(\xi*, \theta_0)|)/npar\}.}
-#' The relative P-efficiency is
-#' \deqn{\exp(\log(\sum_{i=1}^k w^*_ip(x^*_i, \theta_0) - \log(\sum_{i=1}^k w_ip(x_i, \theta_0))}{
-#' exp(log (\sum w*_i p(x*_i, \theta_0) - log(\sum w_i p(x_i, \theta_0)),
-#' }
-#' where \eqn{x^*}{x*} and \eqn{w^*}{w*} are the support points and the corresponding weights of the optimal design, respectively.
+#' @details
+#' See Masoudi et al. (2018) for formula details (the paper is under review and will be updated as soon as accepted).
 #'
 #'  The argument  \code{x} is the vector of design points.
 #'  For design points with more than one dimension,

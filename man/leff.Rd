@@ -29,11 +29,11 @@ This can be a family function, a call to a family function or a character string
 
 \item{fimfunc}{A function. Returns the FIM as a \code{matrix}. Required when \code{formula} is missing. See 'Details' of \code{\link{minimax}}.}
 
-\item{xopt}{Vector of design (support) points of optimal design. Similar to \code{x}.}
+\item{xopt}{Vector of design (support) points of optimal design (\eqn{\xi_2}). Similar to \code{x}.}
 
 \item{wopt}{Vector of corresponding design weights for \code{xopt}.}
 
-\item{x}{Vector of design (support) points. See 'Details' of \code{\link{leff}}.}
+\item{x}{Vector of design (support) points of \eqn{\xi_1}. See 'Details' of \code{\link{leff}}.}
 
 \item{w}{Vector of corresponding design weights for \code{x}.}
 
@@ -48,16 +48,16 @@ See 'Examples'.}
 A value between 0 and 1.
 }
 \description{
-Given a vector of initial estimates for the parameters, this function calculates the D-and PA efficiency of a design \eqn{\xi_1} with respect to a design \eqn{\xi_2}.
+Given a vector of initial estimates for the parameters, this function calculates the D-and PA- efficiency of a design \eqn{\xi_1} with respect to a design \eqn{\xi_2}.
 Usually, \eqn{\xi_2} is an  optimal design.
 }
 \details{
 For a known \eqn{\theta_0}, relative D-efficiency is
-\deqn{exp(\frac{log|M(\xi, \theta_0)| - log|M(\xi*, \theta_0)|}{npar})}{
+\deqn{exp(\frac{log|M(\xi, \theta_0)| - log|M(\xi^*, \theta_0)|}{npar})}{
 exp\{(log|M(\xi, \theta_0)| - log|M(\xi*, \theta_0)|)/npar\}.}
 The relative P-efficiency is
-\deqn{\exp(\log(\sum_{i=1}^k w^*_ip(x^*_i, \theta_0) - \log(\sum_{i=1}^k w_ip(x_i, \theta_0))}{
-exp(log (\sum w*_i p(x*_i, \theta_0) - log(\sum w_i p(x_i, \theta_0)),
+\deqn{\exp(\log(\sum_{i=1}^k w_ip(x_i, \theta_0) - \log(\sum_{i=1}^k w^*_ip(x^*_i, \theta_0))}{
+exp(log (\sum w_i p(x_i, \theta_0) - log(\sum w*_i p(x*_i, \theta_0)),
 }
 where \eqn{x^*}{x*} and \eqn{w^*}{w*} are the support points and the corresponding weights of the optimal design, respectively.
 
