@@ -204,7 +204,6 @@ sensbayes <- function(formula,
   }
   if (!is.numeric(npar))
     stop("'npar' is the number of parameters and must be numeric")
-  browser()
   output <- sensbayes_inner (formula = formula,
                              predvars = predvars, parvars = parvars,
                              family =  family,
@@ -776,8 +775,8 @@ print.sensbayes <- function(x,  ...){
 #' sens.bayes.control()
 #' sens.bayes.control(cubature = list(maxEval = 50000))
 #' sens.bayes.control(optslist = list(maxeval = 3000))
-sens.bayes.control <- function(cubature = list(tol = 1e-6,
-                                               maxEval = 100000,
+sens.bayes.control <- function(cubature = list(tol = 1e-5,
+                                               maxEval = 50000,
                                                absError = 0),
                                x0 = NULL,
                                optslist = list(stopval = -Inf,

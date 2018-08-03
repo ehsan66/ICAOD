@@ -958,8 +958,8 @@ PlotPsi_x <- function(x, w, lower, upper, Psi_x, FIM, answering, mu, plot_3d  = 
   }
 
   if(length(lower) == 2){
-    xlab_3d <- "S"
-    ylab_3d <- "I"
+    xlab_3d <- "x1"
+    ylab_3d <- "x2"
     len <- 40
     xPlot <- seq(lower[1],upper[1], length.out = len)
     yPlot <- seq(lower[2],upper[2], length.out = len)

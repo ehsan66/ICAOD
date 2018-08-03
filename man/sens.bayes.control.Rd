@@ -4,7 +4,7 @@
 \alias{sens.bayes.control}
 \title{Control Parameters for Verifying General Equivalence Theorem for Bayesian Designs}
 \usage{
-sens.bayes.control(cubature = list(tol = 1e-06, maxEval = 1e+05, absError =
+sens.bayes.control(cubature = list(tol = 1e-05, maxEval = 50000, absError =
   0), x0 = NULL, optslist = list(stopval = -Inf, algorithm =
   "NLOPT_GN_DIRECT_L", xtol_rel = 1e-08, ftol_rel = 1e-10, maxeval = 2000), ...)
 }
