@@ -1,6 +1,7 @@
-# ICAOD .9.6.7
+# ICAOD 0.9.7
 # A bug fixed in minimax designs
-# Adding efficiency functions
+# Adding efficiency functions beff and leff
+
 
 
 # ICAOD 0.9.6
