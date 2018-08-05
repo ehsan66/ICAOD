@@ -4,8 +4,8 @@
 \alias{senslocally}
 \title{Verifying Optimality of Locally D-optimal Designs}
 \usage{
-senslocally(formula, predvars, parvars, family = gaussian(), x, w, lx, ux,
-  inipars, fimfunc = NULL, sens.minimax.control = list(),
+senslocally(formula, predvars, parvars, family = gaussian(), x, w, lx,
+  ux, inipars, fimfunc = NULL, sens.minimax.control = list(),
   calculate_criterion = TRUE, plot_3d = c("lattice", "rgl"),
   plot_sens = TRUE, npar = length(inipars), silent = FALSE)
 }

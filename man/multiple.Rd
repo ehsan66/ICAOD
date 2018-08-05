@@ -4,9 +4,10 @@
 \alias{multiple}
 \title{Locally Multiple Objective Optimal Designs for the 4-Parameter Hill Model}
 \usage{
-multiple(minDose, maxDose, iter, k, inipars, Hill_par = FALSE, delta, lambda,
-  fimfunc = NULL, ICA.control = list(), sens.minimax.control = list(),
-  initial = NULL, tol = sqrt(.Machine$double.xmin))
+multiple(minDose, maxDose, iter, k, inipars, Hill_par = FALSE, delta,
+  lambda, fimfunc = NULL, ICA.control = list(),
+  sens.minimax.control = list(), initial = NULL,
+  tol = sqrt(.Machine$double.xmin))
 }
 \arguments{
 \item{minDose}{Minimum dose \eqn{D}. For the 4-parameter logistic model, i.e. when \code{Hill_par = FALSE}, it is the minimum of \eqn{log(D)}.}

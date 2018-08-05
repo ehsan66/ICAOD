@@ -4,9 +4,9 @@
 \alias{beff}
 \title{Calculates Relative Efficiency for Bayesian Optimal Designs}
 \usage{
-beff(formula, predvars, parvars, family = gaussian(), prior, fimfunc = NULL,
-  xopt, wopt, x, w, crt.bayes.control = list(), npar = NULL, type = c("D",
-  "PA"), prob = NULL)
+beff(formula, predvars, parvars, family = gaussian(), prior,
+  fimfunc = NULL, xopt, wopt, x, w, crt.bayes.control = list(),
+  npar = NULL, type = c("D", "PA"), prob = NULL)
 }
 \arguments{
 \item{formula}{A nonlinear model \code{\link[stats]{formula}}.

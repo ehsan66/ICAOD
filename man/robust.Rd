@@ -4,10 +4,10 @@
 \alias{robust}
 \title{Robust D-Optimal Designs}
 \usage{
-robust(formula, predvars, parvars, family = gaussian(), lx, ux, iter, k, prob,
-  parset, fimfunc = NULL, ICA.control = list(),
-  sens.minimax.control = list(), initial = NULL, npar = dim(parset)[2],
-  plot_3d = c("lattice", "rgl"))
+robust(formula, predvars, parvars, family = gaussian(), lx, ux, iter, k,
+  prob, parset, fimfunc = NULL, ICA.control = list(),
+  sens.minimax.control = list(), initial = NULL,
+  npar = dim(parset)[2], plot_3d = c("lattice", "rgl"))
 }
 \arguments{
 \item{formula}{A nonlinear model \code{\link[stats]{formula}}.

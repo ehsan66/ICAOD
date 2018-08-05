@@ -6,7 +6,8 @@
 \usage{
 sens.minimax.control(answering.set = list(n_seg = 6, merge_tol = 0.005),
   x0 = NULL, optslist = list(stopval = -Inf, algorithm =
-  "NLOPT_GN_DIRECT_L", xtol_rel = 1e-08, ftol_rel = 1e-10, maxeval = 6000), ...)
+  "NLOPT_GN_DIRECT_L", xtol_rel = 1e-08, ftol_rel = 1e-10, maxeval = 6000),
+  ...)
 }
 \arguments{
 \item{answering.set}{A list of control parameters to find the answering set in minimax and standardized maximin optimal design problems. See 'Details'.}

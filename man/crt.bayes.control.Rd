@@ -4,7 +4,8 @@
 \alias{crt.bayes.control}
 \title{Control Parameters for Evaluating Bayesian Criteria}
 \usage{
-crt.bayes.control(cubature = list(tol = 1e-05, maxEval = 50000, absError = 0))
+crt.bayes.control(cubature = list(tol = 1e-05, maxEval = 50000, absError
+  = 0))
 }
 \arguments{
 \item{cubature}{A list that will be passed to the arguments of the function \code{\link[cubature]{hcubature}}. See 'Details'.}

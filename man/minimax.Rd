@@ -4,8 +4,8 @@
 \alias{minimax}
 \title{Minimax and Standardized Maximin D-Optimal Designs}
 \usage{
-minimax(formula, predvars, parvars, family = gaussian(), lx, ux, lp, up, iter,
-  k, n.grid = 0, fimfunc = NULL, ICA.control = list(),
+minimax(formula, predvars, parvars, family = gaussian(), lx, ux, lp, up,
+  iter, k, n.grid = 0, fimfunc = NULL, ICA.control = list(),
   sens.minimax.control = list(), crt.minimax.control = list(),
   standardized = FALSE, initial = NULL, localdes = NULL,
   npar = length(lp), plot_3d = c("lattice", "rgl"))

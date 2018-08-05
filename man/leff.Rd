@@ -4,9 +4,9 @@
 \alias{leff}
 \title{Calculates Relative Efficiency for Locally Optimal Designs}
 \usage{
-leff(formula, predvars, parvars, family = gaussian(), inipars, type = c("D",
-  "PA"), fimfunc = NULL, xopt, wopt, x, w, npar = length(inipars),
-  prob = NULL)
+leff(formula, predvars, parvars, family = gaussian(), inipars,
+  type = c("D", "PA"), fimfunc = NULL, xopt, wopt, x, w,
+  npar = length(inipars), prob = NULL)
 }
 \arguments{
 \item{formula}{A nonlinear model \code{\link[stats]{formula}}.

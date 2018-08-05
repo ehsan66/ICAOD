@@ -4,10 +4,10 @@
 \alias{locallycomp}
 \title{Locally DP-Optimal Designs}
 \usage{
-locallycomp(formula, predvars, parvars, family = gaussian(), lx, ux, alpha,
-  prob, iter, k, inipars, fimfunc = NULL, ICA.control = list(),
-  sens.minimax.control = list(), initial = NULL, npar = length(inipars),
-  plot_3d = c("lattice", "rgl"))
+locallycomp(formula, predvars, parvars, family = gaussian(), lx, ux,
+  alpha, prob, iter, k, inipars, fimfunc = NULL, ICA.control = list(),
+  sens.minimax.control = list(), initial = NULL,
+  npar = length(inipars), plot_3d = c("lattice", "rgl"))
 }
 \arguments{
 \item{formula}{A nonlinear model \code{\link[stats]{formula}}.

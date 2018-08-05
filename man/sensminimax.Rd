@@ -4,8 +4,8 @@
 \alias{sensminimax}
 \title{Verifying Optimality of Minimax and Standardized maximin D-optimal Designs}
 \usage{
-sensminimax(formula, predvars, parvars, family = gaussian(), x, w, lx, ux, lp,
-  up, fimfunc = NULL, standardized = FALSE, localdes = NULL,
+sensminimax(formula, predvars, parvars, family = gaussian(), x, w, lx,
+  ux, lp, up, fimfunc = NULL, standardized = FALSE, localdes = NULL,
   sens.minimax.control = list(), calculate_criterion = TRUE,
   crt.minimax.control = list(), plot_3d = c("lattice", "rgl"),
   plot_sens = TRUE, npar = length(lp), silent = FALSE)

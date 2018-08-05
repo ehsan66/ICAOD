@@ -4,10 +4,11 @@
 \alias{senslocallycomp}
 \title{Verifying Optimality of Locally DP-optimal Designs}
 \usage{
-senslocallycomp(formula, predvars, parvars, alpha, prob, family = gaussian(),
-  x, w, lx, ux, inipars, fimfunc = NULL, sens.minimax.control = list(),
-  calculate_criterion = TRUE, plot_3d = c("lattice", "rgl"),
-  plot_sens = TRUE, npar = length(inipars), silent = FALSE)
+senslocallycomp(formula, predvars, parvars, alpha, prob,
+  family = gaussian(), x, w, lx, ux, inipars, fimfunc = NULL,
+  sens.minimax.control = list(), calculate_criterion = TRUE,
+  plot_3d = c("lattice", "rgl"), plot_sens = TRUE,
+  npar = length(inipars), silent = FALSE)
 }
 \arguments{
 \item{formula}{A nonlinear model \code{\link[stats]{formula}}.

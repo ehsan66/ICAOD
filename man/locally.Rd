@@ -6,8 +6,8 @@
 \usage{
 locally(formula, predvars, parvars, family = gaussian(), lx, ux, iter, k,
   inipars, fimfunc = NULL, ICA.control = list(),
-  sens.minimax.control = list(), initial = NULL, npar = length(inipars),
-  plot_3d = c("lattice", "rgl"))
+  sens.minimax.control = list(), initial = NULL,
+  npar = length(inipars), plot_3d = c("lattice", "rgl"))
 }
 \arguments{
 \item{formula}{A nonlinear model \code{\link[stats]{formula}}.

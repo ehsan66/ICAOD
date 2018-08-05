@@ -11,4 +11,4 @@ Imports: Rcpp,  nloptr, stats, graphics, grDevices, cubature, sn, mnormt, method
 Suggests: rgl, lattice, knitr, rmarkdown
 BugReports: https://github.com/ehsan66/ICAOD/issues
 URL: https://github.com/ehsan66/ICAOD
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
