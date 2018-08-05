@@ -1,3 +1,7 @@
+# This is a new version (Version 0.9.7)
+* 
+
+
 # Re-submitted
 * Thanks for the comments dear Uwe Ligges. 
 ####### The Title field should be in title case, current version then in title case: 'Optimal Designs for Nonlinear Models'
