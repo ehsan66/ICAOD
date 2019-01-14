@@ -2,6 +2,7 @@
 # Quadrature formulas are added from package mvQuad.
 # A bug in CPU time is fixed.
 # Help pages are improved.
+# spell checking passed
 
 # ICAOD 0.9.7
 # A bug is fixed in minimax designs.
