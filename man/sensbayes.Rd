@@ -6,8 +6,9 @@
 \usage{
 sensbayes(formula, predvars, parvars, family = gaussian(), x, w, lx, ux,
   fimfunc = NULL, prior = list(), sens.bayes.control = list(),
-  crt.bayes.control = list(), plot_3d = c("lattice", "rgl"),
-  plot_sens = TRUE, npar = NULL, calculate_criterion = TRUE,
+  crt.bayes.control = list(), crt_method = c("cubature", "quadrature"),
+  sens_method = c("cubature", "quadrature"), plot_3d = c("lattice",
+  "rgl"), plot_sens = TRUE, npar = NULL, calculate_criterion = TRUE,
   silent = FALSE)
 }
 \arguments{
@@ -19,15 +20,20 @@ Will be coerced to a \code{\link[stats]{formula}} if necessary.}
 
 \item{parvars}{A vector of characters. Denotes the unknown parameters in the \code{\link[stats]{formula}}.}
 
-\item{family}{A description of the response distribution and link function to be used in the model.
+\item{family}{A description of the response distribution and the link function to be used in the model.
 This can be a family function, a call to a family function or a character string naming the family.
  Every family function has a link argument allowing to specify the link function to be applied on the response variable.
   If not specified, default links are used. For details see \code{\link[stats]{family}}.
    By default, a linear gaussian model \code{gaussian()} is applied.}
 
-\item{x}{Vector of design (support) points. See 'Details' of \code{\link{sensminimax}}.}
+\item{x}{A vector of candidate design (support) points.
+When is not set to \code{NULL} (default),
+ the agorithm only finds the optimal weights for the candidate points in  \code{x}.
+   Should be set when the user has a finite number of candidate design points  and the purpose
+   is to find the optimal weight for each of them (when zero, they will be excluded from the design).
+For design points with more than one dimension, see 'Details' of \code{\link{sensminimax}}.}
 
-\item{w}{Vector of corresponding design weights for \code{x}.}
+\item{w}{Vector of the corresponding design weights for \code{x}.}
 
 \item{lx}{Vector of lower bounds for the predictors. Should be in the same order as \code{predvars}.}
 
@@ -39,31 +45,42 @@ This can be a family function, a call to a family function or a character string
  \code{\link{uniform}}, \code{\link{normal}},
 \code{\link{skewnormal}} or \code{\link{student}}  to create the  prior. See 'Details' of \code{\link{bayes}}.}
 
-\item{sens.bayes.control}{Control parameters to verify the general equivalence theorem. For details, see \code{\link{sens.bayes.control}}.}
+\item{sens.bayes.control}{A list. Control parameters to verify the general equivalence theorem. For details, see \code{\link{sens.bayes.control}}.}
 
-\item{crt.bayes.control}{Control parameters to approximate the integral in  Bayesian criterion at a given design over the parameter space.
+\item{crt.bayes.control}{A list. Control parameters to approximate the integral in  the Bayesian criterion at a given design over the parameter space.
 For details, see \code{\link{crt.bayes.control}}.}
+
+\item{crt_method}{A character denotes which method to be used to approximate the integrals in Bayesian criteria.
+\code{"cubature"} corresponds to the adaptive multivariate integration method using the \code{\link[cubature]{hcubature}} algorithm (default).
+\code{"quadrature"} corresponds the traditional quadrature formulas and calls the function \code{\link[mvQuad]{createNIGrid}}.
+The tuning parameters are adjusted by \code{crt.bayes.control}. Default is set to \code{"cubature"}.}
+
+\item{sens_method}{Similar to \code{crt_method}, but for approximating the intergals in the sensitivity (derivative) function.
+The tuning parameters are adjusted by \code{sens.bayes.control}. Default is set to \code{"cubature"}.}
 
 \item{plot_3d}{Which package should be used to plot the sensitivity (derivative) function for two-dimensional design space. Defaults to \code{"lattice"}.}
 
 \item{plot_sens}{Plot the sensitivity (derivative) function? Defaults to \code{TRUE}.}
 
 \item{npar}{Number of model parameters.  Used when \code{fimfunc} is given instead of \code{formula} to specify the number of model parameters.
-If not specified truly, the sensitivity (derivative) plot may be shifted below the y-axis. When \code{NULL}, it will be set to \code{length(parvars)} or
+If not specified correctly, the sensitivity (derivative) plot may be shifted below the y-axis.
+When \code{NULL} (default), it will be set to \code{length(parvars)} or
 \code{prior$npar} when \code{missing(formula)}.}
 
-\item{calculate_criterion}{Evaluate the D-criterion? See 'Details' of \code{\link{sensminimax}}.}
+\item{calculate_criterion}{Calculate the optimality criterion? See 'Details' of \code{\link{sensminimax}}.}
 
 \item{silent}{Do not print anything? Defaults to \code{FALSE}.}
 }
 \description{
-This function plot the sensitivity (derivative) function given an approximate (continuous) design and calculate the efficiency lower bound (ELB) for Bayesian D-optimal designs.
+Plots the sensitivity (derivative) function  and calculates the efficiency lower bound (ELB) for a  given  Bayesian design.
 Let \eqn{\boldsymbol{x}}{x} belongs to \eqn{\chi} that denotes the design space.
-Based on the general equivalence theorem, generally, a design \eqn{\xi^*}{\xi*} is optimal if and only if the value of its sensitivity (derivative) function
-be non-positive for all \eqn{\boldsymbol{x}}{x} in \eqn{\chi} and it only reaches zero
-when \eqn{\boldsymbol{x}}{x} belong to the support of \eqn{\xi^*}{\xi*} (be equal to one of the design point).
-Therefore, the user can look at the sensitivity plot and the ELB and decide whether the
-design is optimal or close enough to the true optimal design (ELB tells us that without knowing the latter).
+Based on the general equivalence theorem,  a design \eqn{\xi^*}{\xi*} is optimal if and only if the value of the sensitivity (derivative) function
+is non-positive for all \eqn{\boldsymbol{x}}{x} in \eqn{\chi} and zero when
+ \eqn{\boldsymbol{x}}{x} belongs to the support of \eqn{\xi^*}{\xi*} (be equal to the one of the design points).
+
+For an approximate (continuous) design, when the design space is one or two-dimensional, the user can visually verify the optimality of the design by observing the
+sensitivity plot. Furthermore, the approximity of the design to the optimal design
+ can be measured by the  ELB without knowing the latter.
 }
 \details{
 Let \eqn{\Xi} be the space of all  approximate designs with
@@ -80,17 +97,19 @@ A design \eqn{\xi^*}{\xi*} is Bayesian D-optimal among all designs on \eqn{\chi}
  \eqn{c(\boldsymbol{x},\xi^*)}{c(x, \xi*)} is
   called \strong{sensitivity} or \strong{derivative} function.
 
- \strong{Sometimes, the CPU time can be considerably reduced
-by choosing less conservative values for the tuning parameters \code{tol} and \code{maxEval} in
-the function \code{\link{sens.bayes.control}}.}
-The user should find a trade-off between accuracy and speed for his/her problem.
- See 'Examples'.
+Depending on the complexity of the problem at hand, sometimes, the CPU time can be considerably reduced
+by choosing a set of  less conservative values for the tuning parameters \code{tol} and \code{maxEval} in
+the function \code{\link{sens.bayes.control}} when \code{sens_method = "cubature"}.
+Similarly, this applies  when \code{sens_method = "quadrature"}.
+In general, if the CPU time matters, the user should find an appropriate speed-accuracy trade-off  for her/his own problem.
+ See 'Examples' for more details.
 }
 \note{
-Having accurate plots for the sensitivity (derivative) function
- and calculating ELB to a high precision is the primary goal here,
-  although the process may take too long (even hours) due to
-requesting very accurate integral approximations.
+The default values of the tuning parameters in \code{sens.bayes.control} are set in a way that
+having accurate plots for the sensitivity (derivative) function
+ and calculating the ELB to a high precision  to be the primary goals,
+ eventhough the process may take too long. The user should choose a set of less conservative values
+ via the argument \code{sens.bayes.control} when the CPU-time is too long or matters.
 }
 \examples{
 ##################################################################
@@ -99,28 +118,28 @@ requesting very accurate integral approximations.
 skew2 <- skewnormal(xi = c(0, 1), Omega = matrix(c(1, -0.17, -0.17, .5), nrow = 2),
                     alpha = c(-1, 0), lower =  c(-3, .1), upper = c(3, 2))
 \dontrun{
-sensbayes(formula = ~1/(1 + exp(-b *(x - a))),
-          predvars = "x", parvars = c("a", "b"),
-          family = binomial(),
-          x= c(-2.50914, -1.16780, -0.36904, 1.29227),
-          w =c(0.35767, 0.11032, 0.15621, 0.37580),
-          lx = -3, ux = 3,
-          prior = skew2)
-# took 29 seconds on my system!
+  sensbayes(formula = ~1/(1 + exp(-b *(x - a))),
+            predvars = "x", parvars = c("a", "b"),
+            family = binomial(),
+            x= c(-2.50914, -1.16780, -0.36904, 1.29227),
+            w =c(0.35767, 0.11032, 0.15621, 0.37580),
+            lx = -3, ux = 3,
+            prior = skew2)
+  # took 29 seconds on my system!
 }
 
 # It took very long.
 # We re-adjust the tuning parameters in sens.bayes.control to be faster
 # See how we drastically reduce the maxEval and increase the tolerance
 \dontrun{
-sensbayes(formula = ~1/(1 + exp(-b *(x - a))),
-          predvars = "x", parvars = c("a", "b"),
-          family = binomial(),
-          x= c(-2.50914, -1.16780, -0.36904, 1.29227),
-          w =c(0.35767, 0.11032, 0.15621, 0.37580),
-          lx = -3, ux = 3,prior = skew2,
-          sens.bayes.control = list(cubature = list(tol = 1e-4, maxEval = 300)))
-# took 5 Seconds on my system!
+  sensbayes(formula = ~1/(1 + exp(-b *(x - a))),
+            predvars = "x", parvars = c("a", "b"),
+            family = binomial(),
+            x= c(-2.50914, -1.16780, -0.36904, 1.29227),
+            w =c(0.35767, 0.11032, 0.15621, 0.37580),
+            lx = -3, ux = 3,prior = skew2,
+            sens.bayes.control = list(cubature = list(tol = 1e-4, maxEval = 300)))
+  # took 5 Seconds on my system!
 }
 
 
@@ -143,22 +162,53 @@ sensbayes(formula = ~1/(1 + exp(-b *(x - a))),
 lb <- c(4, 11, 100, 5)
 ub <- c(9, 17, 140, 10)
 \dontrun{
-sensbayes(formula = ~ theta1 + (theta2 - theta1)*(x^theta4)/(x^theta4 + theta3^theta4),
-          predvars = c("x"), parvars = c("theta1", "theta2", "theta3", "theta4"),
-          x = c(0.78990, 95.66297, 118.42964,147.55809, 500),
-          w = c(0.23426, 0.17071, 0.17684, 0.1827, 0.23549),
-          lx = .001, ux = 500,  prior = uniform(lb, ub))
-# took 200 seconds on my system
+  sensbayes(formula = ~ theta1 + (theta2 - theta1)*(x^theta4)/(x^theta4 + theta3^theta4),
+            predvars = c("x"), parvars = c("theta1", "theta2", "theta3", "theta4"),
+            x = c(0.78990, 95.66297, 118.42964,147.55809, 500),
+            w = c(0.23426, 0.17071, 0.17684, 0.1827, 0.23549),
+            lx = .001, ux = 500,  prior = uniform(lb, ub))
+  # took 200 seconds on my system
 }
 
 # Re-adjust the tuning parameters to have it faster
 \dontrun{
-sensbayes(formula = ~ theta1 + (theta2 - theta1)*(x^theta4)/(x^theta4 + theta3^theta4),
-          predvars = c("x"), parvars = c("theta1", "theta2", "theta3", "theta4"),
-          x = c(0.78990, 95.66297, 118.42964,147.55809, 500),
-          w = c(0.23426, 0.17071, 0.17684, 0.1827, 0.23549),
-          lx = .001, ux = 500,  prior = uniform(lb, ub),
-          sens.bayes.control = list(cubature = list(tol = 1e-3, maxEval = 300)))
-# took 4 seconds on my system. See how much it makes difference
+  sensbayes(formula = ~ theta1 + (theta2 - theta1)*(x^theta4)/(x^theta4 + theta3^theta4),
+            predvars = c("x"), parvars = c("theta1", "theta2", "theta3", "theta4"),
+            x = c(0.78990, 95.66297, 118.42964,147.55809, 500),
+            w = c(0.23426, 0.17071, 0.17684, 0.1827, 0.23549),
+            lx = .001, ux = 500,  prior = uniform(lb, ub),
+            sens.bayes.control = list(cubature = list(tol = 1e-3, maxEval = 300)))
+  # took 4 seconds on my system. See how much it makes difference
+}
+
+\dontrun{
+  # Now we try it with quadrature. Default is 6 nodes
+  sensbayes(formula = ~ theta1 + (theta2 - theta1)*(x^theta4)/(x^theta4 + theta3^theta4),
+            predvars = c("x"), parvars = c("theta1", "theta2", "theta3", "theta4"),
+            x = c(0.78990, 95.66297, 118.42964,147.55809, 500),
+            w = c(0.23426, 0.17071, 0.17684, 0.1827, 0.23549),
+            sens_method = "quadrature",
+            lx = .001, ux = 500,  prior = uniform(lb, ub))
+  # 166.519 s
+
+  # use less number of nodes  to see if we can reduce the CPU time
+  sensbayes(formula = ~ theta1 + (theta2 - theta1)*(x^theta4)/(x^theta4 + theta3^theta4),
+            predvars = c("x"), parvars = c("theta1", "theta2", "theta3", "theta4"),
+            x = c(0.78990, 95.66297, 118.42964,147.55809, 500),
+            w = c(0.23426, 0.17071, 0.17684, 0.1827, 0.23549),
+            sens_method = "quadrature",
+            sens.bayes.control = list(quadrature = list(level = 3)),
+            lx = .001, ux = 500,  prior = uniform(lb, ub))
+  # we don't have an accurate plot
+
+  # use less number of levels: use 4 nodes
+  sensbayes(formula = ~ theta1 + (theta2 - theta1)*(x^theta4)/(x^theta4 + theta3^theta4),
+            predvars = c("x"), parvars = c("theta1", "theta2", "theta3", "theta4"),
+            x = c(0.78990, 95.66297, 118.42964,147.55809, 500),
+            w = c(0.23426, 0.17071, 0.17684, 0.1827, 0.23549),
+            sens_method = "quadrature",
+            sens.bayes.control = list(quadrature = list(level = 4)),
+            lx = .001, ux = 500,  prior = uniform(lb, ub))
+
 }
 }

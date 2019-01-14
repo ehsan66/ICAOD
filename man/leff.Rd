@@ -17,7 +17,7 @@ Will be coerced to a \code{\link[stats]{formula}} if necessary.}
 
 \item{parvars}{A vector of characters. Denotes the unknown parameters in the \code{\link[stats]{formula}}.}
 
-\item{family}{A description of the response distribution and link function to be used in the model.
+\item{family}{A description of the response distribution and the link function to be used in the model.
 This can be a family function, a call to a family function or a character string naming the family.
  Every family function has a link argument allowing to specify the link function to be applied on the response variable.
   If not specified, default links are used. For details see \code{\link[stats]{family}}.
@@ -25,11 +25,11 @@ This can be a family function, a call to a family function or a character string
 
 \item{inipars}{Vector. Initial values for the unknown parameters. It will be passed to the information matrix and also probability function.}
 
-\item{type}{A character. \code{"D"} denotes D-efficiency and \code{"PA"} denotes average P-efficiency.}
+\item{type}{A character. \code{"D"} denotes the D-efficiency and \code{"PA"} denotes the average P-efficiency.}
 
 \item{fimfunc}{A function. Returns the FIM as a \code{matrix}. Required when \code{formula} is missing. See 'Details' of \code{\link{minimax}}.}
 
-\item{xopt}{Vector of design (support) points of optimal design (\eqn{\xi_2}). Similar to \code{x}.}
+\item{xopt}{Vector of design (support) points of the optimal design (\eqn{\xi_2}). Similar to \code{x}.}
 
 \item{wopt}{Vector of corresponding design weights for \code{xopt}.}
 
@@ -40,7 +40,7 @@ This can be a family function, a call to a family function or a character string
 \item{npar}{Number of model parameters.  Used when \code{fimfunc} is given instead of \code{formula} to specify the number of model parameters.
 If not given, the sensitivity plot may be shifted below the y-axis. When \code{NULL}, it will be set here to \code{length(inipars)}.}
 
-\item{prob}{Either \code{formula} or a \code{function}. when function, its argument is \code{x} and \code{param} same as the arguments in \code{fimfunc}.
+\item{prob}{Either \code{formula} or a \code{function}. When function, its argument are \code{x} and \code{param}, and they are the same as the arguments in \code{fimfunc}.
 \code{prob} as a function takes the design points and vector of parameters and returns the probability of success at each design points.
 See 'Examples'.}
 }
@@ -61,13 +61,13 @@ exp(log (\sum w_i p(x_i, \theta_0) - log(\sum w*_i p(x*_i, \theta_0)),
 }
 where \eqn{x^*}{x*} and \eqn{w^*}{w*} are the support points and the corresponding weights of the optimal design, respectively.
 
- The argument  \code{x} is the vector of design points.
- For design points with more than one dimension,
+The argument  \code{x} is the vector of design points.
+ For design points with more than one dimension (the models with more than one predictors),
    it is a concatenation of the design points, but \strong{dimension-wise}.
    For example, let the model has three predictors   \eqn{(I, S, Z)}.
-    Then,  (three-dimensional) design points of a two-point optimal design are
+    Then,  a two-point optimal design has the following points:
    \eqn{\{\mbox{point1} = (I_1, S_1, Z_1), \mbox{point2} = (I_2, S_2, Z_2)\}}{{point1 = (I1, S1, Z1), point2 = (I2, S2, Z2)}}.
-    Then, the argument \code{x} is equivalent to
+    Then, the argument \code{x} is equal to
     \code{x = c(I1, I2, S1, S2, Z1, Z2)}.
 }
 \examples{

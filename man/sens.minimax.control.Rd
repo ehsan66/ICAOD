@@ -20,36 +20,54 @@ It will be passed to the optimization function \code{\link[nloptr]{nloptr}}.}
 \item{...}{Further arguments will be passed to \code{\link{nl.opts}} from package \code{\link[nloptr]{nloptr}}.}
 }
 \value{
-A list of control parameters for verifying the general equivalence theorem.
+A list of control parameters for verifying the general equivalence theorem for minimax, standardized maximin and locally optimal designs.
 }
 \description{
-It returns a list of control parameters required for
-verifying the general equivalence theorem that is
-plotting the sensitivity (derivative) function of the optimality criterion
-  at a given approximate (continuous) design and also
- calculating the efficiency lower bound (ELB).
+This function returns a list of control parameters that are used to find
+the ``asnwering set'' for minimax and
+standardized maximin generated designs.
+ The answering set is required to  obtain the sensitivity (derivative) function in order to verify the optimality of
+ a given design.
+Moreover, it contains a list of \code{\link[nloptr]{nloptr}} control parameters to find maximum of the sensitivity (derivative) function over the design space,
+ used to calculate the efficiency lower bound (ELB).
 }
 \details{
-Given a design, answering set is a subset of all local optima of the optimality criterion over the parameter space
-  (only in minimax and standardized maximin problems).
- Answering set (and its associated measure) is the basis of the creation of
-  the sensitivity (derivative) functions in  minimax and standardized maximin problems.
- That means, calculating the ELB or plotting the sensitivity (derivative) function requires a known answering set.
- Unfortunately, there is no theoretical rule on how to choose the number of elements of the answering set and they would have to be found by trial and error.
- Given a design, we find the answering set in two steps:
+Given a design, an ``answering set'' is a subset of all local optima of the
+  optimality criterion over the parameter space
+  (only applicable for minimax and standardized maximin design problems).
+  For an optimality verification by the general equivalence theorem,
+  finding the true answering set is important because the sensitivity (derivative) function in
+   a  minimax or standardized maximin problem is
+  obtained based on it.
+   An invalid  answering set may result in a false
+  sensitivity plot and ELB.
+ Unfortunately, there is no theoretical rule on how to choose the number of elements of
+  an answering set, and they would have to be found by trial and error.
+ Given a design, the answering set for a minimax criterion is obtained as follows:
  \itemize{
- \item{Step 1: }{Find all local maxima of the minimax criterion (or local minima of the standardized maximin criterion) over the parameter space.
-  Here, we divide the parameter space into \code{(n_seg + 1)^p} segments (p is the number of unknown model parameters) and use the endpoints as initial values for local searches directed by function \code{optim} (\code{"L-BFGS-B"} method).}
- \item{Step 2: }{Pick the ones nearest to the global minimum (or maximum in standardized maximin problems) subject to a merging tolerance \code{merge_tol} (default \code{0.005}).}
+ \item{Step 1: }{Find all the local maxima of the optimality criterion (minimax)  over the parameter space.
+  For this purpose, in our algorithm, the parameter space is divided into \code{(n_seg + 1)^p} segments,
+   where p is the number of unknown model parameters.
+   Then, each boundary point of the resulted segments (intervals) is assigned to the argument
+   \code{par} of the function \code{optim} in order to start a local search
+    using the \code{"L-BFGS-B"} method.}
+ \item{Step 2: }{Pick the ones nearest to the global minimum subject to a merging tolerance
+  \code{merge_tol} (default \code{0.005}).}
 }
-Obviously, the answering set is a subset of all local maxima (or local minima in standardized maximin problems), given a design.
-Therefore, it is very important to be able to find all the local maxima (or the local minima) to create the true answering set with no missing elements.
- Otherwise, even when the design is optimal, the sensitivity (derivative) plot may not verify the optimality of the design.\cr
-  \strong{Please increase the value of \code{n_seg} for  models with large number of unknown parameters or large parameter space.}\cr
+The resulting maxima establish the answering set.
+Obviously, the answering set is a subset of all the local maxima.
+Therefore, it is very important to be able to find all the local maxima to create the true answering set with no missing elements.
+ Otherwise, even when the design is optimal, the sensitivity (derivative) plot may not verify the optimality of the design.
+   Finding all the local optimal of a multimodal function like the sensitivity fucntion
+  is not an easy task and this is the main reason
+  that checking the general equivalence theorem (even plotting) in minimax and standardized maximin problems
+   is complicated. As a result,
+ the argument \code{answering.set} is a list with two elements:
+   \describe{
+  \item{\code{n_seg}}{Please increase the value of \code{n_seg} for  models with larger number of unknown  parameters or large parameter space.}
+  \item{\code{merge_tol}}{ We advise to not change the default value of the parameter \code{merge_tol} as it has been successfully tested for many examples.}
+}
 
-We advise not changing the default value of the parameter \code{merge_tol} as it has been tested for many examples.
- Finding all local optimal of a function is not an easy task and is the main reason
-  that checking general equivalence theorem (even plotting) in minimax and standardized maximin problems is very time-consuming.
 
 
 ELB is a measure of  proximity of a design to the optimal design without knowing the latter.
@@ -64,7 +82,7 @@ will be passed to this function as follows:
 
 Argument \code{x0} provides the user initial values for this maximization problem
  and will be passed to the argument with the same name
-of the function  \code{\link[nloptr]{nloptr}}.
+in the function  \code{\link[nloptr]{nloptr}}.
 
 
 Argument \code{optslist} will be passed to the argument \code{opts} of the function \code{\link[nloptr]{nloptr}}.
@@ -74,14 +92,16 @@ Argument \code{optslist} will be passed to the argument \code{opts} of the funct
   \item{\code{algorithm}}{Defaults to \code{NLOPT_GN_DIRECT_L}. DIRECT-L is a deterministic-search algorithm based on systematic division of the search domain into smaller and smaller hyperrectangles.}
   \item{\code{xtol_rel}}{Stop when an optimization step (or an estimate of the optimum) changes every parameter by less than \code{xtol_rel} multiplied by the absolute value of the parameter. Criterion is disabled if \code{xtol_rel} is non-positive. Defaults to \code{1e-8}.}
   \item{\code{ftol_rel}}{Stop when an optimization step (or an estimate of the optimum) changes the objective function value by less than \code{ftol_rel} multiplied by the absolute value of the function value. Criterion is disabled if \code{ftol_rel} is non-positive. Defaults to \code{1e-10}.}
-  \item{\code{maxeval}}{Stop when the number of function evaluations exceeds maxeval. Criterion is disabled if maxeval is non-positive. Defaults to \code{6000}. See below.}
+  \item{\code{maxeval}}{Stop when the number of function evaluations exceeds maxeval. Criterion is disabled if maxeval is non-positive. Defaults to \code{6000}. See 'Note' on when to change its value.}
 }
- A full description of all options is shown by the function \code{nloptr.print.options()} in package \code{\link[nloptr]{nloptr}}.
+ A detailed explanation of all the options is shown by the function \code{nloptr.print.options()} in package \code{\link[nloptr]{nloptr}}.
 }
 \note{
-When the value of ELB is larger than 1, it means the maximum found by the optimization function set by \code{algorithm} is not global.
- In this case, please increase  the value of the parameter \code{maxeval} to find the global maximum of the derivative function over the design space and
- and avoid false ELB.
+Whenever the value of ELB is computationally larger than 1, it is a sign that  the obtained \eqn{\epsilon} is not global maximum.
+ To overcome this issue, please increase
+ the value of the parameter \code{maxeval} to allow the
+  optimization algorithm to find the global maximum
+  of the sensitivity (derivative) function over the design space.
 }
 \examples{
 sens.minimax.control()

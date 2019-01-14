@@ -1,5 +1,3 @@
-
-
 # ###############################################################################################################*
 # ###############################################################################################################*
 print_optima_char <- function(mat, type, merge_tol){
@@ -67,6 +65,7 @@ control.answering <- function(n_seg = 6, merge_tol = .005){
 }
 # ###############################################################################################################*
 # ###############################################################################################################*
+# ###############################################################################################################*
 Calculate_Cost_minimax <- function(mat, fixed_arg){
   # mat: is the matrix of positions
   # fixed_arg: passed to calculate
@@ -80,33 +79,71 @@ Calculate_Cost_minimax <- function(mat, fixed_arg){
   cost <- vector("double", n_cost)
   if(fixed_arg$equal_weight)
     w_equal <- rep(1/fixed_arg$k, fixed_arg$k)
-  for(i in 1:dim(mat)[1]){
-    x <- mat[i, fixed_arg$x_id]
-    if(!fixed_arg$equal_weight)
-      w <- mat[i, fixed_arg$w_id] else
-        w <- w_equal
-      if(fixed_arg$sym){
-        x_w <- ICA_extract_x_w(x = x, w = w,
-                               sym_point = fixed_arg$sym_point)
-        x <- x_w$x
-        w <- x_w$w
-      }
-      optim_func <- fixed_arg$optim_func
-      store[[i]] <- optim_func(fn = fixed_arg$crfunc,
-                               x = x,
-                               w = w,
-                               lower = fixed_arg$lp,
-                               upper = fixed_arg$up,
-                               fixedpar = fixed_arg$fixedpar,
-                               fixedpar_id = fixed_arg$fixedpar_id,
-                               npred= fixed_arg$npred)
-      MinRowId <- which.min(store[[i]]$minima[, fixed_arg$CostColumnId])
-      cost[i] <- store[[i]]$minima[MinRowId , fixed_arg$CostColumnId]
-      inner_optima_store[i, ] <- store[[i]]$minima[MinRowId , -fixed_arg$CostColumnId]
-      x <- w <-MinRowId <- NA
-  }
-  ##we multiply the cost function by negative for maximin and minimax optimal design!
+  #if (!fixed_arg$parallel){
+    for(i in 1:dim(mat)[1]){
+      if (!fixed_arg$is.only.w)
+        x <- mat[i, fixed_arg$x_id] else
+          x <- NULL
+        if(!fixed_arg$equal_weight)
+          w <- mat[i, fixed_arg$w_id] else
+            w <- w_equal
+          if(fixed_arg$sym){
+            x_w <- ICA_extract_x_w(x = x, w = w,
+                                   sym_point = fixed_arg$sym_point)
+            x <- x_w$x
+            w <- x_w$w
+          }
+          optim_func <- fixed_arg$optim_func
+          store[[i]] <- optim_func(fn = fixed_arg$crfunc,
+                                   x = x,
+                                   w = w,
+                                   lower = fixed_arg$lp,
+                                   upper = fixed_arg$up,
+                                   fixedpar = fixed_arg$fixedpar,
+                                   fixedpar_id = fixed_arg$fixedpar_id,
+                                   npred= fixed_arg$npred)
+          MinRowId <- which.min(store[[i]]$minima[, fixed_arg$CostColumnId])
+          cost[i] <- store[[i]]$minima[MinRowId , fixed_arg$CostColumnId]
+          inner_optima_store[i, ] <- store[[i]]$minima[MinRowId , -fixed_arg$CostColumnId]
+          x <- w <-MinRowId <- NA
+    }
+  #}else{
+    #################### parallel
+   # store <- foreach(x = 1:dim(mat)[1])%dopar%{
+  #     i <- x
+  #     if (!fixed_arg$is.only.w)
+  #       x <- mat[i, fixed_arg$x_id] else
+  #         x <- NULL
+  #       if(!fixed_arg$equal_weight)
+  #         w <- mat[i, fixed_arg$w_id] else
+  #           w <- w_equal
+  #         if(fixed_arg$sym){
+  #           x_w <- ICA_extract_x_w(x = x, w = w,
+  #                                  sym_point = fixed_arg$sym_point)
+  #           x <- x_w$x
+  #           w <- x_w$w
+  #         }
+  #         temp <- fixed_arg$optim_func(fn = fixed_arg$crfunc,
+  #                                      x = x,
+  #                                      w = w,
+  #                                      lower = fixed_arg$lp,
+  #                                      upper = fixed_arg$up,
+  #                                      fixedpar = fixed_arg$fixedpar,
+  #                                      fixedpar_id = fixed_arg$fixedpar_id,
+  #                                      npred= fixed_arg$npred)
+  #         MinRowId <- which.min(temp$minima[, fixed_arg$CostColumnId])
+  #         temp$cost <- temp$minima[MinRowId , fixed_arg$CostColumnId]
+  #         temp$inner_optima_store <- temp$minima[MinRowId , -fixed_arg$CostColumnId]
+  #         return(temp)
+  #   }
+  # }
+  #################### parallel
 
+  ##we multiply the cost function by negative for maximin and minimax optimal design!
+  # if (fixed_arg$parallel){
+  #   cost <-  sapply(store, "[[", "cost")
+  #   inner_optima_store <-  t(sapply(store, "[[", "inner_optima_store"))
+  # }
   if(fixed_arg$type != "locally" && fixed_arg$type != "robust"){
     cost <- -cost
     #inner_optima_store <- matrix(NA, nrow = length(cost))
@@ -384,8 +421,7 @@ create_localdes <- function(parvars, localdes){
 }
 #############################################################################################################*
 #############################################################################################################*
-create_optim_func <- function(type, lp_nofixed, up_nofixed, crt.minimax.control, discrete_set, robpars, inipars){
-
+create_optim_func <- function(type, lp_nofixed, up_nofixed, crt.minimax.control, discrete_set, robpars, inipars, is.only.w){
   # defining the nloptr directL
   if (type != "robust")
     vertices_inner <- make_vertices(lower = lp_nofixed, upper = up_nofixed)
@@ -414,7 +450,6 @@ create_optim_func <- function(type, lp_nofixed, up_nofixed, crt.minimax.control,
   # for locally optimal design we dont need an inner optimization
   if (type == "locally")
     optim_locally <- function(fn, lower, upper, w, x, fixedpar, fixedpar_id,  npred){
-
       log_det <- fn(param = inipars, q=c(x, w),  fixedpar = fixedpar,
                     fixedpar_id = fixedpar_id, npred = npred)
       counts <- 1
@@ -479,16 +514,21 @@ create_optim_func <- function(type, lp_nofixed, up_nofixed, crt.minimax.control,
 }
 #############################################################################################################*
 #############################################################################################################*
-create_criterion_minimax <- function(FIM, type, lp, up, localdes = NULL, npar, robpars = NULL, crt_type, multipars = NULL, compound = NULL){
+create_criterion_minimax <- function(FIM, type, lp, up, localdes = NULL, npar, robpars = NULL, crt_type, multipars = NULL, compound = NULL, is.only.w, only_w_varlist = NULL){
   if (crt_type == "D"){
     if (type == "minimax") {
       crfunc_minimax <- function(param, q, npred) {
-        lq <- length(q) # q is the design points and weights
-        pieces <- lq / (npred + 1)
-        x_ind <- 1:(npred * pieces)
-        w_ind <- (x_ind[length(x_ind)] + 1):lq
-        x <- q[x_ind]
-        w <- q[w_ind]
+        if (!is.only.w){
+          lq <- length(q) # q is the design points and weights
+          pieces <- lq / (npred + 1)
+          x_ind <- 1:(npred * pieces)
+          w_ind <- (x_ind[length(x_ind)] + 1):lq
+          x <- q[x_ind]
+          w <- q[w_ind]
+        }else{
+          w <- q
+          x <- only_w_varlist$x
+        }
         if (is.vector(param)){
           # here the fim only accepts param as vector
           minimax_crfunc <-  det2(FIM(x = x, w = w, param = param), logarithm = TRUE) - 5000 * (sum(w) - 1) ^ 2   ## -(-det+pen) = det-pen
@@ -515,13 +555,17 @@ create_criterion_minimax <- function(FIM, type, lp, up, localdes = NULL, npar, r
 
     if (type == "standardized") {
       crfunc_standardized <- function(q, param, npred) {
-        lq <- length(q)
-        pieces <- lq/(npred + 1)
-        x_ind <- 1:(npred * pieces)
-        w_ind <- (x_ind[length(x_ind)] + 1):lq
-        x <- q[x_ind]
-        w <- q[w_ind]
-
+        if (!is.only.w){
+          lq <- length(q)
+          pieces <- lq/(npred + 1)
+          x_ind <- 1:(npred * pieces)
+          w_ind <- (x_ind[length(x_ind)] + 1):lq
+          x <- q[x_ind]
+          w <- q[w_ind]
+        }else{
+          w <- q
+          x <- only_w_varlist$x
+        }
         if (is.matrix(param)){
           # localdes_check<- localdes(param = param[1, ])
           # if (!is.list(localdes_check))
@@ -574,12 +618,17 @@ create_criterion_minimax <- function(FIM, type, lp, up, localdes = NULL, npar, r
     }
     if (type[1] == "locally") {
       crfunc_locally <- function(param, q, npred) {
-        lq <- length(q)
-        pieces <- lq / (npred + 1)
-        x_ind <- 1:(npred * pieces)
-        w_ind <- (x_ind[length(x_ind)] + 1):lq
-        x <- q[x_ind]
-        w <- q[w_ind]
+        if (!is.only.w){
+          lq <- length(q)
+          pieces <- lq / (npred + 1)
+          x_ind <- 1:(npred * pieces)
+          w_ind <- (x_ind[length(x_ind)] + 1):lq
+          x <- q[x_ind]
+          w <- q[w_ind]
+        } else{
+          w <- q
+          x <- only_w_varlist$x
+        }
         locally_det <-
           -det2(FIM(x = x, w = w, param = param), logarithm = TRUE) + 5000 * (sum(w) - 1) ^ 2
         # if (!is.finite(locally_det))
@@ -599,12 +648,17 @@ create_criterion_minimax <- function(FIM, type, lp, up, localdes = NULL, npar, r
 
       crfunc_ave <- function(param, q, npred) {
         ## param here is a matrix: parset: a set of parameters
-        lq <- length(q) # q is the design points and weights
-        pieces <- lq / (npred + 1)
-        x_ind <- 1:(npred * pieces)
-        w_ind <- (x_ind[length(x_ind)] + 1):lq
-        x <- q[x_ind]
-        w <- q[w_ind]
+        if (!is.only.w){
+          lq <- length(q) # q is the design points and weights
+          pieces <- lq / (npred + 1)
+          x_ind <- 1:(npred * pieces)
+          w_ind <- (x_ind[length(x_ind)] + 1):lq
+          x <- q[x_ind]
+          w <- q[w_ind]
+        } else{
+          w <- q
+          x <- only_w_varlist$x
+        }
         on_average_crfunc <- sum(
           sapply(1:length(robpars$prob), FUN= function(j)
             robpars$prob[j] * -det2(FIM(x = x, w = w, param = param[j, ]), logarithm = TRUE))
@@ -623,29 +677,38 @@ create_criterion_minimax <- function(FIM, type, lp, up, localdes = NULL, npar, r
 
   if (crt_type == "DPA"){
     crfunc <- function(param, q, npred){
-      lq <- length(q) # q is the design points and weights
-      pieces <- lq / (npred + 1)
-      x_ind <- 1:(npred * pieces)
-      w_ind <- (x_ind[length(x_ind)] + 1):lq
-      x <- q[x_ind]
-      w <- q[w_ind]
-      if (compound$alpha != 0)
-        bcrfunc1 <- -(compound$alpha/4  * det2(FIM(x = x, w = w, param = param),logarithm= TRUE) +
-                        (1 -compound$alpha) * log(sum(w * compound$prob(x = x, param = param)))) else
-                          bcrfunc1 <-  -log(sum(w * compound$prob(x = x, param = param)))
-
-      return(bcrfunc1)
-    }
-    if (crt_type == "DPM")
-
-      crfunc <- function(param, q, npred){
+      if (!is.only.w){
         lq <- length(q) # q is the design points and weights
         pieces <- lq / (npred + 1)
         x_ind <- 1:(npred * pieces)
         w_ind <- (x_ind[length(x_ind)] + 1):lq
         x <- q[x_ind]
         w <- q[w_ind]
+      } else{
+        w <- q
+        x <- only_w_varlist$x
+      }
+      if (compound$alpha != 0)
+        bcrfunc1 <- -(compound$alpha/4  * det2(FIM(x = x, w = w, param = param),logarithm= TRUE) +
+                        (1 -compound$alpha) * log(sum(w * compound$prob(x = x, param = param)))) else
+                          bcrfunc1 <-  -log(sum(w * compound$prob(x = x, param = param)))
 
+                        return(bcrfunc1)
+    }
+    if (crt_type == "DPM")
+
+      crfunc <- function(param, q, npred){
+        if (!is.only.w){
+        lq <- length(q) # q is the design points and weights
+        pieces <- lq / (npred + 1)
+        x_ind <- 1:(npred * pieces)
+        w_ind <- (x_ind[length(x_ind)] + 1):lq
+        x <- q[x_ind]
+        w <- q[w_ind]
+        } else{
+          w <- q
+          x <- only_w_varlist$x
+        }
         bcrfunc1 <- -(compound$alpha/4  * det2(FIM(x = x, w = w, param = param),logarithm= TRUE) +
                         (1 -compound$alpha) * log(min(compound$prob(x = x, param = param))))
         return(bcrfunc1)
@@ -753,7 +816,6 @@ create_psy_minimax <- function(crt_type, multipars, compound){
       # return the value of left hand side of (4) in ICA paper.
       # if mu = 1  and answering has only one row, then we computing the equivalence theorem left hand side for locally D_optimal design.
       # also can be used for multidimensional models like enzyme kinetic
-
       if(length(mu) != dim(answering)[1])
         stop("The number of measures is not equal to the number of elements of answering set.")
       if(typeof(FIM) != "closure")
@@ -905,7 +967,7 @@ create_psy_minimax <- function(crt_type, multipars, compound){
         if (crt_type == "DPA")
           if (compound$alpha != 0)
             Psi_Point_answering[i,j] <- mu[j] * compound$alpha/compound$npar * sum(diag(solve(FIM_x) %*% FIM_x1)) + (1-compound$alpha) * (compound$prob(c(x1, y1), answering[j, ])- sum(w * compound$prob(x, answering[j, ])))/sum(w * compound$prob(x, answering[j, ])) else
-            Psi_Point_answering[i,j] <- mu[j] * (compound$prob(c(x1, y1), answering[j, ])- sum(w * compound$prob(x, answering[j, ])))/sum(w * compound$prob(x, answering[j, ]))
+              Psi_Point_answering[i,j] <- mu[j] * (compound$prob(c(x1, y1), answering[j, ])- sum(w * compound$prob(x, answering[j, ])))/sum(w * compound$prob(x, answering[j, ]))
 
         if (crt_type == "DPM")
           Psi_Point_answering[i,j] <- mu[j] * compound$alpha/compound$npar * sum(diag(solve(FIM_x) %*% FIM_x1)) +
@@ -945,7 +1007,7 @@ PlotPsi_x <- function(x, w, lower, upper, Psi_x, FIM, answering, mu, plot_3d  = 
                                                               w = w, answering = answering))
     plot(xPlot, PsiPlot, type = "l",
          col = "blue",   xlab = "Design Interval",
-         ylab = "Sensitivity Function", xaxt = "n", main = "Sensitivity Plot")
+         ylab = "c", xaxt = "n")
     abline(h = 0, v = c(x) ,col = "grey", lty = 3)
 
     Point_y<- sapply(1:length(x), FUN = function(j) Psi_x(x1 = x[j], mu = mu, FIM = FIM, x = x,
@@ -1122,141 +1184,150 @@ minimax_inner <- function(formula,
                           multipars = list(),
                           plot_3d = c("lattice", "rgl"),
                           compound = list(prob = NULL, alpha = NULL, npar = NULL),
+                          only_w_varlist = list(x = NULL),
                           ...) {
   time1 <- proc.time()
   #   param_set: a matrix that denotes the fixed values for the parameters and is required when inner_space = "discrete". Each row of the matrix is the values of the components of the parameters,
   #    The number of columns should be equal to length(lp).
-  # ################################################*
-  # ### do not change the seed
-  # if (exists(".Random.seed")) {
-  #   OldSeed <- get(".Random.seed", envir = .GlobalEnv)
-  #   on.exit(assign(".Random.seed", OldSeed, envir = .GlobalEnv))
-  # }
-  # ################################################*
-  if (is.null(crt.minimax.control$inner_space))
-    stop("BUG: set the 'crt.minimax.control$inner_space' in the outer function")
-  if (!crt.minimax.control$inner_space %in% c("discrete", "continuous", "robust_set", "locally"))
-    stop("BUG: 'inner_space must be either 'discrete' or 'continuous' or 'robust_set' or 'locally'")
-  ########################################################*
-  #### dealing with FIM and formula besides checking some common argument
-  fimfunc_formula <- check_common_args(fimfunc = fimfunc, formula = formula,
-                                       predvars = predvars, parvars = parvars,
-                                       family = family, lx =lx, ux = ux, iter = iter, k = k,
-                                       paramvectorized = (type == "minimax" & crt.minimax.control$inner_space == "discrete"),
-                                       prior = NULL)
-  if(missing(formula)){
-    # to handle ...
-    if (crt.minimax.control$inner_space == "continuous" || crt.minimax.control$inner_space == "robust_set" ||  crt.minimax.control$inner_space == "locally")
-      fimfunc2 <- function(x, w, param)
-        fimfunc(x = x, w = w, param = param,...)
+  if (!is.null(only_w_varlist$x))
+    is.only.w <- TRUE else
+      is.only.w <- FALSE
+    # ################################################*
+    # ### do not change the seed
+    # if (exists(".Random.seed")) {
+    #   OldSeed <- get(".Random.seed", envir = .GlobalEnv)
+    #   on.exit(assign(".Random.seed", OldSeed, envir = .GlobalEnv))
+    # }
+    # ################################################*
+    if (is.null(crt.minimax.control$inner_space))
+      stop("BUG: set the 'crt.minimax.control$inner_space' in the outer function")
+    if (!crt.minimax.control$inner_space %in% c("discrete", "continuous", "robust_set", "locally"))
+      stop("BUG: 'inner_space must be either 'discrete' or 'continuous' or 'robust_set' or 'locally'")
+    ########################################################*
+    #### dealing with FIM and formula besides checking some common argument
+    fimfunc_formula <- check_common_args(fimfunc = fimfunc, formula = formula,
+                                         predvars = predvars, parvars = parvars,
+                                         family = family, lx =lx, ux = ux, iter = iter, k = k,
+                                         paramvectorized = (type == "minimax" & crt.minimax.control$inner_space == "discrete"),
+                                         prior = NULL, x = only_w_varlist$x)
+    if(missing(formula)){
+      # to handle ...
+      if (crt.minimax.control$inner_space == "continuous" || crt.minimax.control$inner_space == "robust_set" ||  crt.minimax.control$inner_space == "locally")
+        fimfunc2 <- function(x, w, param)
+          fimfunc(x = x, w = w, param = param,...)
 
-    if (crt.minimax.control$inner_space == "discrete")
-      fimfunc2 <- function(x, w, param)
-        list(fimfunc(x = x, w = w, param = param,...))
+      if (crt.minimax.control$inner_space == "discrete")
+        fimfunc2 <- function(x, w, param)
+          list(fimfunc(x = x, w = w, param = param,...))
 
-    # fim_localdes <- function(x, w, param)
-    #   fimfunc(x = x, w = w, param = param,...)
+      # fim_localdes <- function(x, w, param)
+      #   fimfunc(x = x, w = w, param = param,...)
 
-    fimfunc_sens <- function(x, w, param)
-      fimfunc(x = x, w = w, param = param,...) ## it can not be equal to fimfunc2 when inner_space is discrete
-  } else{
-    if (type != "robust")
-      if (length(lp) != length(parvars))
-        stop("length of 'lp' is not equal to the length of 'parvars'")
-    # fim_localdes <- fimfunc_formula$fimfunc_formula
-    fimfunc2 <- fimfunc_formula$fimfunc_formula ## can be vectorized with respect to parameters!
-    fimfunc_sens <- fimfunc_formula$fimfunc_sens_formula
-  }
+      fimfunc_sens <- function(x, w, param)
+        fimfunc(x = x, w = w, param = param,...) ## it can not be equal to fimfunc2 when inner_space is discrete
+    } else{
+      if (type != "robust")
+        if (length(lp) != length(parvars))
+          stop("length of 'lp' is not equal to the length of 'parvars'")
+      # fim_localdes <- fimfunc_formula$fimfunc_formula
+      fimfunc2 <- fimfunc_formula$fimfunc_formula ## can be vectorized with respect to parameters!
+      fimfunc_sens <- fimfunc_formula$fimfunc_sens_formula
+    }
 
-  if (type[1] == "standardized"){
-    if (!missing(formula))
-      localdes_par <- create_localdes(parvars = parvars, localdes = localdes) else
-        localdes_par <- localdes
-      #localdes_par <- function(param)
-      #  localdes(param = param, fimfunc = fim_localdes)
+    if (type[1] == "standardized"){
+      if (!missing(formula))
+        localdes_par <- create_localdes(parvars = parvars, localdes = localdes) else
+          localdes_par <- localdes
+        #localdes_par <- function(param)
+        #  localdes(param = param, fimfunc = fim_localdes)
 
-  }else
-    localdes_par <- NULL
+    }else
+      localdes_par <- NULL
 
-  if (type == "minimax" || type == "standardized" || type == "locally" )
-    checkminimax <- check_minimax_args(lp = lp, up = up, type = type, localdes = localdes, localdes_par = localdes_par, parvars = parvars, fimfunc = fimfunc, crt.minimax.control = crt.minimax.control)
+    if (type == "minimax" || type == "standardized" || type == "locally" )
+      checkminimax <- check_minimax_args(lp = lp, up = up, type = type, localdes = localdes, localdes_par = localdes_par, parvars = parvars, fimfunc = fimfunc, crt.minimax.control = crt.minimax.control)
 
-  #######################################################*
-  ICA.control <- do.call("ICA.control", ICA.control)
-  ICA.control <- add_fixed_ICA.control(ICA.control.list = ICA.control)
+    #######################################################*
+    ICA.control <- do.call("ICA.control", ICA.control)
+    ICA.control <- add_fixed_ICA.control(ICA.control.list = ICA.control)
 
-  sens.minimax.control <- do.call("sens.minimax.control", sens.minimax.control)
-  #############################################################################*
-  ## if only one point design was requested, then the weight can only be one
-  if (k == 1)
-    ICA.control$equal_weight <- TRUE
-  if (length(lx) != 1 && ICA.control$sym)
-    stop("currently symetric property only can be applied to models with one variable")
-  #############################################################################*
-
-
-  # global variables needed for tin the creation of crfunc
-  npred <- length(lx)
-  if (is.null(npar))
-    stop("BUG: please provide 'npar'")
-  #   npar <- length(lp)
+    sens.minimax.control <- do.call("sens.minimax.control", sens.minimax.control)
+    #############################################################################*
+    ## if only one point design was requested, then the weight can only be one
+    if (k == 1)
+      ICA.control$equal_weight <- TRUE
+    if (length(lx) != 1 && ICA.control$sym)
+      stop("currently symetric property only can be applied to models with one variable")
+    #############################################################################*
 
 
-  #if (type == "minimax" || type == "standardized" || type == "locally" ){
-  temp1 <- create_criterion_minimax(FIM = fimfunc2, type = type[1], localdes = localdes_par, lp = lp, up = up, npar = npar, robpars = robpars, crt_type = crt_type[1], multipars = multipars, compound = compound)
-  temp2 <- create_criterion_minimax(FIM = fimfunc_sens, type = type[1], localdes = localdes_par, lp = lp, up = up, npar = npar, robpars = robpars, crt_type = crt_type[1], multipars = multipars, compound = compound)
-  #}
-  #if (type == "robust")
-  #  create_criterion_ave(FIM, prob, parset)
+    # global variables needed for tin the creation of crfunc
+    npred <- length(lx)
+    if (is.null(npar))
+      stop("BUG: please provide 'npar'")
+    #   npar <- length(lp)
 
 
-  #############################################################################*
-  ## return ld and ud, the lower and upper bound of the design weighs and points
-  temp3 <- return_ld_ud (sym = ICA.control$sym, equal_weight = ICA.control$equal_weight, k = k, npred = npred, lx = lx, ux = ux)
-  initial <- check_initial(initial = initial, ld = temp3$ld, ud = temp3$ud)
-  #############################################################################*
-  # Psi_Mu, Psi_x, Psi_xy
-  Psi_funcs <- create_psy_minimax(crt_type = crt_type, multipars = multipars, compound = compound)
+    #if (type == "minimax" || type == "standardized" || type == "locally" ){
+    temp1 <- create_criterion_minimax(FIM = fimfunc2, type = type[1], localdes = localdes_par, lp = lp, up = up, npar = npar, robpars = robpars, crt_type = crt_type[1], multipars = multipars, compound = compound, is.only.w = is.only.w, only_w_varlist = only_w_varlist)
+    temp2 <- create_criterion_minimax(FIM = fimfunc_sens, type = type[1], localdes = localdes_par, lp = lp, up = up, npar = npar, robpars = robpars, crt_type = crt_type[1], multipars = multipars, compound = compound, is.only.w = is.only.w, only_w_varlist = only_w_varlist)
+    #}
+    #if (type == "robust")
+    #  create_criterion_ave(FIM, prob, parset)
 
-  #############################################################################*
-  ## making the arg list
-  ## the variables that will be added to control not by user, but by mica
-  arg <- list(lx = lx, ux = ux, lp = lp, up = up, k = k, npar = npar,
-              ld = temp3$ld, ud = temp3$ud, type = type[1], #localdes = localdes_par,
-              initial = initial, ICA.control = ICA.control,
-              sens.minimax.control = sens.minimax.control,
-              crt.minimax.control = crt.minimax.control,
-              FIM = fimfunc2,  FIM_sens = fimfunc_sens,
-              crfunc_sens = temp2$crfunc, crfunc = temp1$crfunc,
-              fixedpar = temp1$fixedpar, fixedpar_id = temp1$fixedpar_id,
-              is_fixed = temp1$is_fixed,
-              lp_nofixed = temp1$lp_nofixed, up_nofixed = temp1$up_nofixed,
-              robpars = robpars, Psi_funcs = Psi_funcs,
-              plot_3d = plot_3d[1],
-              localdes = localdes,
-              compound = compound)
-  if (type == "locally")
-    arg$inipars <- lp
 
-  ## updating will be added to arg in iterate
-  ## because when the inner_space is discrete crfunc_sen is not vectorized with respect to the parameters
+    #############################################################################*
+    ## return ld and ud, the lower and upper bound of the design weighs and points
+    temp3 <- return_ld_ud (sym = ICA.control$sym, equal_weight = ICA.control$equal_weight, k = k, npred = npred, lx = lx, ux = ux, is.only.w  =  is.only.w)
+    initial <- check_initial(initial = initial, ld = temp3$ld, ud = temp3$ud)
+    #############################################################################*
+    # Psi_Mu, Psi_x, Psi_xy
+    Psi_funcs <- create_psy_minimax(crt_type = crt_type, multipars = multipars, compound = compound)
+    #############################################################################*
 
-  ### sensitivity function required for cheking the equivalence theorem
+    #############################################################################*
+    ## making the arg list
+    ## the variables that will be added to control not by user, but by mica
+    arg <- list(lx = lx, ux = ux, lp = lp, up = up, k = k, npar = npar,
+                ld = temp3$ld, ud = temp3$ud, type = type[1], #localdes = localdes_par,
+                initial = initial, ICA.control = ICA.control,
+                sens.minimax.control = sens.minimax.control,
+                crt.minimax.control = crt.minimax.control,
+                FIM = fimfunc2,  FIM_sens = fimfunc_sens,
+                crfunc_sens = temp2$crfunc, crfunc = temp1$crfunc,
+                fixedpar = temp1$fixedpar, fixedpar_id = temp1$fixedpar_id,
+                is_fixed = temp1$is_fixed,
+                lp_nofixed = temp1$lp_nofixed, up_nofixed = temp1$up_nofixed,
+                robpars = robpars, Psi_funcs = Psi_funcs,
+                plot_3d = plot_3d[1],
+                localdes = localdes,
+                compound = compound,
+                is.only.w =  is.only.w,
+                only_w_varlist = only_w_varlist,
+                time_start = time1)
+    #lx_sens = lx_sens,
+    #ux_sens = ux_sens)
+    if (type == "locally")
+      arg$inipars <- lp
 
-  #   arg$Psi_x <- temp_der$Psi_x
-  #   arg$Psi_Mu <- temp_der$Psi_Mu
-  #   if (length(lx) == 2)
-  #     arg$Psi_xy <- temp_der$Psi_xy
-  # }
-  ##  Psi_x works for both one, two and three dimensional
-  ## but Psi_xy is needed for plotting becasue the function should have two arguments
-  #############################################################################*
+    ## updating will be added to arg in iterate
+    ## because when the inner_space is discrete crfunc_sen is not vectorized with respect to the parameters
 
-  ICA_object <- list(arg = arg, evol = NULL)
-  class(ICA_object) <- c("list", "minimax")
-  out <- iterate.minimax(object = ICA_object, iter = iter)
-  out$arg$time <- proc.time() - time1
-  return(out)
+    ### sensitivity function required for cheking the equivalence theorem
+
+    #   arg$Psi_x <- temp_der$Psi_x
+    #   arg$Psi_Mu <- temp_der$Psi_Mu
+    #   if (length(lx) == 2)
+    #     arg$Psi_xy <- temp_der$Psi_xy
+    # }
+    ##  Psi_x works for both one, two and three dimensional
+    ## but Psi_xy is needed for plotting becasue the function should have two arguments
+    #############################################################################*
+
+    ICA_object <- list(arg = arg, evol = NULL)
+    class(ICA_object) <- c("list", "minimax")
+    out <- iterate.minimax(object = ICA_object, iter = iter)
+    return(out)
 
 }
 
@@ -1285,99 +1356,107 @@ sensminimax_inner <- function (formula,
                                silent = FALSE,
                                calculate_sens = TRUE,
                                compound = list(prob = NULL, alpha = NULL, npar = NULL),
+                               #only_w_varlist = list(x = NULL),
                                ...){
   #calculate_sens is for when you call the function from plot and only
   #want to calculate the criterion!
   time1 <- proc.time()
+
   if (calledfrom[1]  == "sensfuncs"){
+    # if (!is.null( only_w_varlist$x))
+    #   is.only.w <- TRUE else
+    #     is.only.w <- FALSE
 
-    ## you should create the varlist!! as in iter function
-    # ################################################*
-    #### minimax version
-    if (length(lx) > 2)
-      plot_sens <- FALSE
-    if (!is.logical(calculate_criterion))
-      stop("'calculate_criterion' must be logical")
-    if (!is.null(npar))
-      if(!is.numeric(npar) || npar <= 0)
-        stop("'npar' must be positive numeric")
-    if (!is.character(plot_3d[1]))
-      stop("'plot_3d' must be a character string")
-    if (!(plot_3d[1] %in% c("lattice", "rgl")))
-      stop("'plot_3d' must be either 'lattice' or 'rgl'")
+      ## you should create the varlist!! as in iter function
+      # ################################################*
+      #### minimax version
+      if (length(lx) > 2)
+        plot_sens <- FALSE
+      if (!is.logical(calculate_criterion))
+        stop("'calculate_criterion' must be logical")
+      if (!is.null(npar))
+        if(!is.numeric(npar) || npar <= 0)
+          stop("'npar' must be positive numeric")
+      if (!is.character(plot_3d[1]))
+        stop("'plot_3d' must be a character string")
+      if (!(plot_3d[1] %in% c("lattice", "rgl")))
+        stop("'plot_3d' must be either 'lattice' or 'rgl'")
 
 
-    ########################################################*
-    #### dealing with FIM and formula besides checking some common argument
-    fimfunc_formula <- check_common_args(fimfunc = fimfunc, formula = formula,
-                                         predvars = predvars, parvars = parvars,
-                                         family = family, lx =lx, ux = ux,
-                                         iter = 1, k = length(w),
-                                         paramvectorized = FALSE, prior = NULL)
-    if(missing(formula)){
-      # to handle ...
-      fimfunc2 <- function(x, w, param)
-        fimfunc(x = x, w = w, param = param,...)
+      ########################################################*
+      #### dealing with FIM and formula besides checking some common argument
+      fimfunc_formula <- check_common_args(fimfunc = fimfunc, formula = formula,
+                                           predvars = predvars, parvars = parvars,
+                                           family = family, lx =lx, ux = ux,
+                                           iter = 1, k = length(w),
+                                           paramvectorized = FALSE, prior = NULL,
+                                           x =NULL)
+      if(missing(formula)){
+        # to handle ...
+        fimfunc2 <- function(x, w, param)
+          fimfunc(x = x, w = w, param = param,...)
 
-      fimfunc_sens <- fimfunc2
-      fim_localdes <- fimfunc2
-    } else{
-      if (type != "robust")
-        if (length(lp) != length(parvars))
-          stop("length of 'lp' is not equal to the length of 'parvars'")
-      fimfunc2 <- fimfunc_formula$fimfunc_formula
-      fimfunc_sens <- fimfunc_formula$fimfunc_sens_formula
-      fim_localdes <- fimfunc_formula$fimfunc_sens_formula
-    }
+        fimfunc_sens <- fimfunc2
+        fim_localdes <- fimfunc2
+      } else{
+        if (type != "robust")
+          if (length(lp) != length(parvars))
+            stop("length of 'lp' is not equal to the length of 'parvars'")
+        fimfunc2 <- fimfunc_formula$fimfunc_formula
+        fimfunc_sens <- fimfunc_formula$fimfunc_sens_formula
+        fim_localdes <- fimfunc_formula$fimfunc_sens_formula
+      }
 
-    if (type[1] == "standardized"){
-      if (!missing(formula))
-        localdes_par <- create_localdes(parvars = parvars, localdes = localdes) else
-          localdes_par <- localdes
-        # localdes_par <- function(param)
-        #   localdes(param = param, fimfunc = fim_localdes)
-    }else
-      localdes_par <- NULL
+      if (type[1] == "standardized"){
+        if (!missing(formula))
+          localdes_par <- create_localdes(parvars = parvars, localdes = localdes) else
+            localdes_par <- localdes
+          # localdes_par <- function(param)
+          #   localdes(param = param, fimfunc = fim_localdes)
+      }else
+        localdes_par <- NULL
 
-    if (is.null(npar))
-      npar <- length(lp)
+      if (is.null(npar))
+        npar <- length(lp)
 
-    sens.minimax.control <- do.call("sens.minimax.control", sens.minimax.control)
-    crt.minimax.control <- do.call("crt.minimax.control", crt.minimax.control)
-    crt.minimax.control$inner_space <- "continuous"
-    if (type == "minimax" || type == "standardized" || type == "locally" )
-      checkminimax <- check_minimax_args(lp = lp, up = up, type = type[1], localdes = localdes, localdes_par = localdes_par, parvars = parvars, fimfunc = fimfunc, crt.minimax.control = crt.minimax.control)
-    temp2 <- create_criterion_minimax(FIM = fimfunc_sens, type = type[1], localdes = localdes_par, lp = lp, up = up, npar = npar, robpars = robpars, crt_type = crt_type[1], multipars = multipars, compound = compound)
+      sens.minimax.control <- do.call("sens.minimax.control", sens.minimax.control)
+      crt.minimax.control <- do.call("crt.minimax.control", crt.minimax.control)
+      crt.minimax.control$inner_space <- "continuous"
+      if (type == "minimax" || type == "standardized" || type == "locally" )
+        checkminimax <- check_minimax_args(lp = lp, up = up, type = type[1], localdes = localdes, localdes_par = localdes_par, parvars = parvars, fimfunc = fimfunc, crt.minimax.control = crt.minimax.control)
+      temp2 <- create_criterion_minimax(FIM = fimfunc_sens, type = type[1], localdes = localdes_par, lp = lp, up = up, npar = npar, robpars = robpars, crt_type = crt_type[1], multipars = multipars, compound = compound, is.only.w = FALSE, only_w_varlist = NULL)
 
-    ###############################################################################*
-    # required for finding the answering set for verification
-    # copied from iterate
-    #if (length(lp) <= 2)
-
-    optim_starting <- function(fn, lower, upper, w, x, fixedpar, fixedpar_id,  npred){
-      out <- optim2(fn = fn, lower = lower, upper = upper,
-                    n_seg = sens.minimax.control$answering.set$n_seg,
-                    q = c(x, w),
-                    fixedpar = fixedpar, fixedpar_id = fixedpar_id,
-                    npred= npred)
-      minima <- out$minima
-      counts <- out$counts
-      return(list(minima =minima, counts = counts))
-    }
-    ######################################################################*
-    # Psi_Mu, Psi_x, Psi_xy
-    Psi_funcs <- create_psy_minimax(crt_type = crt_type, multipars = multipars, compound = compound)
-    varlist <-list(fixedpar = temp2$fixedpar, fixedpar_id = temp2$fixedpar_id,
-                   npred =  length(lx),
-                   crfunc_sens = temp2$crfunc,
-                   #Psi_x_minus_minimax = Psi_x_minus_minimax,
-                   lp_nofixed = temp2$lp_nofixed, up_nofixed = temp2$up_nofixed,
-                   plot_3d = plot_3d[1],
-                   optim_starting = optim_starting,
-                   fimfunc_sens =  fimfunc_sens,
-                   npar = npar,
-                   Psi_x_minus_minimax = Psi_funcs$Psi_x_minus_minimax, Psi_x = Psi_funcs$Psi_x,
-                   Psi_xy = Psi_funcs$Psi_xy, Psi_Mu = Psi_funcs$Psi_Mu)
+      ###############################################################################*
+      # required for finding the answering set for verification
+      # copied from iterate
+      #if (length(lp) <= 2)
+      optim_starting <- function(fn, lower, upper, w, x, fixedpar, fixedpar_id,  npred){
+        # if (!is.only.w)
+        #   q1 <- c(x, w) else
+        #     q1 <- w
+        out <- optim2(fn = fn, lower = lower, upper = upper,
+                      n_seg = sens.minimax.control$answering.set$n_seg,
+                      q = c(x, w),
+                      fixedpar = fixedpar, fixedpar_id = fixedpar_id,
+                      npred= npred)
+        minima <- out$minima
+        counts <- out$counts
+        return(list(minima =minima, counts = counts))
+      }
+      ######################################################################*
+      # Psi_Mu, Psi_x, Psi_xy
+      Psi_funcs <- create_psy_minimax(crt_type = crt_type, multipars = multipars, compound = compound)
+      varlist <-list(fixedpar = temp2$fixedpar, fixedpar_id = temp2$fixedpar_id,
+                     npred =  length(lx),
+                     crfunc_sens = temp2$crfunc,
+                     #Psi_x_minus_minimax = Psi_x_minus_minimax,
+                     lp_nofixed = temp2$lp_nofixed, up_nofixed = temp2$up_nofixed,
+                     plot_3d = plot_3d[1],
+                     optim_starting = optim_starting,
+                     fimfunc_sens =  fimfunc_sens,
+                     npar = npar,
+                     Psi_x_minus_minimax = Psi_funcs$Psi_x_minus_minimax, Psi_x = Psi_funcs$Psi_x,
+                     Psi_xy = Psi_funcs$Psi_xy, Psi_Mu = Psi_funcs$Psi_Mu)
 
   }
   if (calledfrom[1] ==  "iter")

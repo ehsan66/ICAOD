@@ -9,7 +9,8 @@ GenerateNewCountry <- function(NumOfCountries,
                                x_id,
                                w_id,
                                npred,
-                               equal_weight){
+                               equal_weight,
+                               is.only.w){
   # sym: TRUE if a symetric design should be found
   # sym_point: a point that the design is symmetric around
   # npred: number of independnt variables. We must know the dimesnion of the design space.
@@ -28,21 +29,26 @@ GenerateNewCountry <- function(NumOfCountries,
   VarMinMatrix <-  matrix(lower, NumOfCountries, length(lower), byrow = TRUE)
   VarMaxMatrix <-  matrix(upper, NumOfCountries, length(upper), byrow = TRUE)
   NewCountry <- (VarMaxMatrix - VarMinMatrix) * matrix(runif (length(VarMaxMatrix)), dim(VarMaxMatrix)[1],  dim(VarMaxMatrix)[2]) + VarMinMatrix
-  ## we are sorting even a non symetric design!
-  npoint <- length(x_id)
-  #  sort only if the number of independent variables is 1, otherwise it's a bug!
-  if (npred == 1)
-    NewCountry[,1:npoint] <- t(apply(NewCountry[,1:npoint, drop = FALSE], 1, sort))
-  # we dont sort the weights based on the points becuase it is an inital random country!
-  if(!equal_weight){
-    w_mat <- NewCountry[, w_id, drop = FALSE]
-    # ony for symmetric case is useful!
-    if (sym)
-      even_odd <- ifelse(length(lower)%% 2 == 0, "even", "odd") else
-        even_odd <- NA
-      ## the sum of weight will be one!!
-      w_sum_to_one <- SumToOne(w_mat = w_mat, sym = sym, even_odd = even_odd)
-      NewCountry[, w_id] <- w_sum_to_one
+  if (!is.only.w){
+    ## we are sorting even a non symetric design!
+    npoint <- length(x_id)
+    #  sort only if the number of independent variables is 1, otherwise it's a bug!
+    if (npred == 1)
+      NewCountry[,1:npoint] <- t(apply(NewCountry[,1:npoint, drop = FALSE], 1, sort))
+    # we dont sort the weights based on the points becuase it is an inital random country!
+    if(!equal_weight){
+      w_mat <- NewCountry[, w_id, drop = FALSE]
+      # ony for symmetric case is useful!
+      if (sym)
+        even_odd <- ifelse(length(lower)%% 2 == 0, "even", "odd") else
+          even_odd <- NA
+        ## the sum of weight will be one!!
+        w_sum_to_one <- SumToOne(w_mat = w_mat, sym = sym, even_odd = even_odd)
+        NewCountry[, w_id] <- w_sum_to_one
+    }
+  }else{
+    ## here the sum of weights will be equal to 1 for each row (country)
+    NewCountry <- SumToOne(w_mat =  NewCountry, sym = sym, even_odd = NA)
   }
   return(NewCountry)
 }
@@ -197,15 +203,14 @@ CreateInitialEmpires <- function(sorted_Countries,
 ######################################################################################################*
 ######################################################################################################*
 LocalSearch <- function(TheEmpire, lower, upper, l, fixed_arg = fixed_arg){
-  # the local search is done for the half of the imperialists for 'l' times
-  # LocalSearch is only for Point
+  # the local search is done for the half of the positions for 'l' times
+  # when the design points are given, then the positions are only weights
   nfeval <- 0
   n_success <- 0
   imperialist <- as.vector(TheEmpire$ImperialistPosition)
   for(k in 1:(length(imperialist)/2)){
     counter <- 1
     while(counter <= l){
-
       diff_vec <- -sweep(x = TheEmpire$ColoniesPosition, MARGIN = 2, STATS = TheEmpire$ImperialistPosition, FUN = "-")
       ## 'd' is the maximal range is set to the distance between the imperialist and its closest colony in
       # the same emipire divided by  the square root of the number of veriables
@@ -220,12 +225,10 @@ LocalSearch <- function(TheEmpire, lower, upper, l, fixed_arg = fixed_arg){
       NewPos[k] <- (NewPos[k] <= upper[k] & NewPos[k] >= lower[k]) * NewPos[k] +
         (NewPos[k] > upper[k]) * (upper[k] - .25 * (upper[k] - lower[k]) * runif(1)) +
         (NewPos[k] < lower[k]) * (lower[k] + .25 * (upper[k] - lower[k]) * runif(1))
-
+      if (fixed_arg$is.only.w)
+        NewPos <- NewPos/sum(NewPos)
       output <- fixed_arg$Calculate_Cost(mat = matrix(NewPos, nrow = 1), fixed_arg = fixed_arg)
-
       NewPos_cost <- output$cost
-
-
       fneval_candidate <- output$nfeval
 
 
@@ -272,7 +275,6 @@ AssimilateColonies2 <- function(TheEmpire,
 
   # Rerurn the assimilated positions of colonies and update  TheEmpire$ColoniesPosition, TheEmpire$ColoniesCost and   TheEmpire$ColoniesInnerParam
 
-
   NumOfColonies <- dim(TheEmpire$ColoniesPosition)[1]
   ##MARGIN is 2 since it should be subtracted columnwise!
   diff_vec <- -sweep(x = TheEmpire$ColoniesPosition, MARGIN = 2, STATS = TheEmpire$ImperialistPosition, FUN = "-")
@@ -297,7 +299,6 @@ AssimilateColonies2 <- function(TheEmpire,
     even_odd <- ifelse(length(VarMin)%% 2 == 0, "even", "odd")
     NewPosition[, w_id] <- SumToOne(w_mat = w_mat, sym = sym, even_odd = even_odd)
   }
-
   temp <- fixed_arg$Calculate_Cost(mat=NewPosition, fixed_arg=fixed_arg)
   nfeval <- temp$nfeval
   NewCost <- temp$cost
@@ -438,10 +439,8 @@ RevolveColonies <- function(TheEmpire, RevolutionRate, NumOfCountries,
   new_imp[, DimIndex] <- new_imp[, DimIndex]  * (( new_imp [, DimIndex] <= upper[DimIndex]) & ( new_imp[, DimIndex] >= lower[DimIndex])) +
     (new_imp[, DimIndex] > upper[DimIndex]) * (upper[DimIndex] - .25 * (upper[DimIndex] - lower[DimIndex]) * runif(1)) +
     (new_imp[, DimIndex] < lower[DimIndex]) * (lower[DimIndex] + .25 * (upper[DimIndex] - lower[DimIndex]) * runif(1))
-
   if(!equal_weight)
     new_imp[, w_id] <- SumToOne(w_mat =  new_imp[, w_id, drop = FALSE], sym=sym, even_odd=even_odd)
-
   temp <- fixed_arg$Calculate_Cost(mat = new_imp, fixed_arg = fixed_arg)
   nfeval <- nfeval + temp$nfeval
   new_imp_cost <- temp$cost
@@ -809,8 +808,7 @@ is.formula <- function(x){
 ######################################################################################################*
 #' @importFrom methods formalArgs
 check_common_args <- function(fimfunc, formula, predvars, parvars, family,
-                              lx, ux, iter, k, paramvectorized, prior){
-
+                              lx, ux, iter, k, paramvectorized, prior, x){
   ### it checks the formula, k , lx, ux and iter and returns the fisher information matrix
   if (is.null(fimfunc) & missing(formula))
     stop("either 'fimfunc' or 'formula' must be given")
@@ -912,11 +910,11 @@ check_common_args <- function(fimfunc, formula, predvars, parvars, family,
   if (!is.numeric(k) || (k %% 1) != 0 || k <= 0)
     stop("\"k\" must be a positive integer number")
 
+
   if (missing(iter))
     stop("\"iter\" is missing")
   if (!is.numeric(iter) || (iter %% 1) != 0 || iter <= 0)
     stop("\"iter\" must be a positive integer number")
-
 
   if (!is.null(prior)){
     if (class(prior) != "cprior")
@@ -931,6 +929,10 @@ check_common_args <- function(fimfunc, formula, predvars, parvars, family,
       stop("min must be less than max in 'prior'")
     fixedpars <- NULL
   }
+  if (!is.null(x)){
+    if (length(x)/k != length(lx))
+      stop("Length of 'lx' is not equal to 'length(x)/k'. Check 'k', 'x', 'lx' and 'ux' to match.")
+  }
   return(list(fimfunc_formula = fimfunc_formula, fimfunc_sens_formula = fimfunc_sens_formula, num_unknown_param = num_unknown_param ))
 
 
@@ -938,36 +940,43 @@ check_common_args <- function(fimfunc, formula, predvars, parvars, family,
 
 ######################################################################################################*
 ######################################################################################################*
-return_ld_ud <- function(sym, equal_weight, k, npred, lx, ux){
+return_ld_ud <- function(sym, equal_weight, k, npred, lx, ux, is.only.w){
   # create the upper bound and lower bound for and the dimension of decision variables
   #x_length can be
-  if (sym) {
-    ## if the number of design points be odd then the middle point of the design shouyld be the symmetric point!
-    ## the number of design point can be one less then w for odd k
-    if (k %% 2 == 0) {
-      w_length <-  k / 2
-      x_length <-  k / 2
+  if (!is.only.w){
+    if (sym) {
+      ## if the number of design points be odd then the middle point of the design shouyld be the symmetric point!
+      ## the number of design point can be one less then w for odd k
+      if (k %% 2 == 0) {
+        w_length <-  k / 2
+        x_length <-  k / 2
+      }else{
+        x_length <-  floor(k / 2)
+        w_length <- floor(k / 2) + 1
+      }
     }else{
-      x_length <-  floor(k / 2)
-      w_length <- floor(k / 2) + 1
+      x_length  <-  k * npred
+      w_length <-  k
+    }
+    # so if sym == TRUE then we have two possiblity:
+    # the number of design points is odd, then the x is one element less than w and in the missed point is sym_point
+    # but if number of design be even then the length of x is equal to length of w
+    ld <- c()
+    ud <- c()
+    for (i in 1:npred) {
+      ld <- c(ld, rep(lx[i], x_length / npred))
+      ud <- c(ud, rep(ux[i], x_length / npred))
+    }
+    #now we should add the wights!
+    if (!equal_weight) {
+      ld <- c(ld, rep(0, w_length))
+      ud <- c(ud, rep(1, w_length))
     }
   }else{
-    x_length  <-  k * npred
+    # we dont use lx, ux here!
     w_length <-  k
-  }
-  # so if sym == TRUE then we have two possiblity:
-  # the number of design points is odd, then the x is one element less than w and in the missed point is sym_point
-  # but if number of design be even then the length of x is equal to length of w
-  ld <- c()
-  ud <- c()
-  for (i in 1:npred) {
-    ld <- c(ld, rep(lx[i], x_length / npred))
-    ud <- c(ud, rep(ux[i], x_length / npred))
-  }
-  #now we should add the wights!
-  if (!equal_weight) {
-    ld = c(ld, rep(0, w_length))
-    ud = c(ud, rep(1, w_length))
+    ld <- rep(0, w_length)
+    ud <- rep(1, w_length)
   }
   return(list(ld = ld, ud = ud))
 }
@@ -992,40 +1001,42 @@ check_initial <- function(initial, ld, ud){
 }
 ######################################################################################################*
 ######################################################################################################*
-print_xw_char <- function(x, w,  npred){
+print_xw_char <- function(x, w,  npred, is.only.w){
   # if (npred == 1)
   #   return(x)
-  k <- length(x)/npred
-  if ( k != length(w))
-    stop("'k' is not equal to the length of 'w'")
-  x <- sprintf("%.5f", round(x,5))
-  x <- format(x, width = max(nchar(x)))
+  if (!is.only.w){
+    k <- length(x)/npred
+    if ( k != length(w))
+      stop("'k' is not equal to the length of 'w'")
+    x <- sprintf("%.5f", round(x,5))
+    x <- format(x, width = max(nchar(x)))
+    if (npred != 1){
+      brackets_left  <- brackets_right <- rep("|", npred)
+      brackets_left[1] <- "/"
+      brackets_left[npred] <- "\\"
+      brackets_right[1] <- "\\"
+      brackets_right[npred] <- "/"
+    }else
+      brackets_left  <- brackets_right <- rep("", npred)
 
+    x_mat <- matrix(x, nrow = npred, byrow = TRUE)
+    x_char <- sapply(X = 1:ncol(x_mat), function(j)paste(brackets_left, x_mat[, j], brackets_right, sep = ""))
+    # adding a row points
+    point_char <- format(paste("Points", 1:k, sep = ""), width = max(nchar(x_char)), justify = "centre")
+    # adding the weights
+    w <- sprintf("%.3f", round(w,3))
+    w <- format(w, width = max(nchar(x_char)), justify = "centre")
+    weight_char <- format(paste("Weights", 1:k, sep = ""), width = max(nchar(x_char)), justify = "centre")
 
+    x_char <- rbind(point_char, x_char, weight_char, w)
+    x_char <- sapply(X = 1:nrow(x_char), function(i)paste(x_char[i, ], collapse = " "))
+    outchar <- paste(x_char, collapse = "\n ")
+  }else{
+    w <- sprintf("%.3f", round(w,3))
+    outchar <- paste("Weights:", paste(w, collapse = " "))
+  }
 
-
-  if (npred != 1){
-    brackets_left  <- brackets_right <- rep("|", npred)
-    brackets_left[1] <- "/"
-    brackets_left[npred] <- "\\"
-    brackets_right[1] <- "\\"
-    brackets_right[npred] <- "/"
-  }else
-    brackets_left  <- brackets_right <- rep("", npred)
-
-  x_mat <- matrix(x, nrow = npred, byrow = TRUE)
-  x_char <- sapply(X = 1:ncol(x_mat), function(j)paste(brackets_left, x_mat[, j], brackets_right, sep = ""))
-  # adding a row points
-  point_char <- format(paste("Point", 1:k, sep = ""), width = max(nchar(x_char)), justify = "centre")
-  # adding the weights
-  w <- sprintf("%.3f", round(w,3))
-  w <- format(w, width = max(nchar(x_char)), justify = "centre")
-  weight_char <- format(paste("Weight", 1:k, sep = ""), width = max(nchar(x_char)), justify = "centre")
-
-  x_char <- rbind(point_char, x_char, weight_char, w)
-  x_char <- sapply(X = 1:nrow(x_char), function(i)paste(x_char[i, ], collapse = " "))
-  x_char <- paste(x_char, collapse = "\n ")
-  return(x_char)
+  return(outchar)
 
 }
 
@@ -1050,5 +1061,24 @@ print_xw_char <- function(x, w,  npred){
 
 ######################################################################################################*
 ######################################################################################################*
+create_FIM_LLTM <- function(Q, normalization){
+  wlambda <- function(x, w, param, q){
+    # x is the design points that are the values for the ability parameters
+    #qparam <- apply(q * param, 2, sum)
+    qparam <- -sum(q * param)
+    # argument of lambda for each param vector
+    arg_lambda <- sapply(1:length(qparam), function(k)sum(w * exp(qparam[k] + x)/(1 + exp(qparam[k] + x))^2))
+  }
 
-
+  fim_LLTM <- function(x, w, param){
+    Qmat <- Q
+    nitems <- nrow(Qmat)
+    if (!is.null(normalization))
+      param <- c(normalization, param)
+    lmat <- lapply(1:nitems, FUN = function(j)wlambda(q = Qmat[j, ],x = x, w = w, param = param) * Qmat[j, ] %*% t(Qmat[j, ]))
+    lmat <- apply(simplify2array(lmat), c(1, 2), sum)
+    return(lmat)
+  }
+  fimfunc <- fim_LLTM
+  return(fimfunc = fim_LLTM)
+}

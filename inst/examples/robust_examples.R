@@ -2,7 +2,7 @@
 # See how we set a stopping rule.
 # The ELB is computed every checkfreq = 30 iterations
 # The optimization stops when the ELB is larger than stoptol = .95
-res <- robust(formula = ~1/(1 + exp(-b *(x - a))),
+res1 <- robust(formula = ~1/(1 + exp(-b *(x - a))),
               predvars = c("x"), parvars = c("a", "b"),
               family = binomial(),
               lx = -5, ux = 5, prob = rep(1/4, 4),
@@ -12,6 +12,19 @@ res <- robust(formula = ~1/(1 + exp(-b *(x - a))),
                                  stoptol = .95, checkfreq = 30))
 
 \dontrun{
-res <- iterate(res, 100)
+res1 <- iterate(res1, 100)
 # stops at iteration 51
+}
+
+
+\dontrun{
+res1.1 <- robust(formula = ~1/(1 + exp(-b *(x - a))),
+              predvars = c("x"), parvars = c("a", "b"),
+              family = binomial(),
+              lx = -5, ux = 5, prob = rep(1/4, 4),
+              parset = matrix(c(0.5, 1.5, 0.5, 1.5, 4.0, 4.0, 5.0, 5.0), 4, 2),
+              x = c(-3, 0, 3),
+              iter = 150, k =3)
+plot(res1.1)
+# not optimal
 }

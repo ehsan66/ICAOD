@@ -2,21 +2,21 @@
 % Please edit documentation in R/8-UserPriors.R
 \name{normal}
 \alias{normal}
-\title{Multivariate Normal Prior Distribution for Model Parameters}
+\title{Assumes A Multivariate Normal Prior Distribution for The Model Parameters}
 \usage{
 normal(mu, sigma, lower, upper)
 }
 \arguments{
-\item{mu}{A vector of length of parameters, representing the mean value.}
+\item{mu}{A vector representing the mean values.}
 
 \item{sigma}{A symmetric positive-definite matrix representing the variance-covariance matrix of the distribution.}
 
-\item{lower}{A vector of lower bounds  for the unknown parameters.}
+\item{lower}{A vector of lower bounds  for the model parameters.}
 
-\item{upper}{A vector of upper bounds  for the unknown parameters.}
+\item{upper}{A vector of upper bounds  for the model parameters.}
 }
 \value{
-An object of class \code{cprior} that is a  list with components:
+An object of class \code{cprior} that is a  list with the following components:
 \itemize{
  \item{fn: }{prior distribution as an R \code{function} with argument \code{param} that is the vector of the unknown parameters. See below.}
  \item{npar: }{Number of unknown parameters and is equal to the length of \code{param}}.
@@ -25,7 +25,7 @@ An object of class \code{cprior} that is a  list with components:
 }
 The list will be passed to the argument \code{prior} of the function \code{\link{bayes}}.
  The order of the argument \code{param} in \code{fn} has the same order as the argument \code{parvars} when the model is specified by a formula.
-Otherwise, it is the same as the argument \code{param} in the function \code{fimfunc}.
+Otherwise, it is equal to the argument \code{param} in the function \code{fimfunc}.
 }
 \description{
 Creates a multivariate normal prior distribution for the unknown parameters as an object of class \code{cprior}.

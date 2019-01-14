@@ -7,7 +7,9 @@
 bayescomp(formula, predvars, parvars, family = binomial(), prior, alpha,
   prob, lx, ux, iter, k, fimfunc = NULL, ICA.control = list(),
   crt.bayes.control = list(), sens.bayes.control = list(),
-  initial = NULL, npar = NULL, plot_3d = c("lattice", "rgl"))
+  crt_method = c("cubature", "quadrature"), sens_method = c("cubature",
+  "quadrature"), initial = NULL, npar = NULL, plot_3d = c("lattice",
+  "rgl"))
 }
 \arguments{
 \item{formula}{A nonlinear model \code{\link[stats]{formula}}.
@@ -18,7 +20,7 @@ Will be coerced to a \code{\link[stats]{formula}} if necessary.}
 
 \item{parvars}{A vector of characters. Denotes the unknown parameters in the \code{\link[stats]{formula}}.}
 
-\item{family}{A description of the response distribution and link function to be used in the model.
+\item{family}{A description of the response distribution and the link function to be used in the model.
 This can be a family function, a call to a family function or a character string naming the family.
  Every family function has a link argument allowing to specify the link function to be applied on the response variable.
   If not specified, default links are used. For details see \code{\link[stats]{family}}.
@@ -31,7 +33,7 @@ This can be a family function, a call to a family function or a character string
 \item{alpha}{A value between 0 and 1.
 Compound or combined DP-criterion  is the product of the efficiencies of a design  with respect to D- and average P- optimality, weighted by \code{alpha}.}
 
-\item{prob}{Either \code{formula} or a \code{function}. when function, its argument is \code{x} and \code{param} same as the arguments in \code{fimfunc}.
+\item{prob}{Either \code{formula} or a \code{function}. When function, its argument are \code{x} and \code{param}, and they are the same as the arguments in \code{fimfunc}.
 \code{prob} as a function takes the design points and vector of parameters and returns the probability of success at each design points.
 See 'Examples'.}
 
@@ -47,16 +49,25 @@ See 'Examples'.}
 
 \item{ICA.control}{ICA control parameters. For details, see \code{\link{ICA.control}}.}
 
-\item{crt.bayes.control}{Control parameters to approximate the integral in  Bayesian criterion at a given design over the parameter space.
+\item{crt.bayes.control}{A list. Control parameters to approximate the integral in  the Bayesian criterion at a given design over the parameter space.
 For details, see \code{\link{crt.bayes.control}}.}
 
-\item{sens.bayes.control}{Control parameters to verify the general equivalence theorem. For details, see \code{\link{sens.bayes.control}}.}
+\item{sens.bayes.control}{A list. Control parameters to verify the general equivalence theorem. For details, see \code{\link{sens.bayes.control}}.}
 
-\item{initial}{A matrix of the  initial designs that will be used as initial solutions (countries).
+\item{crt_method}{A character denotes which method to be used to approximate the integrals in Bayesian criteria.
+\code{"cubature"} corresponds to the adaptive multivariate integration method using the \code{\link[cubature]{hcubature}} algorithm (default).
+\code{"quadrature"} corresponds the traditional quadrature formulas and calls the function \code{\link[mvQuad]{createNIGrid}}.
+The tuning parameters are adjusted by \code{crt.bayes.control}. Default is set to \code{"cubature"}.}
+
+\item{sens_method}{Similar to \code{crt_method}, but for approximating the intergals in the sensitivity (derivative) function.
+The tuning parameters are adjusted by \code{sens.bayes.control}. Default is set to \code{"cubature"}.}
+
+\item{initial}{A matrix of the  initial design points and weights that will be inserted into the initial solutions (countries) of the algorithm.
 Every row is a design, i.e.  a concatenation of \code{x} and \code{w}. Will be coerced to a \code{matrix} if necessary.  See 'Details' of \code{\link{minimax}}.}
 
 \item{npar}{Number of model parameters.  Used when \code{fimfunc} is given instead of \code{formula} to specify the number of model parameters.
-If not specified truly, the sensitivity (derivative) plot may be shifted below the y-axis. When \code{NULL}, it will be set to \code{length(parvars)} or
+If not specified correctly, the sensitivity (derivative) plot may be shifted below the y-axis.
+When \code{NULL} (default), it will be set to \code{length(parvars)} or
 \code{prior$npar} when \code{missing(formula)}.}
 
 \item{plot_3d}{Which package should be used to plot the sensitivity (derivative) function for two-dimensional design space. Defaults to \code{"lattice"}.}
@@ -65,34 +76,33 @@ If not specified truly, the sensitivity (derivative) plot may be shifted below t
 an object of class \code{bayes} that is a list including three sub-lists:
 \describe{
   \item{\code{arg}}{A list of design and algorithm parameters.}
-  \item{\code{evol}}{A list of length equal to the number of iterations that stores the information about the best design (design with least criterion value) of each iteration as follows:
+  \item{\code{evol}}{A list of length equal to the number of iterations that stores the information about the best design (design with the minimum criterion value) of each iteration as follows:
    \code{evol[[iter]]} contains:
     \tabular{lll}{
       \code{iter}                   \tab      \tab Iteration number.\cr
       \code{x}                      \tab      \tab Design points. \cr
       \code{w}                      \tab      \tab Design weights. \cr
-      \code{min_cost}               \tab      \tab Cost (Bayesian criterion value) of the best imperialist.  \cr
-      \code{mean_cost}              \tab      \tab Mean of costs of all imperialists. \cr
+      \code{min_cost}               \tab      \tab Value of the criterion for the best imperialist (design).  \cr
+      \code{mean_cost}              \tab      \tab Mean of the critrion values of all the imperialists. \cr
       \code{sens}                   \tab      \tab An object of class 'sensbayes'. See below.\cr
     }
   }
 
-  \item{\code{empires}}{A list of all empires of the last iteration.}
+  \item{\code{empires}}{A list of all the empires of the last iteration.}
   \item{\code{alg}}{A list with following information:
     \tabular{lll}{
-      \code{nfeval}           \tab      \tab Number of function evaluations. See below. \cr
-      \code{nlocal}           \tab      \tab Number of successful local search. \cr
+      \code{nfeval}           \tab      \tab Number of function evaluations. It does not count the function evaluations from checking the general equivalence theorem. \cr
+      \code{nlocal}           \tab      \tab Number of successful local searches. \cr
       \code{nrevol}           \tab      \tab Number of successful revolutions. \cr
-      \code{nimprove}         \tab      \tab Number of successful movements toward the imperialists in assimilation step. \cr
+      \code{nimprove}         \tab      \tab Number of successful movements toward the imperialists in the assimilation step. \cr
       \code{convergence}      \tab      \tab Stopped by \code{'maxiter'} or \code{'equivalence'}?\cr
     }
   }
 }
-\code{sens}  contains information about design verification by the general equivalence theorem.
- See \code{sensbayes} for more Details. It is only available every \code{ICA.control$checkfreq} iterations
- and the last iteration if   \code{ICA.control$checkfreq >= 0}. Otherwise, \code{NULL}.
-
- \code{nfeval} does not count the function evaluations from checking the general equivalence theorem.
+The list \code{sens}  contains information about the design verification by the general equivalence theorem.
+ See \code{sensbayes} for more Details.
+  It is only given every \code{ICA.control$checkfreq} iterations
+ and also the last iteration if   \code{ICA.control$checkfreq >= 0}. Otherwise, \code{NULL}.
 }
 \description{
 Finds compound Bayesian DP-optimal designs that meet the dual goal of parameter estimation and
@@ -117,10 +127,13 @@ integration over \Theta \alpha/q log|M(\xi, \theta)| + (1- \alpha)
 log ( \sum w_i p(x_i, \theta)) \pi(\theta) d\theta.
 }
 
-Use \code{\link{plot}} function to verify the general equivalence theorem for the output design or change \code{checkfreq} in \code{\link{ICA.control}}..
+To verify the equivalence theorem of the output design,
+use \code{\link{plot}} function or change the value of the \code{checkfreq} in the argument \code{\link{ICA.control}}.
 
-To increase the speed of the algorithm, change the tuning parameters \code{tol} and \code{maxEval} via the
-argument \code{crt.bayes.control}.
+To increase the speed of the algorithm, change the value of the tuning parameters \code{tol} and \code{maxEval} via
+the argument  \code{crt.bayes.control} when \code{crt_method = "cubature"}.
+In general, if the CPU time matters, the user should find an appropriate speed-accuracy trade-off  for her/his own problem.
+ See 'Examples' for more details.
 }
 \examples{
 ##########################################################################
@@ -142,6 +155,8 @@ res1 <- bayescomp(formula = myformula1,
 \dontrun{
   res1 <- iterate(res1, 1000)
   plot(res1, sens.bayes.control = list(cubature = list(tol = 1e-3, maxEval = 1000)))
+  # or use quadrature method
+  plot(res1, sens_method = "quadrature")
 }
 
 ##########################################################################
@@ -179,6 +194,8 @@ res2 <- bayescomp(fimfunc = myfim,
                   prob = myprob, alpha = .5,
                   ICA.control = list(rseed = 1366))
   plot(res2, sens.bayes.control = list(cubature = list(maxEval = 1000, tol = 1e-4)))
+  # quadrature with 6 nodes (default)
+  plot(res2, sens_method = "quadrature")
 }
 
 

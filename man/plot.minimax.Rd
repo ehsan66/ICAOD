@@ -12,16 +12,18 @@
 \arguments{
 \item{x}{An object of class \code{minimax}.}
 
-\item{iter}{Iteration number. if \code{NULL}, will be set to last iteration.}
+\item{iter}{Iteration number. if \code{NULL} (default), it will be set to the last iteration.}
 
-\item{sensitivity}{Logical. If \code{TRUE}, the general equivalence theorem is used to check the optimality if the best design in iteration number \code{iter} and the sensitivity plot will be plotted.}
+\item{sensitivity}{Logical. If \code{TRUE} (default), the general equivalence theorem is used to check the optimality if the best design in iteration number \code{iter} and the sensitivity function will be plotted.}
 
-\item{calculate_criterion}{Re-calculate the criterion value? It only assumes a continuous parameter space for the minimax and standardized maximin designs.  Defaults to \code{FALSE}. See 'Details'.}
+\item{calculate_criterion}{Logical. Re-calculate the criterion value (maybe with a set of new tuning parameters to be sure of the globality of the maximum over the parameter space given the design)? It only assumes a continuous parameter space for the minimax and standardized maximin designs.  Defaults to \code{FALSE}. See 'Details'.}
 
-\item{sens.minimax.control}{Control parameters to verify general equivalence theorem. For details, see \code{\link{sens.minimax.control}}.}
+\item{sens.minimax.control}{Control parameters to verify general equivalence theorem. For details, see \code{\link{sens.minimax.control}}.
+If \code{NULL} (default), it will be set to the  tuning parameters used to create object \code{x}.}
 
 \item{crt.minimax.control}{Control parameters to optimize the minimax or standardized maximin criterion at a given design over a \strong{continuous} parameter space.
-For details, see \code{\link{crt.minimax.control}}.}
+For details, see \code{\link{crt.minimax.control}}.
+If \code{NULL} (default), it will be set to the  tuning parameters used to create object \code{x}.}
 
 \item{silent}{Do not print anything? Defaults to \code{FALSE}.}
 
@@ -33,19 +35,25 @@ Only applicable when \code{sensitivity = TRUE}.}
 \item{...}{Argument with no further use.}
 }
 \description{
-This function plots the evolution of the algorithm till iteration number \code{iter} iteration and re-checks the general equivalence theorem by plotting the sensitivity function and calculating the ELB.
+This function plots the evolution of the ICA algorithm (iteration vs the best (minimum) criterion value at each iteration) and also verifies the optimality of the last obtained design
+ using  the general equivalence theorem. It plots the sensitivity function and calculates the ELB for the  best design generated at iteration number  \code{iter}.
 }
 \details{
-The criterion value can also be re-calculated for the output designs using new set of tuning parameters in the function \code{\link{crt.minimax.control}}.
- This is useful for  minimax and standardized maximin optimal designs to assess the robustness of the
- criterion value with respect to different values of the tuning parameters.
+In addition to verfiying the general equivalence theorem,
+ this function makes it possible to re-calculated the critrio value
+  for the output designs using a new set of tuning parameters, especially,
+   a large value for \code{maxeval} in the function \code{\link{crt.minimax.control}}.
+ This is useful for  minimax and standardized maximin optimal designs to assess
+  the robustness of the
+ criterion value with respect to different values of \code{maxeval}.
  To put it simple, for these designs, the user can re-calculate the
- criterion value (finds the global maximum over the parameter space given an output design in a minimax problem) with larger values for  \code{maxeval} in \code{\link{crt.minimax.control}}
+ criterion value (finds the global maximum over the parameter space given an output design in a minimax problem)
+  with larger values for  \code{maxeval} in \code{\link{crt.minimax.control}}
  to be sure that the function \code{nloptr} finds global optima of the inner
- optimization problem (over the parameter space) using the default value
- (or a new user-given value, in case it has been reset) of \code{maxeval}.
- If increasing the value of \code{maxeval} gives different criterion values,
- then the results can not be trusted and should be repeated with a higher value for \code{maxeval}.
+ optimization problem over the parameter space using the default value
+ (or the user-given value) of \code{maxeval}.
+ If increasing the value of \code{maxeval} returns different criterion values,
+ then the results can not be trusted and the algorithm should be repeated with a higher value for \code{maxeval}.
 }
 \seealso{
 \code{\link{minimax}}, \code{\link{locally}}, \code{\link{robust}}

@@ -9,7 +9,7 @@
 \arguments{
 \item{x}{an object of class \code{bayes}.}
 
-\item{iter}{Iteration number. if \code{NULL}, will be set to last iteration.}
+\item{iter}{Iteration number. if \code{NULL}, it will be set to the last iteration.}
 
 \item{...}{Argument with no further use.}
 }

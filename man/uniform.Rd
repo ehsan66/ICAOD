@@ -2,17 +2,17 @@
 % Please edit documentation in R/8-UserPriors.R
 \name{uniform}
 \alias{uniform}
-\title{Multivariate Uniform Prior Distribution for Model Parameters}
+\title{Assume A Multivariate Uniform Prior Distribution for The Model Parameters}
 \usage{
 uniform(lower, upper)
 }
 \arguments{
-\item{lower}{A vector of lower bounds  for the unknown parameters.}
+\item{lower}{A vector of lower bounds  for the model parameters.}
 
-\item{upper}{A vector of upper bounds  for the unknown parameters.}
+\item{upper}{A vector of upper bounds  for the model parameters.}
 }
 \value{
-An object of class \code{cprior} that is a  list with components:
+An object of class \code{cprior} that is a  list with the following components:
 \itemize{
  \item{fn: }{prior distribution as an R \code{function} with argument \code{param} that is the vector of the unknown parameters. See below.}
  \item{npar: }{Number of unknown parameters and is equal to the length of \code{param}}.
@@ -21,7 +21,7 @@ An object of class \code{cprior} that is a  list with components:
 }
 The list will be passed to the argument \code{prior} of the function \code{\link{bayes}}.
  The order of the argument \code{param} in \code{fn} has the same order as the argument \code{parvars} when the model is specified by a formula.
-Otherwise, it is the same as the argument \code{param} in the function \code{fimfunc}.
+Otherwise, it is equal to the argument \code{param} in the function \code{fimfunc}.
 }
 \description{
 Creates independent uniform prior distributions for the unknown model parameters as an object of class \code{cprior}.

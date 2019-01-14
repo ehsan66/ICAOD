@@ -15,7 +15,7 @@ iterate(object, iter)
 An (updated) object of class 'bayes' or 'minimax'.
 }
 \description{
-Runs the ICA optimization algorithm on an object of class 'bayes' or 'minimax' for more number of iterations  and updates the results.
+Runs ICA for more number of iterations.
 }
 \seealso{
 \code{\link{iterate.minimax}} and \code{\link{iterate.bayes}}.

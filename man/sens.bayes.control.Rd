@@ -5,12 +5,15 @@
 \title{Control Parameters for Verifying General Equivalence Theorem for Bayesian Designs}
 \usage{
 sens.bayes.control(cubature = list(tol = 1e-05, maxEval = 50000, absError
-  = 0), x0 = NULL, optslist = list(stopval = -Inf, algorithm =
-  "NLOPT_GN_DIRECT_L", xtol_rel = 1e-08, ftol_rel = 1e-10, maxeval = 2000),
-  ...)
+  = 0), quadrature = list(type = NULL, level = NULL, ndConstruction =
+  "product", level.trans = FALSE), x0 = NULL, optslist = list(stopval =
+  -Inf, algorithm = "NLOPT_GN_DIRECT_L", xtol_rel = 1e-08, ftol_rel =
+  1e-10, maxeval = 2000), ...)
 }
 \arguments{
-\item{cubature}{A list that will be passed to the arguments of the \code{\link[cubature]{hcubature}} function. See 'Details'.}
+\item{cubature}{A list that will be passed to the arguments of the \code{\link[cubature]{hcubature}} function. See 'Details' of \code{\link{crt.bayes.control}}.}
+
+\item{quadrature}{A list that will be passed to the arguments of the \code{\link[mvQuad]{createNIGrid}} function. See 'Details' of \code{\link{crt.bayes.control}}.}
 
 \item{x0}{Vector of starting values for maximizing the sensitivity (derivative) function over the design space \eqn{x}.
 It will be passed to the optimization function \code{\link[nloptr]{nloptr}}.}
@@ -20,22 +23,16 @@ It will be passed to the optimization function \code{\link[nloptr]{nloptr}}.}
 \item{...}{Further arguments will be passed to \code{\link{nl.opts}} from package \code{\link[nloptr]{nloptr}}.}
 }
 \value{
-A list of control parameters for verifying the general equivalence theorem with respect to the Bayesian optimality criteria.
+A list of three lists each contains the  control parameters for verifying the general equivalence theorem with respect to the Bayesian optimality criteria.
 }
 \description{
-The function \code{sens.bayes.control} returns a list of \code{\link[cubature]{hcubature}}  control parameters for  approximating the integrals in the sensitivity (derivative) function of Bayesian criteria
-and also \code{\link[nloptr]{nloptr}} control parameters to find maximum of the sensitivity (derivative) function over the design space
- and calculate the efficiency lower bound (ELB).
+This function returns two lists each corresponds
+ to an implemented integration method for approximating the integrals
+  in the sensitivity (derivative) functions for Bayesian criteria.
+Moreover, it contains a list of \code{\link[nloptr]{nloptr}} control parameters to find maximum of the sensitivity (derivative) function over the design space,
+ used to calculate the efficiency lower bound (ELB).
 }
 \details{
-\code{cubature} is a list that its components will be passed to the function \code{\link[cubature]{hcubature}}.
-Its components are:
- \describe{
-  \item{\code{tol}}{The maximum tolerance. Defaults to \code{1e-6}.}
-  \item{\code{maxEval}}{The maximum number of function evaluations needed. Note that the actual number of function evaluations performed is only approximately guaranteed not to exceed this number. Defaults to \code{100000}.}
-  \item{\code{absError}}{The maximum absolute error tolerated. Defaults to \code{0}.}
-}
-
 ELB is a measure of  proximity of a design to the optimal design without knowing the latter.
 Given a design, let \eqn{\epsilon} be the global maximum
  of the sensitivity (derivative) function with respect the vector of the model predictors \eqn{x} over the design space.
@@ -48,26 +45,31 @@ will be passed to this function as follows:
 
 Argument \code{x0} provides the user initial values for this maximization problem
  and will be passed to the argument with the same name
-of the function  \code{\link[nloptr]{nloptr}}.
+in the function  \code{\link[nloptr]{nloptr}}.
 
 
-Argument \code{optslist} will be passed to the argument \code{opts} of the function \code{\link[nloptr]{nloptr}}.
-\code{optslist} is a \code{list} and the most important components are listed as follows:
+Argument \code{optslist} is a list and it will be passed to the argument \code{opts} of the function \code{\link[nloptr]{nloptr}}.
+The most important components of  \code{optslist} are:
  \describe{
   \item{\code{stopval}}{Stop minimization when an objective value <= \code{stopval} is found. Setting stopval to \code{-Inf} disables this stopping criterion (default).}
   \item{\code{algorithm}}{Defaults to \code{NLOPT_GN_DIRECT_L}. DIRECT-L is a deterministic-search algorithm based on systematic division of the search domain into smaller and smaller hyperrectangles.}
   \item{\code{xtol_rel}}{Stop when an optimization step (or an estimate of the optimum) changes every parameter by less than \code{xtol_rel} multiplied by the absolute value of the parameter. Criterion is disabled if \code{xtol_rel} is non-positive. Defaults to \code{1e-8}.}
   \item{\code{ftol_rel}}{Stop when an optimization step (or an estimate of the optimum) changes the objective function value by less than \code{ftol_rel} multiplied by the absolute value of the function value. Criterion is disabled if \code{ftol_rel} is non-positive. Defaults to \code{1e-10}.}
-  \item{\code{maxeval}}{Stop when the number of function evaluations exceeds maxeval. Criterion is disabled if maxeval is non-positive. Defaults to \code{6000}. See below.}
+  \item{\code{maxeval}}{Stop when the number of function evaluations exceeds maxeval. Criterion is disabled if maxeval is non-positive. Defaults to \code{6000}. See 'Note' on when to change its value.}
 }
- A full description of all options is shown by the function \code{nloptr.print.options()} in package \code{\link[nloptr]{nloptr}}.
+ More details are available by the function \code{nloptr.print.options()} in package \code{\link[nloptr]{nloptr}}.
 }
 \note{
-When the value of ELB is larger than 1, it means the maximum found by the optimization function set by \code{algorithm} is not global.
- In this case, please increase  the value of the parameter \code{maxeval} to find the global maximum of the sensitivity (derivative) function and avoid false ELB.
+Whenever the value of ELB is computationally larger than 1, it is a sign that  the obtained \eqn{\epsilon} is not global maximum.
+ To overcome this issue, please increase  the value of the parameter \code{maxeval} to allow the optimization algorithm to find the global maximum of the sensitivity (derivative) function over the design space.
+
+
+Please note the difference bewteen \code{maxEval} in \code{cubature} and \code{maxeval} in  \code{optslist}. They are quite two types of different tuning parameters.
+The earlier is the (approximate) maximum number of function evaluations in the hcubature adaptive integration method and the latter is the maximum number of function evaluations in the maximization problem.
 }
 \examples{
 sens.bayes.control()
 sens.bayes.control(cubature = list(maxEval = 50000))
 sens.bayes.control(optslist = list(maxeval = 3000))
+sens.bayes.control(quadrature =  list(level = 4))
 }

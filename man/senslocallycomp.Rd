@@ -2,7 +2,7 @@
 % Please edit documentation in R/3-UserMinimaxFunctions.R
 \name{senslocallycomp}
 \alias{senslocallycomp}
-\title{Verifying Optimality of Locally DP-optimal Designs}
+\title{Verifying Optimality of The Locally DP-optimal Designs}
 \usage{
 senslocallycomp(formula, predvars, parvars, alpha, prob,
   family = gaussian(), x, w, lx, ux, inipars, fimfunc = NULL,
@@ -22,32 +22,32 @@ Will be coerced to a \code{\link[stats]{formula}} if necessary.}
 \item{alpha}{A value between 0 and 1.
 Compound or combined DP-criterion  is the product of the efficiencies of a design  with respect to D- and average P- optimality, weighted by \code{alpha}.}
 
-\item{prob}{Either \code{formula} or a \code{function}. when function, its argument is \code{x} and \code{param} same as the arguments in \code{fimfunc}.
+\item{prob}{Either \code{formula} or a \code{function}. When function, its argument are \code{x} and \code{param}, and they are the same as the arguments in \code{fimfunc}.
 \code{prob} as a function takes the design points and vector of parameters and returns the probability of success at each design points.
 See 'Examples'.}
 
-\item{family}{A description of the response distribution and link function to be used in the model.
+\item{family}{A description of the response distribution and the link function to be used in the model.
 This can be a family function, a call to a family function or a character string naming the family.
  Every family function has a link argument allowing to specify the link function to be applied on the response variable.
   If not specified, default links are used. For details see \code{\link[stats]{family}}.
    By default, a linear gaussian model \code{gaussian()} is applied.}
 
-\item{x}{Vector of design (support) points. See 'Details' of \code{\link{sensminimax}}.}
+\item{x}{Vector of the design (support) points. See 'Details' of \code{\link{sensminimax}} for models with more than one predictors.}
 
-\item{w}{Vector of corresponding design weights for \code{x}.}
+\item{w}{Vector of the corresponding design weights for \code{x}.}
 
 \item{lx}{Vector of lower bounds for the predictors. Should be in the same order as \code{predvars}.}
 
 \item{ux}{Vector of upper bounds for the predictors. Should be in the same order as \code{predvars}.}
 
-\item{inipars}{Vector. Initial values for the unknown parameters.
-Must match \code{parvars} or argument \code{param} of the function provided in \code{fimfunc}.}
+\item{inipars}{Vector of initial estimates for the unknown parameters.
+It must match \code{parvars} or argument \code{param} of the function provided in \code{fimfunc}.}
 
 \item{fimfunc}{A function. Returns the FIM as a \code{matrix}. Required when \code{formula} is missing. See 'Details' of \code{\link{minimax}}.}
 
 \item{sens.minimax.control}{Control parameters to verify the general equivalence theorem. For details, see the function \code{\link{sens.minimax.control}}.}
 
-\item{calculate_criterion}{Evaluate the D-criterion? See 'Details' of \code{\link{sensminimax}}.}
+\item{calculate_criterion}{Calculate the optimality criterion? See 'Details' of \code{\link{sensminimax}}.}
 
 \item{plot_3d}{Which package should be used to plot the sensitivity (derivative) function for models with two predictors.
 Either \code{"rgl"} or \code{"lattice"} (default).}
@@ -55,25 +55,29 @@ Either \code{"rgl"} or \code{"lattice"} (default).}
 \item{plot_sens}{Plot the sensitivity (derivative) function? Defaults to \code{TRUE}.}
 
 \item{npar}{Number of model parameters.  Used when \code{fimfunc} is given instead of \code{formula} to specify the number of model parameters.
-If not given, the sensitivity plot may be shifted below the y-axis. When \code{NULL}, it will be set here to \code{length(inipars)}.}
+If not given, the sensitivity plot may be shifted below the y-axis.
+When \code{NULL}, it is set  to \code{length(inipars)}.}
 
 \item{silent}{Do not print anything? Defaults to \code{FALSE}.}
 }
 \value{
-an object of class \code{sensminimax} that is a list contains:
+an object of class \code{sensminimax} that is a list with the following elements:
  \describe{
  \item{\code{type}}{Argument \code{type} that is required for print methods.}
- \item{\code{optima}}{A  \code{matrix} that stores all the local optima over the parameter space given the best design of the iteration. The cost  (criterion) values are stored in a column named \code{Criterion_Value}.
- The last column (\code{Answering_Set}) shows if the optimum, based on a merging tolerance \code{merge_tol}, belongs to the answering set (1) or not (0).
+ \item{\code{optima}}{A \code{matrix} that stores all the local optima over the parameter space.
+  The cost  (criterion) values are stored in a column named \code{Criterion_Value}.
+ The last column (\code{Answering_Set})
+  shows if the optimum belongs to the answering set (1) or not (0). See 'Details' of \code{\link{sens.minimax.control}}.
    Only applicable for minimax or standardized maximin designs.}
- \item{\code{mu}}{Probability measure on the answering set. Corresponds to the rows of \code{optima} when the associated row in column \code{Answering_Set} is equal to 1.
+ \item{\code{mu}}{Probability measure on the answering set.
+  Corresponds to the rows of \code{optima} for which the associated row in column \code{Answering_Set} is equal to 1.
    Only applicable for minimax or standardized maximin designs.}
  \item{\code{max_deriv}}{Global maximum of the sensitivity (derivative) function (\eqn{\epsilon} in 'Details').}
- \item{\code{ELB}}{D-efficiency lower bound. Can not be larger than 1. See 'Note' in \code{\link{sensminimax}} or 'Details' in \code{\link{sens.minimax.control}}.}
+ \item{\code{ELB}}{D-efficiency lower bound. Can not be larger than 1. If negative, see 'Note' in \code{\link{sensminimax}} or  \code{\link{sens.minimax.control}}.}
  \item{\code{merge_tol}}{Merging tolerance to create the answering set from the set of all local optima. See 'Details' in \code{\link{sens.minimax.control}}.
   Only applicable for minimax or standardized maximin designs.}
- \item{\code{crtval}}{Criterion value. Compare with column \code{Crtiterion_Value} in \code{optima} for minimax and standardized maximin designs.}
- \item{\code{time}}{Required CPU time (rough approximation).}
+ \item{\code{crtval}}{Criterion value. Compare it with the column \code{Crtiterion_Value} in \code{optima} for minimax and standardized maximin designs.}
+ \item{\code{time}}{Used CPU time (rough approximation).}
  }
 }
 \description{
@@ -82,8 +86,8 @@ Let \eqn{\boldsymbol{x}}{x} belongs to \eqn{\chi} that denotes the design space.
 Based on the general equivalence theorem, generally, a design \eqn{\xi^*}{\xi*} is optimal if and only if the value of its sensitivity (derivative) function
 be non-positive for all \eqn{\boldsymbol{x}}{x} in \eqn{\chi} and it only reaches zero
 when \eqn{\boldsymbol{x}}{x} belong to the support of \eqn{\xi^*}{\xi*} (be equal to one of the design point).
-Therefore, the user can look at the sensitivity plot and the ELB and decide whether the
-design is optimal or close enough to the true optimal design (ELB tells us that without knowing the latter).
+Therefore, the user can look at the sensitivity plot and the ELB to decide whether the
+design is optimal or close enough to the true optimal design.
 }
 \examples{
 

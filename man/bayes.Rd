@@ -7,7 +7,9 @@
 bayes(formula, predvars, parvars, family = gaussian(), prior, lx, ux,
   iter, k, fimfunc = NULL, ICA.control = list(),
   crt.bayes.control = list(), sens.bayes.control = list(),
-  initial = NULL, npar = NULL, plot_3d = c("lattice", "rgl"))
+  crt_method = c("cubature", "quadrature"), sens_method = c("cubature",
+  "quadrature"), initial = NULL, npar = NULL, plot_3d = c("lattice",
+  "rgl"), x = NULL)
 }
 \arguments{
 \item{formula}{A nonlinear model \code{\link[stats]{formula}}.
@@ -18,7 +20,7 @@ Will be coerced to a \code{\link[stats]{formula}} if necessary.}
 
 \item{parvars}{A vector of characters. Denotes the unknown parameters in the \code{\link[stats]{formula}}.}
 
-\item{family}{A description of the response distribution and link function to be used in the model.
+\item{family}{A description of the response distribution and the link function to be used in the model.
 This can be a family function, a call to a family function or a character string naming the family.
  Every family function has a link argument allowing to specify the link function to be applied on the response variable.
   If not specified, default links are used. For details see \code{\link[stats]{family}}.
@@ -40,57 +42,72 @@ This can be a family function, a call to a family function or a character string
 
 \item{ICA.control}{ICA control parameters. For details, see \code{\link{ICA.control}}.}
 
-\item{crt.bayes.control}{Control parameters to approximate the integral in  Bayesian criterion at a given design over the parameter space.
+\item{crt.bayes.control}{A list. Control parameters to approximate the integral in  the Bayesian criterion at a given design over the parameter space.
 For details, see \code{\link{crt.bayes.control}}.}
 
-\item{sens.bayes.control}{Control parameters to verify the general equivalence theorem. For details, see \code{\link{sens.bayes.control}}.}
+\item{sens.bayes.control}{A list. Control parameters to verify the general equivalence theorem. For details, see \code{\link{sens.bayes.control}}.}
 
-\item{initial}{A matrix of the  initial designs that will be used as initial solutions (countries).
+\item{crt_method}{A character denotes which method to be used to approximate the integrals in Bayesian criteria.
+\code{"cubature"} corresponds to the adaptive multivariate integration method using the \code{\link[cubature]{hcubature}} algorithm (default).
+\code{"quadrature"} corresponds the traditional quadrature formulas and calls the function \code{\link[mvQuad]{createNIGrid}}.
+The tuning parameters are adjusted by \code{crt.bayes.control}. Default is set to \code{"cubature"}.}
+
+\item{sens_method}{Similar to \code{crt_method}, but for approximating the intergals in the sensitivity (derivative) function.
+The tuning parameters are adjusted by \code{sens.bayes.control}. Default is set to \code{"cubature"}.}
+
+\item{initial}{A matrix of the  initial design points and weights that will be inserted into the initial solutions (countries) of the algorithm.
 Every row is a design, i.e.  a concatenation of \code{x} and \code{w}. Will be coerced to a \code{matrix} if necessary.  See 'Details' of \code{\link{minimax}}.}
 
 \item{npar}{Number of model parameters.  Used when \code{fimfunc} is given instead of \code{formula} to specify the number of model parameters.
-If not specified truly, the sensitivity (derivative) plot may be shifted below the y-axis. When \code{NULL}, it will be set to \code{length(parvars)} or
+If not specified correctly, the sensitivity (derivative) plot may be shifted below the y-axis.
+When \code{NULL} (default), it will be set to \code{length(parvars)} or
 \code{prior$npar} when \code{missing(formula)}.}
 
 \item{plot_3d}{Which package should be used to plot the sensitivity (derivative) function for two-dimensional design space. Defaults to \code{"lattice"}.}
+
+\item{x}{A vector of candidate design (support) points.
+When is not set to \code{NULL} (default),
+ the agorithm only finds the optimal weights for the candidate points in  \code{x}.
+   Should be set when the user has a finite number of candidate design points  and the purpose
+   is to find the optimal weight for each of them (when zero, they will be excluded from the design).
+For design points with more than one dimension, see 'Details' of \code{\link{sensminimax}}.}
 }
 \value{
 an object of class \code{bayes} that is a list including three sub-lists:
 \describe{
   \item{\code{arg}}{A list of design and algorithm parameters.}
-  \item{\code{evol}}{A list of length equal to the number of iterations that stores the information about the best design (design with least criterion value) of each iteration as follows:
+  \item{\code{evol}}{A list of length equal to the number of iterations that stores the information about the best design (design with the minimum criterion value) of each iteration as follows:
    \code{evol[[iter]]} contains:
     \tabular{lll}{
       \code{iter}                   \tab      \tab Iteration number.\cr
       \code{x}                      \tab      \tab Design points. \cr
       \code{w}                      \tab      \tab Design weights. \cr
-      \code{min_cost}               \tab      \tab Cost (Bayesian criterion value) of the best imperialist.  \cr
-      \code{mean_cost}              \tab      \tab Mean of costs of all imperialists. \cr
+      \code{min_cost}               \tab      \tab Value of the criterion for the best imperialist (design).  \cr
+      \code{mean_cost}              \tab      \tab Mean of the critrion values of all the imperialists. \cr
       \code{sens}                   \tab      \tab An object of class 'sensbayes'. See below.\cr
     }
   }
 
-  \item{\code{empires}}{A list of all empires of the last iteration.}
+  \item{\code{empires}}{A list of all the empires of the last iteration.}
   \item{\code{alg}}{A list with following information:
     \tabular{lll}{
-      \code{nfeval}           \tab      \tab Number of function evaluations. See below. \cr
-      \code{nlocal}           \tab      \tab Number of successful local search. \cr
+      \code{nfeval}           \tab      \tab Number of function evaluations. It does not count the function evaluations from checking the general equivalence theorem. \cr
+      \code{nlocal}           \tab      \tab Number of successful local searches. \cr
       \code{nrevol}           \tab      \tab Number of successful revolutions. \cr
-      \code{nimprove}         \tab      \tab Number of successful movements toward the imperialists in assimilation step. \cr
+      \code{nimprove}         \tab      \tab Number of successful movements toward the imperialists in the assimilation step. \cr
       \code{convergence}      \tab      \tab Stopped by \code{'maxiter'} or \code{'equivalence'}?\cr
     }
   }
 }
-\code{sens}  contains information about design verification by the general equivalence theorem.
- See \code{sensbayes} for more Details. It is only available every \code{ICA.control$checkfreq} iterations
- and the last iteration if   \code{ICA.control$checkfreq >= 0}. Otherwise, \code{NULL}.
-
- \code{nfeval} does not count the function evaluations from checking the general equivalence theorem.
+The list \code{sens}  contains information about the design verification by the general equivalence theorem.
+ See \code{sensbayes} for more Details.
+  It is only given every \code{ICA.control$checkfreq} iterations
+ and also the last iteration if   \code{ICA.control$checkfreq >= 0}. Otherwise, \code{NULL}.
 }
 \description{
 Finds (pseudo) Bayesian D-optimal designs for nonlinear models.
  It should be used when the user assumes a (truncated) prior distribution for the unknown model parameters.
- If the prior is discrete, please use \code{\link{robust}}.
+ If you have a discrete prior, please use the function \code{\link{robust}}.
 }
 \details{
 Let \eqn{\Xi} be the space of all  approximate designs with
@@ -108,23 +125,26 @@ An object of class \code{cprior}  is a  list with the following components:
  \item{fn: }{Prior distribution as an R \code{function} with argument \code{param} that is the vector of the unknown parameters. See below.}
  \item{npar: }{Number of unknown parameters and is equal to the length of \code{param}}.
  \item{lower: }{Argument \code{lower}. It has the same length as \code{param}}.
- \item{upper: }{Argument \code{lower}. It has the same length as \code{param}}.
+ \item{upper: }{Argument \code{upper}. It has the same length as \code{param}}.
 }
 A \code{cprior} object  will be passed to the argument \code{prior} of the function \code{\link{bayes}}.
  The argument \code{param} in \code{fn} has the same order as the argument \code{parvars} when the model is specified by a \code{formula}.
-Otherwise, it is same as the argument \code{param} in the function \code{fimfunc}.\cr
-The user can apply the available prior (object \code{cprior}) creators that are \code{\link{uniform}}, \code{\link{normal}},
+Otherwise, it is the same as the argument \code{param} in the function \code{fimfunc}.\cr
+The user can use the implemented  priors that are \code{\link{uniform}}, \code{\link{normal}},
 \code{\link{skewnormal}} and \code{\link{student}} to create a \code{cprior} object.
 
-Use \code{\link{plot}} function to verify the general equivalence theorem for the output design.
+To verify the equivalence theorem of the output design,
+use \code{\link{plot}} function or change the value of the \code{checkfreq} in the argument \code{\link{ICA.control}}.
 
-\strong{To increase the speed of the algorithm, change the tuning parameters \code{tol} and \code{maxEval} via
-the argument  \code{crt.bayes.control}.}
-In this case, the user should find a trade-off between accuracy and speed for his/her example.
+To increase the speed of the algorithm, change the value of the tuning parameters \code{tol} and \code{maxEval} via
+the argument  \code{crt.bayes.control} when \code{crt_method = "cubature"}.
+Similarly, this applies  when \code{crt_method = "quadrature"}.
+In general, if the CPU time matters, the user should find an appropriate speed-accuracy trade-off  for her/his own problem.
+ See 'Examples' for more details.
 
-If some of the parameters are fixed in a model, they should be set
-to their values via the argument \code{paravars}. In this case,
-you must provide the number of parameters via argument \code{npar} for verifying the general equivalence theorem.
+If some of the parameters are known and fixed, they should be set
+to their values via the argument \code{paravars} when the model is given by \code{formula}. In this case,
+the user must provide the number of parameters via the argument \code{npar} for verifying the general equivalence theorem.
  See 'Examples', Section 'Weibull',  'Richards' and 'Exponential' model.
 }
 \examples{
@@ -133,7 +153,7 @@ you must provide the number of parameters via argument \code{npar} for verifying
 #############################################
 # set the unfirom prior
 uni <- uniform(lower =  c(-3, .1), upper = c(3, 2))
-# set the lgostic model with formula
+# set the logistic model with formula
 res1 <- bayes(formula = ~1/(1 + exp(-b *(x - a))),
               predvars = "x", parvars = c("a", "b"),
               family = binomial(), lx = -3, ux = 3,
@@ -141,16 +161,53 @@ res1 <- bayes(formula = ~1/(1 + exp(-b *(x - a))),
               ICA.control = list(rseed = 1366))
 
 \dontrun{
-res1 <- iterate(res1, 500)
-plot(res1)
+  res1 <- iterate(res1, 500)
+  plot(res1)
 }
-
 # You can also use your  Fisher information matrix (FIM) if you think it is faster!
 \dontrun{
-bayes(fimfunc = FIM_logistic, lx = -3, ux = 3, k =  5, iter = 500,
-      prior = uni, ICA.control = list(rseed = 1366))
+  bayes(fimfunc = FIM_logistic, lx = -3, ux = 3, k =  5, iter = 500,
+        prior = uni, ICA.control = list(rseed = 1366))
 }
 
+# with fixed x
+\dontrun{
+  res1.1 <- bayes(formula = ~1/(1 + exp(-b *(x - a))),
+                  predvars = "x", parvars = c("a", "b"),
+                  family = binomial(), lx = -3, ux = 3,
+                  k =  5, iter = 100, prior = uni,
+                  x = c( -3, -1.5, 0,  1.5, 3),
+                  ICA.control = list(rseed = 1366))
+  plot(res1.1)
+  # not optimal
+}
+
+# with quadrature formula
+\dontrun{
+  res1.2 <- bayes(formula = ~1/(1 + exp(-b *(x - a))),
+                predvars = "x", parvars = c("a", "b"),
+                family = binomial(), lx = -3, ux = 3,
+                k =  5, iter = 1, prior = uni,
+                crt_method = "quadrature",
+                ICA.control = list(rseed = 1366))
+  res1.2 <- iterate(res1.2, 500)
+  plot(res1.2) # not optimal
+  # compare it with res1 that was found by automatic integration
+  plot(res1)
+
+  # we increase the number of quadrature nodes
+  res1.3 <- bayes(formula = ~1/(1 + exp(-b *(x - a))),
+                  predvars = "x", parvars = c("a", "b"),
+                  family = binomial(), lx = -3, ux = 3,
+                  k =  5, iter = 1, prior = uni,
+                  crt_method = "quadrature",
+                  crt.bayes.control = list(quadrature = list(level = 9)),
+                  ICA.control = list(rseed = 1366))
+  res1.3 <- iterate(res1.3, 500)
+  plot(res1.3)
+  # by automatic integration (crt_method = "cubature"),
+  #  we did not need to worry about the number of nodes.
+}
 ###############################################
 # Two parameter logistic model: normal prior #1
 ###############################################
@@ -159,12 +216,12 @@ norm1 <- normal(mu =  c(0, 1),
                 sigma = matrix(c(1, -0.17, -0.17, .5), nrow = 2),
                 lower =  c(-3, .1), upper = c(3, 2))
 \dontrun{
-# initializing
-res2 <- bayes(formula = ~1/(1 + exp(-b *(x - a))), predvars = "x", parvars = c("a", "b"),
-              family = binomial(), lx = -3, ux = 3, k =  4, iter = 1, prior = norm1,
-              ICA.control = list(rseed = 1366))
-res2 <- iterate(res2, 500)
-plot(res2)
+  # initializing
+  res2 <- bayes(formula = ~1/(1 + exp(-b *(x - a))), predvars = "x", parvars = c("a", "b"),
+                family = binomial(), lx = -3, ux = 3, k =  4, iter = 1, prior = norm1,
+                ICA.control = list(rseed = 1366))
+  res2 <- iterate(res2, 500)
+  plot(res2)
 }
 
 ###############################################
@@ -175,14 +232,14 @@ norm2 <- normal(mu =  c(0, 1),
                 sigma = matrix(c(1, 0, 0, .5), nrow = 2),
                 lower =  c(-3, .1), upper = c(3, 2))
 \dontrun{
-# initializing
-res3 <- bayes(formula = ~1/(1 + exp(-b *(x - a))), predvars = "x", parvars = c("a", "b"),
-              family = binomial(), lx = -3, ux = 3, k =  4, iter = 1, prior = norm2,
-              ICA.control = list(rseed = 1366))
+  # initializing
+  res3 <- bayes(formula = ~1/(1 + exp(-b *(x - a))), predvars = "x", parvars = c("a", "b"),
+                family = binomial(), lx = -3, ux = 3, k =  4, iter = 1, prior = norm2,
+                ICA.control = list(rseed = 1366))
 
-res3 <- iterate(res3, 700)
-plot(res3, sens.bayes.control = list(cubature = list(maxEval = 3000, tol = 1e-4),
-                                     optslist = list(maxeval = 3000)))
+  res3 <- iterate(res3, 700)
+  plot(res3, sens.bayes.control = list(cubature = list(maxEval = 3000, tol = 1e-4),
+                                       optslist = list(maxeval = 3000)))
 }
 
 
@@ -193,11 +250,11 @@ skew1 <- skewnormal(xi = c(0, 1),
                     Omega = matrix(c(1, -0.17, -0.17, .5), nrow = 2),
                     alpha = c(1, 0), lower =  c(-3, .1), upper = c(3, 2))
 \dontrun{
-res4 <- bayes(formula = ~1/(1 + exp(-b *(x - a))), predvars = "x", parvars = c("a", "b"),
-              family = binomial(), lx = -3, ux = 3, k =  4, iter = 700, prior = skew1,
-              ICA.control = list(rseed = 1366, ncount = 60))
-plot(res4, sens.bayes.control = list(cubature = list(maxEval = 3000, tol = 1e-4),
-                                     optslist = list(maxeval = 3000)))
+  res4 <- bayes(formula = ~1/(1 + exp(-b *(x - a))), predvars = "x", parvars = c("a", "b"),
+                family = binomial(), lx = -3, ux = 3, k =  4, iter = 700, prior = skew1,
+                ICA.control = list(rseed = 1366, ncount = 60))
+  plot(res4, sens.bayes.control = list(cubature = list(maxEval = 3000, tol = 1e-4),
+                                       optslist = list(maxeval = 3000)))
 }
 
 
@@ -208,11 +265,11 @@ skew2 <- skewnormal(xi = c(0, 1),
                     Omega = matrix(c(1, -0.17, -0.17, .5), nrow = 2),
                     alpha = c(-1, 0), lower =  c(-3, .1), upper = c(3, 2))
 \dontrun{
-res5 <- bayes(formula = ~1/(1 + exp(-b *(x - a))), predvars = "x", parvars = c("a", "b"),
-              family = binomial(), lx = -3, ux = 3, k =  4, iter = 700, prior = skew2,
-              ICA.control = list(rseed = 1366, ncount = 60))
-plot(res5, sens.bayes.control = list(cubature = list(maxEval = 3000, tol = 1e-4),
-                                     optslist = list(maxeval = 3000)))
+  res5 <- bayes(formula = ~1/(1 + exp(-b *(x - a))), predvars = "x", parvars = c("a", "b"),
+                family = binomial(), lx = -3, ux = 3, k =  4, iter = 700, prior = skew2,
+                ICA.control = list(rseed = 1366, ncount = 60))
+  plot(res5, sens.bayes.control = list(cubature = list(maxEval = 3000, tol = 1e-4),
+                                       optslist = list(maxeval = 3000)))
 }
 
 ###############################################
@@ -222,19 +279,19 @@ plot(res5, sens.bayes.control = list(cubature = list(maxEval = 3000, tol = 1e-4)
 stud <- student(mean =  c(0, 1), S   = matrix(c(1, -0.17, -0.17, .5), nrow = 2),
                 df = 3, lower =  c(-3, .1), upper = c(3, 2))
 \dontrun{
-res6 <- bayes(formula = ~1/(1 + exp(-b *(x - a))), predvars = "x", parvars = c("a", "b"),
-              family = binomial(), lx = -3, ux = 3, k =  5, iter = 500, prior = stud,
-              ICA.control = list(ncount = 50, rseed = 1366))
-plot(res6)
+  res6 <- bayes(formula = ~1/(1 + exp(-b *(x - a))), predvars = "x", parvars = c("a", "b"),
+                family = binomial(), lx = -3, ux = 3, k =  5, iter = 500, prior = stud,
+                ICA.control = list(ncount = 50, rseed = 1366))
+  plot(res6)
 }
 # not bad, but to find a very accurate designs we increase
 # the ncount to 200 and repeat the optimization
 \dontrun{
-res6 <- bayes(formula = ~1/(1 + exp(-b *(x - a))),
-              predvars = "x", parvars = c("a", "b"),
-              family = binomial(), lx = -3, ux = 3, k =  5, iter = 1000, prior = stud,
-              ICA.control = list(ncount = 200,  rseed = 1366))
-plot(res6)
+  res6 <- bayes(formula = ~1/(1 + exp(-b *(x - a))),
+                predvars = "x", parvars = c("a", "b"),
+                family = binomial(), lx = -3, ux = 3, k =  5, iter = 1000, prior = stud,
+                ICA.control = list(ncount = 200,  rseed = 1366))
+  plot(res6)
 }
 
 
@@ -244,12 +301,12 @@ plot(res6)
 lb <- c(4, 11, 100, 5)
 ub <- c(8, 15, 130, 9)
 \dontrun{
-res7 <- bayes(formula = ~ theta1 + (theta2 - theta1)*(x^theta4)/(x^theta4 + theta3^theta4),
-              predvars = c("x"), parvars = c("theta1", "theta2", "theta3", "theta4"),
-              lx = .001, ux = 500, k = 5, iter = 200, prior = uniform(lb, ub),
-              ICA.control = list(rseed = 1366, ncount = 60))
-plot(res7, sens.bayes.control = list(cubature = list(maxEval = 500, tol = 1e-3),
-                                     optslist = list(maxeval = 500)))
+  res7 <- bayes(formula = ~ theta1 + (theta2 - theta1)*(x^theta4)/(x^theta4 + theta3^theta4),
+                predvars = c("x"), parvars = c("theta1", "theta2", "theta3", "theta4"),
+                lx = .001, ux = 500, k = 5, iter = 200, prior = uniform(lb, ub),
+                ICA.control = list(rseed = 1366, ncount = 60))
+  plot(res7, sens.bayes.control = list(cubature = list(maxEval = 500, tol = 1e-3),
+                                       optslist = list(maxeval = 500)))
 }
 
 #######################################################################
@@ -260,13 +317,13 @@ plot(res7, sens.bayes.control = list(cubature = list(maxEval = 500, tol = 1e-3),
 myfim <- function(x, w, param)
   FIM_2par_exp_censor1(x = x, w = w, param = param, tcensor = 30)
 \dontrun{
-res8 <- bayes(fimfunc = myfim, lx = 0, ux = 1, k = 4,
-              iter = 1, prior = uniform(c(-11, -11), c(11, 11)),
-              ICA.control = list(rseed = 1366))
+  res8 <- bayes(fimfunc = myfim, lx = 0, ux = 1, k = 4,
+                iter = 1, prior = uniform(c(-11, -11), c(11, 11)),
+                ICA.control = list(rseed = 1366))
 
-res8 <- iterate(res8, 200)
-plot(res8, sens.bayes.control = list(cubature = list(maxEval = 500, tol = 1e-3),
-                                     optslist = list(maxeval = 500)))
+  res8 <- iterate(res8, 200)
+  plot(res8, sens.bayes.control = list(cubature = list(maxEval = 500, tol = 1e-3),
+                                       optslist = list(maxeval = 500)))
 }
 
 
@@ -278,11 +335,11 @@ plot(res8, sens.bayes.control = list(cubature = list(maxEval = 500, tol = 1e-3),
 myfim <- function(x, w, param)
   FIM_2par_exp_censor2(x = x, w = w, param = param, tcensor = 30)
 \dontrun{
-res9 <- bayes(fimfunc = myfim, lx = 0, ux = 1, k = 2,
-              iter = 200, prior = uniform(c(-11, -11), c(11, 11)),
-              ICA.control = list(rseed = 1366))
-plot(res9, sens.bayes.control = list(cubature = list(maxEval = 100, tol = 1e-3),
-                                   optslist = list(maxeval = 100)))
+  res9 <- bayes(fimfunc = myfim, lx = 0, ux = 1, k = 2,
+                iter = 200, prior = uniform(c(-11, -11), c(11, 11)),
+                ICA.control = list(rseed = 1366))
+  plot(res9, sens.bayes.control = list(cubature = list(maxEval = 100, tol = 1e-3),
+                                       optslist = list(maxeval = 100)))
 }
 
 #################################
@@ -294,13 +351,13 @@ plot(res9, sens.bayes.control = list(cubature = list(maxEval = 100, tol = 1e-3),
 
 ## See how we fixed a some parameters in Bayesian designs
 \dontrun{
-res10 <- bayes(formula = ~a - b * exp(-lambda * t ^h),
-               predvars = c("t"),
-               parvars = c("a=1", "b=1", "lambda", "h=1"),
-               lx = .00001, ux = 20,
-               prior = uniform(.5, 2.5), k = 5, iter = 400,
-               ICA.control = list(rseed = 1366))
-plot(res10)
+  res10 <- bayes(formula = ~a - b * exp(-lambda * t ^h),
+                 predvars = c("t"),
+                 parvars = c("a=1", "b=1", "lambda", "h=1"),
+                 lx = .00001, ux = 20,
+                 prior = uniform(.5, 2.5), k = 5, iter = 400,
+                 ICA.control = list(rseed = 1366))
+  plot(res10)
 }
 
 #################################
@@ -314,8 +371,8 @@ res11 <- bayes(formula = ~a - b * exp(-lambda * t ^h),
                ICA.control = list(rseed = 1366))
 
 \dontrun{
-res11 <- iterate(res11, 400)
-plot(res11)
+  res11 <- iterate(res11, 400)
+  plot(res11)
 }
 
 #################################
@@ -324,15 +381,19 @@ plot(res11)
 norm4 <- normal(mu = c(1, 1), sigma = matrix(c(.2, 0.1, 0.1, .4), 2, 2),
                 lower = c(.4, .4), upper = c(1.6, 1.6))
 \dontrun{
-res12 <- bayes(formula = ~a/(1 + b * exp(-lambda*t))^h,
-               predvars = c("t"),
-               parvars = c("a=1", "b", "lambda", "h=1"),
-               lx = .00001, ux = 10,
-               prior = norm4,
-               k = 5, iter = 400,
-               ICA.control = list(rseed = 1366))
-plot(res12, sens.bayes.control = list(cubature = list(maxEval = 1000, tol = 1e-3),
-                                      optslist = list(maxeval = 1000)))
+  res12 <- bayes(formula = ~a/(1 + b * exp(-lambda*t))^h,
+                 predvars = c("t"),
+                 parvars = c("a=1", "b", "lambda", "h=1"),
+                 lx = .00001, ux = 10,
+                 prior = norm4,
+                 k = 5, iter = 400,
+                 ICA.control = list(rseed = 1366))
+  plot(res12, sens.bayes.control = list(cubature = list(maxEval = 1000, tol = 1e-3),
+                                        optslist = list(maxeval = 1000)))
+  ## or we can use the quadrature formula to plot the derivative function
+  plot(res12,sens_method = "quadrature",
+       sens.bayes.control = list(optslist = list(maxeval = 1000)))
+
 }
 
 #################################
@@ -345,8 +406,8 @@ res13 <- bayes(formula = ~a + exp(-b*x), predvars = "x",
                iter = 1, k = 3,
                ICA.control= list(rseed = 100))
 \dontrun{
-res13 <- iterate(res13, 300)
-plot(res13)
+  res13 <- iterate(res13, 300)
+  plot(res13)
 }
 
 #################################
@@ -357,11 +418,11 @@ plot(res13)
 # Bayesian optimal designs for nonlinear models
 uni1 <- uniform(lower = c(-.3, 6, .5), upper = c(.3, 8, 1))
 \dontrun{
-res14 <- bayes(formula = ~1/(1 + exp(-b *(x - a)))^s, predvars = "x",
-               parvars = c("a", "b", "s"),
-               lx = -1, ux = 1, prior = uni1, k = 5, iter = 1)
-res14 <- iterate(res14, 300)
-plot(res14)
+  res14 <- bayes(formula = ~1/(1 + exp(-b *(x - a)))^s, predvars = "x",
+                 parvars = c("a", "b", "s"),
+                 lx = -1, ux = 1, prior = uni1, k = 5, iter = 1)
+  res14 <- iterate(res14, 300)
+  plot(res14)
 }
 
 ############################################################################
@@ -371,15 +432,15 @@ lb <- c(.5, 0, 0, 0, 0, 0)
 ub <- c(2, 1, 1, 1, 1, 1)
 myformula1 <- ~beta0+beta1*x1+beta2*x2+beta3*x1^2+beta4*x2^2+beta5*x1*x2
 \dontrun{
-res15 <- bayes(formula = myformula1,
-               predvars = c("x1", "x2"), parvars = paste("beta", 0:5, sep = ""),
-               family = Gamma(),
-               lx = rep(0, 2), ux = rep(1, 2),
-               prior = uniform(lower = lb, upper = ub),
-               k = 7,iter = 1, ICA.control = list(rseed = 1366))
-res14 <- iterate(res14, 500)
-plot(res14, sens.bayes.control = list(cubature = list(maxEval = 5000, tol = 1e-4),
-                                      optslist = list(maxeval = 3000)))
+  res15 <- bayes(formula = myformula1,
+                 predvars = c("x1", "x2"), parvars = paste("beta", 0:5, sep = ""),
+                 family = Gamma(),
+                 lx = rep(0, 2), ux = rep(1, 2),
+                 prior = uniform(lower = lb, upper = ub),
+                 k = 7,iter = 1, ICA.control = list(rseed = 1366))
+  res14 <- iterate(res14, 500)
+  plot(res14, sens.bayes.control = list(cubature = list(maxEval = 5000, tol = 1e-4),
+                                        optslist = list(maxeval = 3000)))
 }
 
 #################################
@@ -391,15 +452,15 @@ diag(sigma1) <- c(.5, .4, .1)
 norm5 <- normal(mu =  c(0, 1, .2), sigma = sigma1,
                 lower =  c(-3, .1, 0), upper = c(3, 2, .7))
 \dontrun{
-res16 <- bayes(formula = ~ c + (1-c)/(1 + exp(-b *(x - a))), predvars = "x",
-               parvars = c("a", "b", "c"),
-               family = binomial(), lx = -3, ux = 3,
-               k =  4, iter = 500, prior = norm5,
-               ICA.control = list(rseed = 1366, ncount = 50),
-               crt.bayes.control = list(cubature = list(maxEval = 2500, tol = 1e-4)))
-plot(res16, sens.bayes.control = list(cubature = list(maxEval = 3000, tol = 1e-4),
-                                      optslist = list(maxeval = 3000)))
-# took 925 second on my system
+  res16 <- bayes(formula = ~ c + (1-c)/(1 + exp(-b *(x - a))), predvars = "x",
+                 parvars = c("a", "b", "c"),
+                 family = binomial(), lx = -3, ux = 3,
+                 k =  4, iter = 500, prior = norm5,
+                 ICA.control = list(rseed = 1366, ncount = 50),
+                 crt.bayes.control = list(cubature = list(maxEval = 2500, tol = 1e-4)))
+  plot(res16, sens.bayes.control = list(cubature = list(maxEval = 3000, tol = 1e-4),
+                                        optslist = list(maxeval = 3000)))
+  # took 925 second on my system
 }
 
 

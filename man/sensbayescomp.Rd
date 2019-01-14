@@ -7,8 +7,9 @@
 sensbayescomp(formula, predvars, parvars, family = gaussian(), x, w, lx,
   ux, fimfunc = NULL, prior = list(), prob, alpha,
   sens.bayes.control = list(), crt.bayes.control = list(),
-  plot_3d = c("lattice", "rgl"), plot_sens = TRUE, npar = NULL,
-  calculate_criterion = TRUE, silent = FALSE)
+  crt_method = c("cubature", "quadrature"), sens_method = c("cubature",
+  "quadrature"), plot_3d = c("lattice", "rgl"), plot_sens = TRUE,
+  npar = NULL, calculate_criterion = TRUE, silent = FALSE)
 }
 \arguments{
 \item{formula}{A nonlinear model \code{\link[stats]{formula}}.
@@ -19,15 +20,20 @@ Will be coerced to a \code{\link[stats]{formula}} if necessary.}
 
 \item{parvars}{A vector of characters. Denotes the unknown parameters in the \code{\link[stats]{formula}}.}
 
-\item{family}{A description of the response distribution and link function to be used in the model.
+\item{family}{A description of the response distribution and the link function to be used in the model.
 This can be a family function, a call to a family function or a character string naming the family.
  Every family function has a link argument allowing to specify the link function to be applied on the response variable.
   If not specified, default links are used. For details see \code{\link[stats]{family}}.
    By default, a linear gaussian model \code{gaussian()} is applied.}
 
-\item{x}{Vector of design (support) points. See 'Details' of \code{\link{sensminimax}}.}
+\item{x}{A vector of candidate design (support) points.
+When is not set to \code{NULL} (default),
+ the agorithm only finds the optimal weights for the candidate points in  \code{x}.
+   Should be set when the user has a finite number of candidate design points  and the purpose
+   is to find the optimal weight for each of them (when zero, they will be excluded from the design).
+For design points with more than one dimension, see 'Details' of \code{\link{sensminimax}}.}
 
-\item{w}{Vector of corresponding design weights for \code{x}.}
+\item{w}{Vector of the corresponding design weights for \code{x}.}
 
 \item{lx}{Vector of lower bounds for the predictors. Should be in the same order as \code{predvars}.}
 
@@ -39,27 +45,36 @@ This can be a family function, a call to a family function or a character string
  \code{\link{uniform}}, \code{\link{normal}},
 \code{\link{skewnormal}} or \code{\link{student}}  to create the  prior. See 'Details' of \code{\link{bayes}}.}
 
-\item{prob}{Either \code{formula} or a \code{function}. when function, its argument is \code{x} and \code{param} same as the arguments in \code{fimfunc}.
+\item{prob}{Either \code{formula} or a \code{function}. When function, its argument are \code{x} and \code{param}, and they are the same as the arguments in \code{fimfunc}.
 \code{prob} as a function takes the design points and vector of parameters and returns the probability of success at each design points.
 See 'Examples'.}
 
 \item{alpha}{A value between 0 and 1.
 Compound or combined DP-criterion  is the product of the efficiencies of a design  with respect to D- and average P- optimality, weighted by \code{alpha}.}
 
-\item{sens.bayes.control}{Control parameters to verify the general equivalence theorem. For details, see \code{\link{sens.bayes.control}}.}
+\item{sens.bayes.control}{A list. Control parameters to verify the general equivalence theorem. For details, see \code{\link{sens.bayes.control}}.}
 
-\item{crt.bayes.control}{Control parameters to approximate the integral in  Bayesian criterion at a given design over the parameter space.
+\item{crt.bayes.control}{A list. Control parameters to approximate the integral in  the Bayesian criterion at a given design over the parameter space.
 For details, see \code{\link{crt.bayes.control}}.}
+
+\item{crt_method}{A character denotes which method to be used to approximate the integrals in Bayesian criteria.
+\code{"cubature"} corresponds to the adaptive multivariate integration method using the \code{\link[cubature]{hcubature}} algorithm (default).
+\code{"quadrature"} corresponds the traditional quadrature formulas and calls the function \code{\link[mvQuad]{createNIGrid}}.
+The tuning parameters are adjusted by \code{crt.bayes.control}. Default is set to \code{"cubature"}.}
+
+\item{sens_method}{Similar to \code{crt_method}, but for approximating the intergals in the sensitivity (derivative) function.
+The tuning parameters are adjusted by \code{sens.bayes.control}. Default is set to \code{"cubature"}.}
 
 \item{plot_3d}{Which package should be used to plot the sensitivity (derivative) function for two-dimensional design space. Defaults to \code{"lattice"}.}
 
 \item{plot_sens}{Plot the sensitivity (derivative) function? Defaults to \code{TRUE}.}
 
 \item{npar}{Number of model parameters.  Used when \code{fimfunc} is given instead of \code{formula} to specify the number of model parameters.
-If not specified truly, the sensitivity (derivative) plot may be shifted below the y-axis. When \code{NULL}, it will be set to \code{length(parvars)} or
+If not specified correctly, the sensitivity (derivative) plot may be shifted below the y-axis.
+When \code{NULL} (default), it will be set to \code{length(parvars)} or
 \code{prior$npar} when \code{missing(formula)}.}
 
-\item{calculate_criterion}{Evaluate the D-criterion? See 'Details' of \code{\link{sensminimax}}.}
+\item{calculate_criterion}{Calculate the optimality criterion? See 'Details' of \code{\link{sensminimax}}.}
 
 \item{silent}{Do not print anything? Defaults to \code{FALSE}.}
 }
@@ -73,16 +88,18 @@ Therefore, the user can look at the sensitivity plot and the ELB and decide whet
 design is optimal or close enough to the true optimal design (ELB tells us that without knowing the latter).
 }
 \details{
-\strong{Sometimes, the CPU time can be considerably reduced
-by choosing less conservative values for the tuning parameters \code{tol} and \code{maxEval} in
-the function \code{\link{sens.bayes.control}}.}
-The user should find a trade-off between accuracy and speed for his/her problem.
+Depending on the complexity of the problem at hand, sometimes, the CPU time can be considerably reduced
+by choosing a set of  less conservative values for the tuning parameters \code{tol} and \code{maxEval} in
+the function \code{\link{sens.bayes.control}} when \code{sens_method = "cubature"}. Similarly, this applies  when \code{sens_method = "quadrature"}.
+In general, if the CPU time matters, the user should find an appropriate speed-accuracy trade-off  for her/his own problem.
+ See 'Examples' for more details.
 }
 \note{
-Having accurate plots for the sensitivity (derivative) function
- and calculating ELB to a high precision is the primary goal here,
-  although the process may take too long (even hours) due to
-requesting very accurate integral approximations.
+The default values of the tuning parameters in \code{sens.bayes.control} are set in a way that
+having accurate plots for the sensitivity (derivative) function
+ and calculating the ELB to a high precision  to be the primary goals,
+ eventhough the process may take too long. The user should choose a set of less conservative values
+ via the argument \code{sens.bayes.control} when the CPU-time is too long or matters.
 }
 \examples{
 ##########################################

@@ -20,7 +20,7 @@ ICA.control(ncount = 40, nimp = ncount/10, assim_coeff = 4,
 
 \item{revol_rate}{Revolution rate. Defaults to \code{0.3}.}
 
-\item{damp}{Damp ratio for revolution rate.  \code{revol_rate} is decreased in every iteration by \code{damp}. Defaults to \code{0.99}.}
+\item{damp}{Damp ratio for revolution rate.  \code{revol_rate} is decreased in every iteration by a factor of \code{damp} (\code{revol_rate * damp}). Defaults to \code{0.99}.}
 
 \item{uniting_threshold}{If the distance between two imperialists is less than the product of the uniting threshold by the largest distance in the search space, ICA unites the empires. Defaults to \code{0.02}.}
 
@@ -35,13 +35,12 @@ Denotes the type of stopping rule.  See 'Details'. Defaults to \code{'maxiter'}.
 
 \item{stoptol}{If \code{stop_rule = 'equivalence'}, algorithm stops when  ELB is larger than  \code{stoptol}. Defaults to \code{0.99}.}
 
-\item{checkfreq}{The algorithm checks the general equivalence theorem. It plots the sensitivity or derivative function and calculates the efficiency lower bound ELB,
-if \code{plot_sens == TRUE},
-     every \code{checkfreq} iterations.
-     When \code{checkfreq = 0}, no check will be made. When \code{checkfreq = Inf}, only the output design will be verified.
-     Defaults to \code{0}.}
+\item{checkfreq}{The algorithm verifies the  general equivalence theorem in
+every \code{checkfreq} iterations.
+When \code{checkfreq = 0}, no verification will be done. When \code{checkfreq = Inf}, only the output design will be verified.
+Defaults to \code{0}.}
 
-\item{plot_cost}{Plot the iteration (evolution) of algorithm? Defaults to \code{TRUE}.}
+\item{plot_cost}{Plot the iterations (evolution) of algorithm? Defaults to \code{TRUE}.}
 
 \item{plot_sens}{Plot the sensitivity (derivative) function at every \code{checkfreq}. Defaults to \code{TRUE}.}
 
@@ -59,21 +58,24 @@ The function \code{ICA.control} returns a list of ICA control parameters.
 }
 \details{
 If \code{stop_rule = 'maxiter'}, the algorithm iterates until maximum number of iterations.\cr
-  If \code{stope_rule = 'equivalence'}, the algorithm stops when either ELB  is greater than \code{stoptol} or reaches \code{maxiter}.
+  If \code{stope_rule = 'equivalence'}, the algorithm stops when either ELB  is greater than \code{stoptol} or it reaches \code{maxiter}.
   In this case, you must specify the check frequency by \code{checkfreq}.
-  Note that checking equivalence theorem is a very time consuming process, especially for Bayesian and minimax problems.
+  Note that checking equivalence theorem is a very time consuming process,
+   especially for Bayesian and minimax design problems.
   We advise using this option only for locally, multiple objective and robust optimal designs.
 
+
+What to follows shows  how \code{sym_point} and \code{sym} may be useful? \cr
  Assume the 2PL model of the form \eqn{ P(Y=1) = \frac{1}{1+exp(-b(x - a))}}{P(Y=1) = 1/(1+exp(-b(x - a)))} and
  let the parameters \eqn{a} and \eqn{b}
   belong to
   \eqn{[a_L, a_U]} and \eqn{[b_L, b_U]}, respectively.
   It can be shown that the optimal design for this model
-  is symmetric about \eqn{a_M = \frac{a_L + a_U}{2}}{a_M= (a_L + a_U)/2}.
+  is symmetric around \eqn{a_M = \frac{a_L + a_U}{2}}{a_M= (a_L + a_U)/2}.
   For this model, to find accurate symmetric designs, one can set \code{sym = TRUE} and
    provide the value of the \eqn{a_M} via \code{sym_point}.
    In this case, the output design will be symmetric around the point \code{sym_point}.
-  The length of  \code{sym_point} must be equal to the number of model predictors, here is \code{1}.
+  The length of  \code{sym_point} must be equal to the number of model predictors, here, is equal to \code{1}.
 }
 \examples{
 ICA.control(ncount = 100)

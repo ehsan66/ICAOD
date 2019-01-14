@@ -7,7 +7,7 @@
 robust(formula, predvars, parvars, family = gaussian(), lx, ux, iter, k,
   prob, parset, fimfunc = NULL, ICA.control = list(),
   sens.minimax.control = list(), initial = NULL,
-  npar = dim(parset)[2], plot_3d = c("lattice", "rgl"))
+  npar = dim(parset)[2], plot_3d = c("lattice", "rgl"), x = NULL)
 }
 \arguments{
 \item{formula}{A nonlinear model \code{\link[stats]{formula}}.
@@ -18,7 +18,7 @@ Will be coerced to a \code{\link[stats]{formula}} if necessary.}
 
 \item{parvars}{A vector of characters. Denotes the unknown parameters in the \code{\link[stats]{formula}}.}
 
-\item{family}{A description of the response distribution and link function to be used in the model.
+\item{family}{A description of the response distribution and the link function to be used in the model.
 This can be a family function, a call to a family function or a character string naming the family.
  Every family function has a link argument allowing to specify the link function to be applied on the response variable.
   If not specified, default links are used. For details see \code{\link[stats]{family}}.
@@ -34,9 +34,8 @@ This can be a family function, a call to a family function or a character string
 
 \item{prob}{A vector of the probability measure \eqn{\pi} associated with each row of \code{parset}.}
 
-\item{parset}{A matrix to provide the set of initial estimates for the model parameters, i.e. support of \eqn{\pi}.
- Every row is one vector of initial estimates for the model parameters
-(\code{nrow(parset) == length(prob)}). See 'Details'.}
+\item{parset}{A matrix that provides the vector of initial estimates for the model parameters, i.e. support of \eqn{\pi}.
+Every row is one vector  (\code{nrow(parset) == length(prob)}). See 'Details'.}
 
 \item{fimfunc}{A function. Returns the FIM as a \code{matrix}. Required when \code{formula} is missing. See 'Details' of \code{\link{minimax}}.}
 
@@ -44,14 +43,21 @@ This can be a family function, a call to a family function or a character string
 
 \item{sens.minimax.control}{Control parameters to verify the general equivalence theorem. For details, see the function \code{\link{sens.minimax.control}}.}
 
-\item{initial}{A matrix of the  initial designs that will be used as initial solutions (countries).
+\item{initial}{A matrix of the  initial design points and weights that will be inserted into the initial solutions (countries) of the algorithm.
 Every row is a design, i.e.  a concatenation of \code{x} and \code{w}. Will be coerced to a \code{matrix} if necessary.  See 'Details' of \code{\link{minimax}}.}
 
 \item{npar}{Number of model parameters.  Used when \code{fimfunc} is given instead of \code{formula} to specify the number of model parameters.
 If not given, the sensitivity plot may be shifted below the y-axis.
- When \code{NULL}, it will be set to \code{dim(parset)[2]}.}
+ When \code{NULL}, it is set to \code{dim(parset)[2]}.}
 
 \item{plot_3d}{Which package should be used to plot the sensitivity (derivative) function for two-dimensional design space. Defaults to \code{"lattice"}.}
+
+\item{x}{A vector of candidate design (support) points.
+When is not set to \code{NULL} (default),
+ the agorithm only finds the optimal weights for the candidate points in  \code{x}.
+   Should be set when the user has a finite number of candidate design points  and the purpose
+   is to find the optimal weight for each of them (when zero, they will be excluded from the design).
+For design points with more than one dimension, see 'Details' of \code{\link{sensminimax}}.}
 }
 \value{
 an object of class \code{minimax} that is a list including three sub-lists:
@@ -64,37 +70,38 @@ an object of class \code{minimax} that is a list including three sub-lists:
       \code{iter}                   \tab      \tab Iteration number.\cr
       \code{x}                      \tab      \tab Design points. \cr
       \code{w}                      \tab      \tab Design weights. \cr
-      \code{min_cost}               \tab      \tab Cost (criterion value) of the best imperialist in iteration \code{iter}. \cr
-      \code{mean_cost}              \tab      \tab Mean of costs of all imperialists in iteration \code{iter}. \cr
+      \code{min_cost}               \tab      \tab Value of the criterion for the best imperialist (design).  \cr
+      \code{mean_cost}              \tab      \tab Mean of the critrion values of all the imperialists. \cr
       \code{sens}                   \tab      \tab An object of class 'sensminimax'. See below. \cr
       \code{param}                  \tab      \tab Vector of parameters.\cr
     }
   }
 
-  \item{\code{empires}}{A list of all empires of the last iteration.}
+  \item{\code{empires}}{A list of all the  empires of the last iteration.}
   \item{\code{alg}}{A list with following information:
     \tabular{lll}{
-      \code{nfeval}           \tab      \tab Number of function evaluations. See below. \cr
-      \code{nlocal}           \tab      \tab Number of successful local search. \cr
+      \code{nfeval}           \tab      \tab Number of function evaluations.  It does not count the function evaluations from checking the general equivalence theorem.\cr
+      \code{nlocal}           \tab      \tab Number of successful local searches. \cr
       \code{nrevol}           \tab      \tab Number of successful revolutions. \cr
-      \code{nimprove}         \tab      \tab Number of successful movements toward the imperialists in assimilation step. \cr
+      \code{nimprove}         \tab      \tab Number of successful movements toward the imperialists in the assimilation step. \cr
       \code{convergence}      \tab      \tab Stopped by \code{'maxiter'} or \code{'equivalence'}?\cr
     }
   }
 }
 
-\code{sens} contains information about the design verification by the general equivalence theorem. See \code{sensminimax} for more details.
-It is only available every \code{ICA.control$checkfreq} iterations
-and the last iteration if   \code{ICA.control$checkfreq >= 0}. Otherwise, \code{NULL}.
+The list \code{sens} contains information about the design verification by the general equivalence theorem. See \code{sensminimax} for more details.
+It is given  every \code{ICA.control$checkfreq} iterations
+and also the last iteration if   \code{ICA.control$checkfreq >= 0}. Otherwise, \code{NULL}.
 
  \code{param} is a vector of parameters that is the global minimum of
-  the minimax criterion or the global maximum of the standardized maximin criterion over the parameter space, given \code{x}, \code{w}.
-
-\code{nfeval} does not count the function evaluations from checking the general equivalence theorem.
+  the minimax criterion or the global maximum of the standardized maximin criterion over the parameter space, given  the current \code{x}, \code{w}.
 }
 \description{
-Finds Robust designs or optimal designs in average for nonlinear models.
- It is useful when a set of initial estimates for the unknown model parameters along with a discrete probability measure on that set  is available.
+Finds Robust designs or optimal  in-average designs for nonlinear models.
+ It is useful when a set of different vectors of initial estimates
+  along with a discrete probability measure
+  are available for the unknown model parameters.
+  It is a discrete version of \code{\link{bayes}}.
 }
 \details{
 Let \eqn{\Theta} be a set of initial estimates for the unknown parameters.
@@ -112,9 +119,9 @@ A robust design \eqn{\xi^*}{\xi*}   maximizes \eqn{B(\xi, \pi)} over the space o
 
  To verify the optimality of the output design by the general equivalence theorem,
  the user can either \code{plot} the results or set  \code{checkfreq} in \code{\link{ICA.control}}
- to \code{Inf}. In either case, the function \code{\link{sensrobust}} is called for verification.
+ to \code{Inf}. In either way, the function \code{\link{sensrobust}} is called for verification.
 One can also adjust the tuning parameters in \code{\link{ICA.control}} to set a stopping rule
-based on the general equivalence theorem. See 'Examples'.
+based on the general equivalence theorem. See 'Examples' below.
 }
 \note{
 When a continuous prior distribution for the unknown model parameters is available,  use \code{\link{bayes}}.
@@ -125,7 +132,7 @@ When only one initial estimates of the unknown model parameters is available (\e
 # See how we set a stopping rule.
 # The ELB is computed every checkfreq = 30 iterations
 # The optimization stops when the ELB is larger than stoptol = .95
-res <- robust(formula = ~1/(1 + exp(-b *(x - a))),
+res1 <- robust(formula = ~1/(1 + exp(-b *(x - a))),
               predvars = c("x"), parvars = c("a", "b"),
               family = binomial(),
               lx = -5, ux = 5, prob = rep(1/4, 4),
@@ -135,8 +142,21 @@ res <- robust(formula = ~1/(1 + exp(-b *(x - a))),
                                  stoptol = .95, checkfreq = 30))
 
 \dontrun{
-res <- iterate(res, 100)
+res1 <- iterate(res1, 100)
 # stops at iteration 51
+}
+
+
+\dontrun{
+res1.1 <- robust(formula = ~1/(1 + exp(-b *(x - a))),
+              predvars = c("x"), parvars = c("a", "b"),
+              family = binomial(),
+              lx = -5, ux = 5, prob = rep(1/4, 4),
+              parset = matrix(c(0.5, 1.5, 0.5, 1.5, 4.0, 4.0, 5.0, 5.0), 4, 2),
+              x = c(-3, 0, 3),
+              iter = 150, k =3)
+plot(res1.1)
+# not optimal
 }
 }
 \seealso{

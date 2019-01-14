@@ -7,7 +7,7 @@
 locally(formula, predvars, parvars, family = gaussian(), lx, ux, iter, k,
   inipars, fimfunc = NULL, ICA.control = list(),
   sens.minimax.control = list(), initial = NULL,
-  npar = length(inipars), plot_3d = c("lattice", "rgl"))
+  npar = length(inipars), plot_3d = c("lattice", "rgl"), x = NULL)
 }
 \arguments{
 \item{formula}{A nonlinear model \code{\link[stats]{formula}}.
@@ -18,7 +18,7 @@ Will be coerced to a \code{\link[stats]{formula}} if necessary.}
 
 \item{parvars}{A vector of characters. Denotes the unknown parameters in the \code{\link[stats]{formula}}.}
 
-\item{family}{A description of the response distribution and link function to be used in the model.
+\item{family}{A description of the response distribution and the link function to be used in the model.
 This can be a family function, a call to a family function or a character string naming the family.
  Every family function has a link argument allowing to specify the link function to be applied on the response variable.
   If not specified, default links are used. For details see \code{\link[stats]{family}}.
@@ -32,8 +32,8 @@ This can be a family function, a call to a family function or a character string
 
 \item{k}{Number of design points. Must be at least equal to the number of model parameters to avoid singularity of the FIM.}
 
-\item{inipars}{Vector. Initial values for the unknown parameters.
-Must match \code{parvars} or argument \code{param} of the function provided in \code{fimfunc}.}
+\item{inipars}{A vector of initial estimates for the unknown parameters.
+It must match \code{parvars} or the argument \code{param} of the function \code{fimfunc}, when provided.}
 
 \item{fimfunc}{A function. Returns the FIM as a \code{matrix}. Required when \code{formula} is missing. See 'Details' of \code{\link{minimax}}.}
 
@@ -41,13 +41,21 @@ Must match \code{parvars} or argument \code{param} of the function provided in \
 
 \item{sens.minimax.control}{Control parameters to verify the general equivalence theorem. For details, see the function \code{\link{sens.minimax.control}}.}
 
-\item{initial}{A matrix of the  initial designs that will be used as initial solutions (countries).
+\item{initial}{A matrix of the  initial design points and weights that will be inserted into the initial solutions (countries) of the algorithm.
 Every row is a design, i.e.  a concatenation of \code{x} and \code{w}. Will be coerced to a \code{matrix} if necessary.  See 'Details' of \code{\link{minimax}}.}
 
 \item{npar}{Number of model parameters.  Used when \code{fimfunc} is given instead of \code{formula} to specify the number of model parameters.
-If not given, the sensitivity plot may be shifted below the y-axis. When \code{NULL}, it will be set here to \code{length(inipars)}.}
+If not given, the sensitivity plot may be shifted below the y-axis.
+When \code{NULL}, it is set to \code{length(inipars)}.}
 
 \item{plot_3d}{Which package should be used to plot the sensitivity (derivative) function for two-dimensional design space. Defaults to \code{"lattice"}.}
+
+\item{x}{A vector of candidate design (support) points.
+When is not set to \code{NULL} (default),
+ the agorithm only finds the optimal weights for the candidate points in  \code{x}.
+   Should be set when the user has a finite number of candidate design points  and the purpose
+   is to find the optimal weight for each of them (when zero, they will be excluded from the design).
+For design points with more than one dimension, see 'Details' of \code{\link{sensminimax}}.}
 }
 \value{
 an object of class \code{minimax} that is a list including three sub-lists:
@@ -60,47 +68,46 @@ an object of class \code{minimax} that is a list including three sub-lists:
       \code{iter}                   \tab      \tab Iteration number.\cr
       \code{x}                      \tab      \tab Design points. \cr
       \code{w}                      \tab      \tab Design weights. \cr
-      \code{min_cost}               \tab      \tab Cost (criterion value) of the best imperialist in iteration \code{iter}. \cr
-      \code{mean_cost}              \tab      \tab Mean of costs of all imperialists in iteration \code{iter}. \cr
+      \code{min_cost}               \tab      \tab Value of the criterion for the best imperialist (design).  \cr
+      \code{mean_cost}              \tab      \tab Mean of the critrion values of all the imperialists. \cr
       \code{sens}                   \tab      \tab An object of class 'sensminimax'. See below. \cr
       \code{param}                  \tab      \tab Vector of parameters.\cr
     }
   }
 
-  \item{\code{empires}}{A list of all empires of the last iteration.}
+  \item{\code{empires}}{A list of all the  empires of the last iteration.}
   \item{\code{alg}}{A list with following information:
     \tabular{lll}{
-      \code{nfeval}           \tab      \tab Number of function evaluations. See below. \cr
-      \code{nlocal}           \tab      \tab Number of successful local search. \cr
+      \code{nfeval}           \tab      \tab Number of function evaluations.  It does not count the function evaluations from checking the general equivalence theorem.\cr
+      \code{nlocal}           \tab      \tab Number of successful local searches. \cr
       \code{nrevol}           \tab      \tab Number of successful revolutions. \cr
-      \code{nimprove}         \tab      \tab Number of successful movements toward the imperialists in assimilation step. \cr
+      \code{nimprove}         \tab      \tab Number of successful movements toward the imperialists in the assimilation step. \cr
       \code{convergence}      \tab      \tab Stopped by \code{'maxiter'} or \code{'equivalence'}?\cr
     }
   }
 }
 
-\code{sens} contains information about the design verification by the general equivalence theorem. See \code{sensminimax} for more details.
-It is only available every \code{ICA.control$checkfreq} iterations
-and the last iteration if   \code{ICA.control$checkfreq >= 0}. Otherwise, \code{NULL}.
+The list \code{sens} contains information about the design verification by the general equivalence theorem. See \code{sensminimax} for more details.
+It is given  every \code{ICA.control$checkfreq} iterations
+and also the last iteration if   \code{ICA.control$checkfreq >= 0}. Otherwise, \code{NULL}.
 
  \code{param} is a vector of parameters that is the global minimum of
-  the minimax criterion or the global maximum of the standardized maximin criterion over the parameter space, given \code{x}, \code{w}.
-
-\code{nfeval} does not count the function evaluations from checking the general equivalence theorem.
+  the minimax criterion or the global maximum of the standardized maximin criterion over the parameter space, given  the current \code{x}, \code{w}.
 }
 \description{
 Finds locally D-optimal designs for nonlinear models.
- It should be used when initial estimates for the unknown parameters are available from, say, a pilot study or previous research.
+ It should be used when a vector of initial estimates is available for the unknown model parameters.
  Locally optimal designs may not be efficient when the initial estimates are  far away from the true values of the parameters.
 }
 \details{
 Let \eqn{M(\xi, \theta_0)} be the Fisher information
-  matrix (FIM) of a \eqn{k-}point design \eqn{\xi} and \eqn{\theta_0}  be the initial user-specified estimates for the unknown parameters.\cr
+  matrix (FIM) of a \eqn{k-}point design \eqn{\xi} and
+   \eqn{\theta_0}  be the vector of the initial  estimates for the unknown parameters.
  A locally D-optimal design \eqn{\xi^*}{\xi*} minimizes over \eqn{\Xi}
   \deqn{-\log|M(\xi, \theta_0)|.}{-log|M(\xi, \theta_0)|.}
 
 One can adjust the tuning parameters in \code{\link{ICA.control}} to set a stopping rule
-based on the general equivalence theorem. See "Examples".
+based on the general equivalence theorem. See "Examples" below.
 }
 \examples{
 #################################
@@ -118,14 +125,21 @@ res1 <- locally(formula = ~a + exp(-b*x), predvars = "x", parvars = c("a", "b"),
                                          stop_rule = "equivalence",
                                          checkfreq = 20, stoptol = .95))
 \dontrun{
-# update the algorithm
-res1 <- iterate(res1, 150)
-#stops at iteration 21 because ELB is greater than .95
+  # update the algorithm
+  res1 <- iterate(res1, 150)
+  #stops at iteration 21 because ELB is greater than .95
 }
 
-plot(res1)
-
-
+### fixed x, lx and ux are only required for equivalence theorem
+\dontrun{
+res1.1 <- locally(formula = ~a + exp(-b*x), predvars = "x", parvars = c("a", "b"),
+                  lx = 0, ux = 1, inipars = c(1, 10),
+                  iter = 100, k = 3,
+                  x = c(.25, .5, .75),
+                  ICA.control= ICA.control(rseed = 100))
+plot(res1.1)
+# we can not have an optimal design using this x
+}
 
 ################################
 ## two parameter logistic model
@@ -137,8 +151,8 @@ res2 <- locally(formula = ~1/(1 + exp(-b *(x - a))),
                 ICA.control= list(rseed = 100, stop_rule = "equivalence",
                                   checkfreq = 50, stoptol = .95))
 \dontrun{
-res2 <- iterate(res2, 100)
-# stops at iteration 51
+  res2 <- iterate(res2, 100)
+  # stops at iteration 51
 }
 
 
@@ -149,17 +163,32 @@ res2 <- iterate(res2, 100)
 ################################
 # mixed inhibition model
 \dontrun{
-res3 <- locally(formula =  ~ V*S/(Km * (1 + I/Kic)+ S * (1 + I/Kiu)),
-                predvars = c("S", "I"),
-                parvars = c("V", "Km", "Kic", "Kiu"),
-                family = gaussian(),
-                lx = c(0, 0), ux = c(30, 60),
-                k = 4,
-                iter = 300,
-                inipars = c(1.5, 5.2, 3.4, 5.6),
-                ICA.control= list(rseed = 100, stop_rule = "equivalence",
-                                  checkfreq = 50, stoptol = .95))
-# stops at iteration 100
+  res3 <- locally(formula =  ~ V*S/(Km * (1 + I/Kic)+ S * (1 + I/Kiu)),
+                  predvars = c("S", "I"),
+                  parvars = c("V", "Km", "Kic", "Kiu"),
+                  family = gaussian(),
+                  lx = c(0, 0), ux = c(30, 60),
+                  k = 4,
+                  iter = 300,
+                  inipars = c(1.5, 5.2, 3.4, 5.6),
+                  ICA.control= list(rseed = 100, stop_rule = "equivalence",
+                                    checkfreq = 50, stoptol = .95))
+  # stops at iteration 100
+}
+
+
+\dontrun{
+  # fixed x
+  res3.1 <- locally(formula =  ~ V*S/(Km * (1 + I/Kic)+ S * (1 + I/Kiu)),
+                  predvars = c("S", "I"),
+                  parvars = c("V", "Km", "Kic", "Kiu"),
+                  family = gaussian(),
+                  lx = c(0, 0), ux = c(30, 60),
+                  k = 5,
+                  iter = 100,
+                  x = c(20, 4, 20, 4, 10,  0, 0, 30, 3, 2),
+                  inipars = c(1.5, 5.2, 3.4, 5.6),
+                  ICA.control= list(rseed = 100))
 }
 }
 \references{

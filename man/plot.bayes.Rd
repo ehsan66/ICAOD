@@ -5,23 +5,36 @@
 \title{Plotting \code{bayes} Objects}
 \usage{
 \method{plot}{bayes}(x, iter = NULL, sensitivity = TRUE,
-  calculate_criterion = FALSE, sens.bayes.control = list(),
-  crt.bayes.control = list(), silent = FALSE, plot_3d = c("lattice",
-  "rgl"), evolution = FALSE, ...)
+  calculate_criterion = FALSE, crt_method = NULL, sens_method = NULL,
+  sens.bayes.control = list(), crt.bayes.control = list(),
+  silent = FALSE, plot_3d = c("lattice", "rgl"), evolution = FALSE,
+  ...)
 }
 \arguments{
 \item{x}{An object of class \code{bayes}.}
 
-\item{iter}{Iteration number. if \code{NULL}, will be set to last iteration.}
+\item{iter}{Iteration number. if \code{NULL} (default), it will be set to the last iteration.}
 
-\item{sensitivity}{Logical. If \code{TRUE}, the general equivalence theorem is used to check the optimality if the best design in iteration number \code{iter} and the sensitivity plot will be plotted.}
+\item{sensitivity}{Logical. If \code{TRUE} (default), the general equivalence theorem is used to check the optimality if the best design in iteration number \code{iter} and the sensitivity function will be plotted.}
 
-\item{calculate_criterion}{Re-calculate the criterion value? It only assumes a continuous parameter space for the minimax and standardized maximin designs.  Defaults to \code{FALSE}. See 'Details'.}
+\item{calculate_criterion}{Logical. Re-calculate the Bayesian criterion value (maybe with a set of new tuning parameters to be sure of the accuracy of the integral approximation)? Defaults to \code{FALSE}. See 'Details'.}
 
-\item{sens.bayes.control}{Control parameters to verify general equivalence theorem. For details, see \code{\link{sens.bayes.control}}.}
+\item{crt_method}{A character denotes which method to be used to approximate the integrals in Bayesian criteria.
+\code{"cubature"} corresponds to the adaptive multivariate integration method using the \code{\link[cubature]{hcubature}} algorithm (default).
+\code{"quadrature"} corresponds the traditional quadrature formulas and calls the function \code{\link[mvQuad]{createNIGrid}}.
+The tuning parameters are adjusted by \code{crt.bayes.control}.
+ If \code{NULL} (default), it will use the method already applied to create the object \code{x}.}
+
+\item{sens_method}{Similar to \code{crt_method}, but for approximating the intergals in the sensitivity (derivative) function.
+The tuning parameters are adjusted by \code{sens.bayes.control}.
+ If \code{NULL} (default), it will use the method already applied to create the object \code{x}.}
+
+\item{sens.bayes.control}{Control parameters to verify general equivalence theorem. For details, see \code{\link{sens.bayes.control}}.
+If \code{NULL} (default), it will be set to the  tuning parameters used to create object \code{x}.}
 
 \item{crt.bayes.control}{Control parameters to approximate the integration in the Bayesian criterion at a given design.
-For details, see \code{\link{crt.bayes.control}}.}
+ For details, see \code{\link{crt.bayes.control}}.
+If \code{NULL} (default), it will be set to the  tuning parameters used to create object \code{x}.}
 
 \item{silent}{Do not print anything? Defaults to \code{FALSE}.}
 
@@ -33,16 +46,17 @@ Only applicable when \code{sensitivity = TRUE}.}
 \item{...}{Argument with no further use.}
 }
 \description{
-This function plots the evolution of the algorithm till iteration number \code{iter} iteration and re-checks the general equivalence theorem by plotting the sensitivity function and calculating the ELB.
+This function plots the evolution of the ICA algorithm (iteration vs the best (minimum) criterion value at each iteration) and also verifies the optimality of the last obtained design
+ using  the general equivalence theorem. It plots the sensitivity function and calculates the ELB for the best design generated  at iteration number \code{iter}.
 }
 \details{
-The criterion value can also be re-calculated for the output designs using new set of tuning parameters in the function \code{\link{crt.bayes.control}}.
+In addition to verfiying the general equivalence theorem,
+ this function makes it possible to  re-calcuate the criterion value for the output designs using a new (say, more conservative) set of tuning parameters.
  This is useful for  Bayesian optimal designs to assess the robustness of the
  criterion value with respect to different values of the tuning parameters.
- To put it simple, for these designs, the user can re-calculate the
- criterion value (approximate the integration given an output design in a Bayesian problem) with different values for  \code{maxEval} and \code{tol} in \code{\link{crt.bayes.control}}
- to be sure that the function \code{hcubature} approximates the integrals to an acceptable accuracy using the default values
- (or a new user-given values, in case it has been reset) of \code{maxEval} and \code{tol}.
+ To put it simple, for Bayesian generated designs, the user can re-calculate the
+ criterion value for the output design (best design generated in \code{iter}) with different values for  \code{maxEval} and \code{tol} in \code{\link{crt.bayes.control}}
+ to verify  that the function \code{hcubature} approximates the integrals to an user-acceptable accuracy. The same also applies for the quadrature methods using different number of nodes.
 }
 \seealso{
 \code{\link{bayes}}, \code{\link{bayescomp}}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{FIM_mixed_inhibition}
 \alias{FIM_mixed_inhibition}
-\title{@title Fisher Information Matrix for the Mixed Inhibition Model.}
+\title{Fisher Information Matrix for the Mixed Inhibition Model.}
 \usage{
 FIM_mixed_inhibition(S, I, w, param)
 }

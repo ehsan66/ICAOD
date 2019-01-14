@@ -15,22 +15,22 @@
 #' }
 #' where \eqn{x^*}{x*} and \eqn{w^*}{w*} are the support points and the corresponding weights of the optimal design, respectively.
 #'
-#'  The argument  \code{x} is the vector of design points.
-#'  For design points with more than one dimension,
+#' The argument  \code{x} is the vector of design points.
+#'  For design points with more than one dimension (the models with more than one predictors),
 #'    it is a concatenation of the design points, but \strong{dimension-wise}.
 #'    For example, let the model has three predictors   \eqn{(I, S, Z)}.
-#'     Then,  (three-dimensional) design points of a two-point optimal design are
+#'     Then,  a two-point optimal design has the following points:
 #'    \eqn{\{\mbox{point1} = (I_1, S_1, Z_1), \mbox{point2} = (I_2, S_2, Z_2)\}}{{point1 = (I1, S1, Z1), point2 = (I2, S2, Z2)}}.
-#'     Then, the argument \code{x} is equivalent to
+#'     Then, the argument \code{x} is equal to
 #'     \code{x = c(I1, I2, S1, S2, Z1, Z2)}.
 #'
 #' @export
 #' @inheritParams locallycomp
 #' @param x Vector of design (support) points of \eqn{\xi_1}. See 'Details' of \code{\link{leff}}.
 #' @param w Vector of corresponding design weights for \code{x}.
-#' @param xopt Vector of design (support) points of optimal design (\eqn{\xi_2}). Similar to \code{x}.
+#' @param xopt Vector of design (support) points of the optimal design (\eqn{\xi_2}). Similar to \code{x}.
 #' @param wopt Vector of corresponding design weights for \code{xopt}.
-#' @param type A character. \code{"D"} denotes D-efficiency and \code{"PA"} denotes average P-efficiency.
+#' @param type A character. \code{"D"} denotes the D-efficiency and \code{"PA"} denotes the average P-efficiency.
 #' @return A value between 0 and 1.
 #' @references McGree, J. M., Eccleston, J. A., and Duffull, S. B. (2008). Compound optimal design criteria for nonlinear models. Journal of Biopharmaceutical Statistics, 18(4), 646-661.
 #' @example inst/examples/leff_examples.R
@@ -56,19 +56,19 @@ leff <- function(formula,
                                        predvars = predvars, parvars = parvars,
                                        family = family, lx =rep(0, npred), ux = rep(1, npred), iter = 1, k = 1,
                                        paramvectorized = FALSE,
-                                       prior = NULL)
+                                       prior = NULL, x = NULL)
 
 
   if (!missing(formula)){
     if (length(inipars) != length(parvars))
-      stop("lengtb of 'inipars' is not equal to the length of 'parvars'")
+      stop("length of 'inipars' is not equal to the length of 'parvars'")
   }
 
   if(missing(formula)){
     # to handle ...
     fimfunc2 <- function(x, w, param)
       fimfunc(x = x, w = w, param = param)
-      #fimfunc(x = x, w = w, param = param,...)
+    #fimfunc(x = x, w = w, param = param,...)
   } else{
     fimfunc2 <- fimfunc_formula$fimfunc_formula ## can be vectorized with respect to parameters!
   }
@@ -109,13 +109,13 @@ leff <- function(formula,
 #' @details
 #' See Masoudi et al. (2018) for formula details (the paper is under review and will be updated as soon as accepted).
 #'
-#'  The argument  \code{x} is the vector of design points.
-#'  For design points with more than one dimension,
+#' The argument  \code{x} is the vector of design points.
+#'  For design points with more than one dimension (the models with more than one predictors),
 #'    it is a concatenation of the design points, but \strong{dimension-wise}.
 #'    For example, let the model has three predictors   \eqn{(I, S, Z)}.
-#'     Then,  (three-dimensional) design points of a two-point optimal design are
+#'     Then,  a two-point optimal design has the following points:
 #'    \eqn{\{\mbox{point1} = (I_1, S_1, Z_1), \mbox{point2} = (I_2, S_2, Z_2)\}}{{point1 = (I1, S1, Z1), point2 = (I2, S2, Z2)}}.
-#'     Then, the argument \code{x} is equivalent to
+#'     Then, the argument \code{x} is equal to
 #'     \code{x = c(I1, I2, S1, S2, Z1, Z2)}.
 #'
 #'
@@ -142,13 +142,15 @@ beff <- function(formula,
     else
       npar <- prior$npar
   }
+
   ## only to pass the check_common_eargs
   npred <- length(x)/length(w)
   fimfunc_formula <- check_common_args(fimfunc = fimfunc, formula = formula,
                                        predvars = predvars, parvars = parvars,
                                        family = family, lx =rep(0, npred), ux = rep(1,npred),
                                        iter = 1, k = length(w),
-                                       paramvectorized = FALSE, prior = prior)
+                                       paramvectorized = FALSE, prior = prior,
+                                       x = NULL)
   if(missing(formula)){
     # to handle ...
     fimfunc2 <- function(x, w, param){

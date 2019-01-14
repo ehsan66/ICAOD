@@ -1,15 +1,15 @@
 ######################################################################################################*
 ######################################################################################################*
-#' Multivariate Normal Prior Distribution for Model Parameters
+#' Assumes A Multivariate Normal Prior Distribution for The Model Parameters
 #'
 #' Creates a multivariate normal prior distribution for the unknown parameters as an object of class \code{cprior}.
 #'
-#' @param mu  A vector of length of parameters, representing the mean value.
+#' @param mu  A vector representing the mean values.
 #' @param sigma A symmetric positive-definite matrix representing the variance-covariance matrix of the distribution.
-#' @param lower A vector of lower bounds  for the unknown parameters.
-#' @param upper A vector of upper bounds  for the unknown parameters.
+#' @param lower A vector of lower bounds  for the model parameters.
+#' @param upper A vector of upper bounds  for the model parameters.
 #' @return
-#' An object of class \code{cprior} that is a  list with components:
+#' An object of class \code{cprior} that is a  list with the following components:
 #' \itemize{
 #'  \item{fn: }{prior distribution as an R \code{function} with argument \code{param} that is the vector of the unknown parameters. See below.}
 #'  \item{npar: }{Number of unknown parameters and is equal to the length of \code{param}}.
@@ -18,7 +18,7 @@
 #' }
 #' The list will be passed to the argument \code{prior} of the function \code{\link{bayes}}.
 #'  The order of the argument \code{param} in \code{fn} has the same order as the argument \code{parvars} when the model is specified by a formula.
-#' Otherwise, it is the same as the argument \code{param} in the function \code{fimfunc}.
+#' Otherwise, it is equal to the argument \code{param} in the function \code{fimfunc}.
 #' @export
 #' @seealso \code{\link{bayes}} \code{\link{sensbayes}}
 ## @importFrom mnormt dmnorm
@@ -37,7 +37,7 @@ normal <- function(mu, sigma, lower, upper){
   prior_char <- paste("prior_func <- function(param){ \n out <- mnormt::dmnorm(x = param, mean = c(", paste(mu, collapse = ", "),
                       "), varcov = matrix(c(", paste(sigma, collapse = ", "), "), nrow =", npar , "))\n return(matrix(out, ncol = dim(param)[1]))}", sep = "")
   eval(parse(text = prior_char))
-  return(structure(list(fn = prior_func, npar = npar, lower = lower, upper = upper), class =  "cprior"))
+  return(structure(list(fn = prior_func, npar = npar, lower = lower, upper = upper, sigma = sigma, mu = mu), class =  "cprior"))
 }
 
 
@@ -46,7 +46,7 @@ normal <- function(mu, sigma, lower, upper){
 
 ######################################################################################################*
 ######################################################################################################*
-#' Multivariate Uniform Prior Distribution for Model Parameters
+#' Assume A Multivariate Uniform Prior Distribution for The Model Parameters
 #'
 #' Creates independent uniform prior distributions for the unknown model parameters as an object of class \code{cprior}.
 #'
@@ -68,14 +68,14 @@ uniform <- function(lower, upper){
 }
 ######################################################################################################*
 ######################################################################################################*
-#' Multivariate Skewed Normal Prior Distribution for Model Parameters
+#' Assumes A Multivariate Skewed Normal Prior Distribution for The Model Parameters
 #'
 #' Creates a multivariate skewed normal prior distribution for the unknown parameters as an object of class \code{cprior}.
 #'
 #' @inheritParams normal
-#' @param xi A numeric vector of length \code{d=length(alpha)} representing the location parameter of the distribution. See 'Background' in \code{\link[sn]{dmsn}}.
-#' @param Omega A symmetric positive-definite matrix of dimension \code{(d,d)}. See 'Background' in \code{\link[sn]{dmsn}}.
-#' @param alpha A numeric vector which regulates the slant of the density. See 'Background' in \code{\link[sn]{dmsn}}.
+#' @param xi A numeric vector of length \code{d=length(alpha)} representing the location parameter of the distribution. For more details, see 'Background' in  \code{\link[sn]{dmsn}}.
+#' @param Omega A symmetric positive-definite matrix of dimension \code{(d,d)}. For more details, see 'Background' in \code{\link[sn]{dmsn}}.
+#' @param alpha A numeric vector which regulates the slant of the density. For more details, see 'Background' in \code{\link[sn]{dmsn}}.
 #' @export
 #' @inherit normal return
 #' @importFrom sn dmsn
@@ -100,9 +100,9 @@ skewnormal <- function(xi, Omega, alpha, lower, upper){
 #' Creates the prior distribution for the parameters as an object of class \code{cprior}.
 #'
 #' @inheritParams normal
-#' @param mean  A vector of length \code{d=ncol(S)}, representing the location parameter (equal to the mean vector when \code{df>1}). See 'Arguments' in \code{\link[mnormt]{dmt}}.
-#' @param S A symmetric positive-definite matrix representing the scale matrix of the distribution, such that \code{S*df/(df-2)} is the variance-covariance matrix when \code{df>2}. See 'Arguments' in \code{\link[mnormt]{dmt}}.
-#' @param df Degrees of freedom; it must be a positive integer. See 'Arguments' in \code{\link[mnormt]{dmt}}.
+#' @param mean  A vector of length \code{d=ncol(S)}, representing the location parameter (equal to the mean vector when \code{df>1}). For more details, see 'Arguments' in  \code{\link[mnormt]{dmt}}.
+#' @param S A symmetric positive-definite matrix representing the scale matrix of the distribution, such that \code{S*df/(df-2)} is the variance-covariance matrix when \code{df>2}. For more details, see 'Arguments' in \code{\link[mnormt]{dmt}}.
+#' @param df Degrees of freedom; it must be a positive integer. For more details, see 'Arguments' in \code{\link[mnormt]{dmt}}.
 #' @export
 #' @importFrom mnormt dmt
 #' @inherit normal return

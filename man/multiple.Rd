@@ -37,7 +37,7 @@ i.e. \eqn{\lambda = (\lambda_1, \lambda_2, \lambda_3)}.
 
 \item{sens.minimax.control}{Control parameters to verify the general equivalence theorem. For details, see the function \code{\link{sens.minimax.control}}.}
 
-\item{initial}{A matrix of the  initial designs that will be used as initial solutions (countries).
+\item{initial}{A matrix of the  initial design points and weights that will be inserted into the initial solutions (countries) of the algorithm.
 Every row is a design, i.e.  a concatenation of \code{x} and \code{w}. Will be coerced to a \code{matrix} if necessary.  See 'Details' of \code{\link{minimax}}.}
 
 \item{tol}{Tolerance for finding the general inverse of the Fisher information matrix. Defaults to \code{.Machine$double.xmin}.}
@@ -53,33 +53,31 @@ an object of class \code{minimax} that is a list including three sub-lists:
       \code{iter}                   \tab      \tab Iteration number.\cr
       \code{x}                      \tab      \tab Design points. \cr
       \code{w}                      \tab      \tab Design weights. \cr
-      \code{min_cost}               \tab      \tab Cost (criterion value) of the best imperialist in iteration \code{iter}. \cr
-      \code{mean_cost}              \tab      \tab Mean of costs of all imperialists in iteration \code{iter}. \cr
+      \code{min_cost}               \tab      \tab Value of the criterion for the best imperialist (design).  \cr
+      \code{mean_cost}              \tab      \tab Mean of the critrion values of all the imperialists. \cr
       \code{sens}                   \tab      \tab An object of class 'sensminimax'. See below. \cr
       \code{param}                  \tab      \tab Vector of parameters.\cr
     }
   }
 
-  \item{\code{empires}}{A list of all empires of the last iteration.}
+  \item{\code{empires}}{A list of all the  empires of the last iteration.}
   \item{\code{alg}}{A list with following information:
     \tabular{lll}{
-      \code{nfeval}           \tab      \tab Number of function evaluations. See below. \cr
-      \code{nlocal}           \tab      \tab Number of successful local search. \cr
+      \code{nfeval}           \tab      \tab Number of function evaluations.  It does not count the function evaluations from checking the general equivalence theorem.\cr
+      \code{nlocal}           \tab      \tab Number of successful local searches. \cr
       \code{nrevol}           \tab      \tab Number of successful revolutions. \cr
-      \code{nimprove}         \tab      \tab Number of successful movements toward the imperialists in assimilation step. \cr
+      \code{nimprove}         \tab      \tab Number of successful movements toward the imperialists in the assimilation step. \cr
       \code{convergence}      \tab      \tab Stopped by \code{'maxiter'} or \code{'equivalence'}?\cr
     }
   }
 }
 
-\code{sens} contains information about the design verification by the general equivalence theorem. See \code{sensminimax} for more details.
-It is only available every \code{ICA.control$checkfreq} iterations
-and the last iteration if   \code{ICA.control$checkfreq >= 0}. Otherwise, \code{NULL}.
+The list \code{sens} contains information about the design verification by the general equivalence theorem. See \code{sensminimax} for more details.
+It is given  every \code{ICA.control$checkfreq} iterations
+and also the last iteration if   \code{ICA.control$checkfreq >= 0}. Otherwise, \code{NULL}.
 
  \code{param} is a vector of parameters that is the global minimum of
-  the minimax criterion or the global maximum of the standardized maximin criterion over the parameter space, given \code{x}, \code{w}.
-
-\code{nfeval} does not count the function evaluations from checking the general equivalence theorem.
+  the minimax criterion or the global maximum of the standardized maximin criterion over the parameter space, given  the current \code{x}, \code{w}.
 }
 \description{
 The 4-parameter Hill model is of the form
@@ -100,9 +98,8 @@ where \eqn{\epsilon \sim N(0, \sigma^2)}{\epsilon ~ N(0, \sigma^2)},
   \eqn{\theta_2 \neq 0}{\theta_2 not equal to 0}, and \eqn{-\infty < ED50 < \infty},
   where \eqn{x = log(D) \in [-M, M]}{x = log(D) belongs to [-M, M]}
   for some sufficiently large value of \eqn{M}.
-  The new form is sometimes referred to as \strong{4-parameter logistic model}.\cr
-
-  The function \code{multiple} finds locally multiple-objective optimal designs for estimating the model parameters, the ED50, and the MED, simultaneously.
+  The new form is sometimes called  4-parameter logistic model.\cr
+ The function \code{multiple} finds locally multiple-objective optimal designs for estimating the model parameters, the ED50, and the MED, simultaneously.
    For more details, see Hyun and  Wong (2015).
 }
 \details{
@@ -110,11 +107,11 @@ When \eqn{\lambda_1 > 0}, then the number of support points \code{k}
   must at least be four to avoid singularity of the Fisher information matrix.
 
 One can adjust the tuning parameters in \code{\link{ICA.control}} to set a stopping rule
-based on the general equivalence theorem. See 'Examples'.
+based on the general equivalence theorem. See 'Examples' below.
 }
 \note{
-DO NOT use this function  for finding  c-optimal designs for estimating 'MED' or 'ED50' (single objective optimal designs)
- because the results may be not be stable.
+This function is NOT appropriate for  finding  c-optimal designs for estimating 'MED' or 'ED50' (single objective optimal designs)
+ and  the results may not be stable.
  The reason is that for the c-optimal criterion
  the generalized inverse of the Fisher information matrix
   is not stable and depends

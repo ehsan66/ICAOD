@@ -12,7 +12,7 @@
 // The model has an analytical solution for the locally D-optimal design. See Bogacka et al. (2011) for details.\cr
 
 // roxygen
-//'  @title Fisher Information Matrix for the Mixed Inhibition Model.
+//' @title Fisher Information Matrix for the Mixed Inhibition Model.
 //'
 //' @description
 //'  It provides the cpp function for FIM for the model \code{~ V*S/(Km * (1 + I/Kic)+ S * (1 + I/Kiu))}

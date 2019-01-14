@@ -7,18 +7,18 @@
 student(mean, S, df, lower, upper)
 }
 \arguments{
-\item{mean}{A vector of length \code{d=ncol(S)}, representing the location parameter (equal to the mean vector when \code{df>1}). See 'Arguments' in \code{\link[mnormt]{dmt}}.}
+\item{mean}{A vector of length \code{d=ncol(S)}, representing the location parameter (equal to the mean vector when \code{df>1}). For more details, see 'Arguments' in  \code{\link[mnormt]{dmt}}.}
 
-\item{S}{A symmetric positive-definite matrix representing the scale matrix of the distribution, such that \code{S*df/(df-2)} is the variance-covariance matrix when \code{df>2}. See 'Arguments' in \code{\link[mnormt]{dmt}}.}
+\item{S}{A symmetric positive-definite matrix representing the scale matrix of the distribution, such that \code{S*df/(df-2)} is the variance-covariance matrix when \code{df>2}. For more details, see 'Arguments' in \code{\link[mnormt]{dmt}}.}
 
-\item{df}{Degrees of freedom; it must be a positive integer. See 'Arguments' in \code{\link[mnormt]{dmt}}.}
+\item{df}{Degrees of freedom; it must be a positive integer. For more details, see 'Arguments' in \code{\link[mnormt]{dmt}}.}
 
-\item{lower}{A vector of lower bounds  for the unknown parameters.}
+\item{lower}{A vector of lower bounds  for the model parameters.}
 
-\item{upper}{A vector of upper bounds  for the unknown parameters.}
+\item{upper}{A vector of upper bounds  for the model parameters.}
 }
 \value{
-An object of class \code{cprior} that is a  list with components:
+An object of class \code{cprior} that is a  list with the following components:
 \itemize{
  \item{fn: }{prior distribution as an R \code{function} with argument \code{param} that is the vector of the unknown parameters. See below.}
  \item{npar: }{Number of unknown parameters and is equal to the length of \code{param}}.
@@ -27,7 +27,7 @@ An object of class \code{cprior} that is a  list with components:
 }
 The list will be passed to the argument \code{prior} of the function \code{\link{bayes}}.
  The order of the argument \code{param} in \code{fn} has the same order as the argument \code{parvars} when the model is specified by a formula.
-Otherwise, it is the same as the argument \code{param} in the function \code{fimfunc}.
+Otherwise, it is equal to the argument \code{param} in the function \code{fimfunc}.
 }
 \description{
 Creates the prior distribution for the parameters as an object of class \code{cprior}.

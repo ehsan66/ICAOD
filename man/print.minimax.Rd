@@ -9,7 +9,7 @@
 \arguments{
 \item{x}{An object of class \code{minimax}.}
 
-\item{iter}{Iteration number. if \code{NULL}, will be set equal to last iteration.}
+\item{iter}{Iteration number. if \code{NULL}, will be set equal to the last iteration.}
 
 \item{...}{Argument with no further use.}
 }

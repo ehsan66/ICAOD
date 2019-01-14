@@ -2,23 +2,23 @@
 % Please edit documentation in R/8-UserPriors.R
 \name{skewnormal}
 \alias{skewnormal}
-\title{Multivariate Skewed Normal Prior Distribution for Model Parameters}
+\title{Assumes A Multivariate Skewed Normal Prior Distribution for The Model Parameters}
 \usage{
 skewnormal(xi, Omega, alpha, lower, upper)
 }
 \arguments{
-\item{xi}{A numeric vector of length \code{d=length(alpha)} representing the location parameter of the distribution. See 'Background' in \code{\link[sn]{dmsn}}.}
+\item{xi}{A numeric vector of length \code{d=length(alpha)} representing the location parameter of the distribution. For more details, see 'Background' in  \code{\link[sn]{dmsn}}.}
 
-\item{Omega}{A symmetric positive-definite matrix of dimension \code{(d,d)}. See 'Background' in \code{\link[sn]{dmsn}}.}
+\item{Omega}{A symmetric positive-definite matrix of dimension \code{(d,d)}. For more details, see 'Background' in \code{\link[sn]{dmsn}}.}
 
-\item{alpha}{A numeric vector which regulates the slant of the density. See 'Background' in \code{\link[sn]{dmsn}}.}
+\item{alpha}{A numeric vector which regulates the slant of the density. For more details, see 'Background' in \code{\link[sn]{dmsn}}.}
 
-\item{lower}{A vector of lower bounds  for the unknown parameters.}
+\item{lower}{A vector of lower bounds  for the model parameters.}
 
-\item{upper}{A vector of upper bounds  for the unknown parameters.}
+\item{upper}{A vector of upper bounds  for the model parameters.}
 }
 \value{
-An object of class \code{cprior} that is a  list with components:
+An object of class \code{cprior} that is a  list with the following components:
 \itemize{
  \item{fn: }{prior distribution as an R \code{function} with argument \code{param} that is the vector of the unknown parameters. See below.}
  \item{npar: }{Number of unknown parameters and is equal to the length of \code{param}}.
@@ -27,7 +27,7 @@ An object of class \code{cprior} that is a  list with components:
 }
 The list will be passed to the argument \code{prior} of the function \code{\link{bayes}}.
  The order of the argument \code{param} in \code{fn} has the same order as the argument \code{parvars} when the model is specified by a formula.
-Otherwise, it is the same as the argument \code{param} in the function \code{fimfunc}.
+Otherwise, it is equal to the argument \code{param} in the function \code{fimfunc}.
 }
 \description{
 Creates a multivariate skewed normal prior distribution for the unknown parameters as an object of class \code{cprior}.

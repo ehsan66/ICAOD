@@ -8,7 +8,7 @@ minimax(formula, predvars, parvars, family = gaussian(), lx, ux, lp, up,
   iter, k, n.grid = 0, fimfunc = NULL, ICA.control = list(),
   sens.minimax.control = list(), crt.minimax.control = list(),
   standardized = FALSE, initial = NULL, localdes = NULL,
-  npar = length(lp), plot_3d = c("lattice", "rgl"))
+  npar = length(lp), plot_3d = c("lattice", "rgl"), x = NULL)
 }
 \arguments{
 \item{formula}{A nonlinear model \code{\link[stats]{formula}}.
@@ -19,7 +19,7 @@ Will be coerced to a \code{\link[stats]{formula}} if necessary.}
 
 \item{parvars}{A vector of characters. Denotes the unknown parameters in the \code{\link[stats]{formula}}.}
 
-\item{family}{A description of the response distribution and link function to be used in the model.
+\item{family}{A description of the response distribution and the link function to be used in the model.
 This can be a family function, a call to a family function or a character string naming the family.
  Every family function has a link argument allowing to specify the link function to be applied on the response variable.
   If not specified, default links are used. For details see \code{\link[stats]{family}}.
@@ -32,16 +32,24 @@ This can be a family function, a call to a family function or a character string
 \item{lp}{Vector of lower bounds for the model parameters. Should be in the same order as \code{parvars} or \code{param} in the argument \code{fimfunc}.}
 
 \item{up}{Vector of upper bounds for the model parameters. Should be in the same order as \code{parvars} or \code{param} in the argument \code{fimfunc}.
-When a parameter is known (has a fixed value), set its associated lower and upper bounds  in \code{lp} and \code{up}  equal to the known value.}
+When a parameter is known (has a fixed value), its associated lower and upper bound values  in \code{lp} and \code{up}  must be set equal.}
 
 \item{iter}{Maximum number of iterations.}
 
 \item{k}{Number of design points. Must be at least equal to the number of model parameters to avoid singularity of the FIM.}
 
-\item{n.grid}{The total number of grid points from the parameter space is \code{n.grid^p}.
-Used to map the parameter space to a \strong{discrete} grid. Disabled when \code{n.grid = 0} (default).
-When set, optimal design protects the experimenter against the worst scenario over the grid points.
-    See 'Details' of \code{\link{minimax}}.}
+\item{n.grid}{Only required when the parameter space is
+going to be discretized.
+The total number of grid points from the parameter space is \code{n.grid^p}.
+ When \code{n.grid > 0}, optimal design protects the experimenter against the worst case scenario only over the grid points, and not over the continuous parameter space.
+  The resulting designs may not be gloablly optimal.
+  In some literature, this type of designs has been used as a compromise to
+  the minimax type designs to avoid continuous optimization probem over
+   the parameter space and simplify the minimax design problems.
+    Especially when the design criterion is convex with respect to the
+  given parameter space at every given design from the design space,
+   the obtained design may also be globally optimal (because the maximum of a convex function is attained on the bounds, and here, are included in the grid points).
+  See 'Details' of \code{\link{minimax}}.}
 
 \item{fimfunc}{A function. Returns the FIM as a \code{matrix}. Required when \code{formula} is missing. See 'Details' of \code{\link{minimax}}.}
 
@@ -55,16 +63,23 @@ For details, see the function \code{\link{crt.minimax.control}}.}
 \item{standardized}{Maximin standardized design? When \code{standardized = TRUE}, the argument \code{localdes} must be given.
 Defaults to \code{FALSE}. See 'Details' of \code{\link{minimax}}.}
 
-\item{initial}{A matrix of the  initial designs that will be used as initial solutions (countries).
+\item{initial}{A matrix of the  initial design points and weights that will be inserted into the initial solutions (countries) of the algorithm.
 Every row is a design, i.e.  a concatenation of \code{x} and \code{w}. Will be coerced to a \code{matrix} if necessary.  See 'Details' of \code{\link{minimax}}.}
 
 \item{localdes}{A function that takes the parameter values  as inputs and returns the design points and weights of the locally optimal design.
 Required when \code{standardized = "TRUE"}. See 'Details' of \code{\link{minimax}}.}
 
 \item{npar}{Number of model parameters.  Used when \code{fimfunc} is given instead of \code{formula} to specify the number of model parameters.
-If not specified truly, the sensitivity (derivative) plot may be shifted below the y-axis. When \code{NULL}, it will be set here to \code{length(lp)}.}
+If not specified truly, the sensitivity (derivative) plot may be shifted below the y-axis. When \code{NULL} (default), it is set to \code{length(lp)}.}
 
 \item{plot_3d}{Which package should be used to plot the sensitivity (derivative) function for two-dimensional design space. Defaults to \code{"lattice"}.}
+
+\item{x}{A vector of candidate design (support) points.
+When is not set to \code{NULL} (default),
+ the agorithm only finds the optimal weights for the candidate points in  \code{x}.
+   Should be set when the user has a finite number of candidate design points  and the purpose
+   is to find the optimal weight for each of them (when zero, they will be excluded from the design).
+For design points with more than one dimension, see 'Details' of \code{\link{sensminimax}}.}
 }
 \value{
 an object of class \code{minimax} that is a list including three sub-lists:
@@ -77,56 +92,47 @@ an object of class \code{minimax} that is a list including three sub-lists:
       \code{iter}                   \tab      \tab Iteration number.\cr
       \code{x}                      \tab      \tab Design points. \cr
       \code{w}                      \tab      \tab Design weights. \cr
-      \code{min_cost}               \tab      \tab Cost (criterion value) of the best imperialist in iteration \code{iter}. \cr
-      \code{mean_cost}              \tab      \tab Mean of costs of all imperialists in iteration \code{iter}. \cr
+      \code{min_cost}               \tab      \tab Value of the criterion for the best imperialist (design).  \cr
+      \code{mean_cost}              \tab      \tab Mean of the critrion values of all the imperialists. \cr
       \code{sens}                   \tab      \tab An object of class 'sensminimax'. See below. \cr
       \code{param}                  \tab      \tab Vector of parameters.\cr
     }
   }
 
-  \item{\code{empires}}{A list of all empires of the last iteration.}
+  \item{\code{empires}}{A list of all the  empires of the last iteration.}
   \item{\code{alg}}{A list with following information:
     \tabular{lll}{
-      \code{nfeval}           \tab      \tab Number of function evaluations. See below. \cr
-      \code{nlocal}           \tab      \tab Number of successful local search. \cr
+      \code{nfeval}           \tab      \tab Number of function evaluations.  It does not count the function evaluations from checking the general equivalence theorem.\cr
+      \code{nlocal}           \tab      \tab Number of successful local searches. \cr
       \code{nrevol}           \tab      \tab Number of successful revolutions. \cr
-      \code{nimprove}         \tab      \tab Number of successful movements toward the imperialists in assimilation step. \cr
+      \code{nimprove}         \tab      \tab Number of successful movements toward the imperialists in the assimilation step. \cr
       \code{convergence}      \tab      \tab Stopped by \code{'maxiter'} or \code{'equivalence'}?\cr
     }
   }
 }
 
-\code{sens} contains information about the design verification by the general equivalence theorem. See \code{sensminimax} for more details.
-It is only available every \code{ICA.control$checkfreq} iterations
-and the last iteration if   \code{ICA.control$checkfreq >= 0}. Otherwise, \code{NULL}.
+The list \code{sens} contains information about the design verification by the general equivalence theorem. See \code{sensminimax} for more details.
+It is given  every \code{ICA.control$checkfreq} iterations
+and also the last iteration if   \code{ICA.control$checkfreq >= 0}. Otherwise, \code{NULL}.
 
  \code{param} is a vector of parameters that is the global minimum of
-  the minimax criterion or the global maximum of the standardized maximin criterion over the parameter space, given \code{x}, \code{w}.
-
-\code{nfeval} does not count the function evaluations from checking the general equivalence theorem.
+  the minimax criterion or the global maximum of the standardized maximin criterion over the parameter space, given  the current \code{x}, \code{w}.
 }
 \description{
 Finds minimax and standardized maximin D-optimal designs for nonlinear models.
- It should be used when the user assumes each of the unknown parameters belongs to an uncertainty interval (or parameter interval)
-  and the purpose is to \strong{protect the experiment from the worst scenario}
-  over the space of the Cartesian product of the given uncertainty intervals, denoted by \eqn{\Theta}.
-  Sometimes, \eqn{\Theta} is  called 'region of uncertainty', that is the parameter space.
-
-If you are looking for a design
-   that is \strong{in average} robust with respect to the parameter space, then you should apply
-   Bayesian optimal designs (continuous parameter space) or robust designs (discrete parameter space). See,  functions \code{\link{bayes}} and \code{\link{robust}}.\cr
-
-  In general, although standardized criteria have some good theoretical features,
-   we recommend applying them \strong{only}
-  when the user can provide a closed-form for
-  locally D-optimal designs for the model of interest by the argument \code{localdes}.
+ It should be used when the user assumes the unknown parameters belong to a parameter region
+ \eqn{\Theta}, which is called ``region of uncertainty'',  where the
+   purpose is to protect the experiment from the worst case scenario
+  over \eqn{\Theta}.
 }
 \details{
 Let \eqn{\Xi} be the space of all  approximate designs with
- \eqn{k} design points (support points) at \eqn{x_1, x_2, ...,  x_k} from  design space \eqn{\chi} with
+ \eqn{k} design points (support points) at \eqn{x_1, x_2, ...,  x_k}
+ from  the design space \eqn{\chi} with
  corresponding weights  \eqn{w_1, . . . ,w_k}.
  Let \eqn{M(\xi, \theta)} be the Fisher information
-  matrix (FIM) of a \eqn{k-}point design \eqn{\xi} and \eqn{\theta} be the vector of unknown parameters.\cr
+  matrix (FIM) of a \eqn{k-}point design \eqn{\xi} and \eqn{\theta} be the vector of
+   unknown parameters.
  A  minimax D-optimal design \eqn{\xi^*}{\xi*} minimizes over \eqn{\Xi}
   \deqn{\max_{\theta \in \Theta} -\log|M(\xi, \theta)|.}{
    max over \Theta -log|M(\xi, \theta)|.}
@@ -138,32 +144,37 @@ Let \eqn{\Xi} be the space of all  approximate designs with
 
 A minimax criterion (cost function or objective function) is evaluated at each design (decision variables) by maximizing the criterion over the parameter space.
 We call the optimization problem over the parameter space as \emph{inner optimization problem}.
-Here, two separate strategies may be
+Two different strategies may be
  applied to solve the inner problem at a given design (design points and weights):
 \enumerate{
-\item \strong{Continuous inner problem}: optimizes the criterion over a continuous parameter space. We use function \code{\link[nloptr]{nloptr}} for this purpose.
-The tuning parameters can be regulated via the argument \code{\link{crt.minimax.control}}. The most important control parameter is \strong{\code{maxeval}} that requires especial attention.
-The output design here protects the experiment from the worst scenario  over
-the continuous parameter space.
-\item  \strong{Discrete inner problem}: maps the parameter space to some grid points and optimizes the criterion over a discrete parameter space
-(the inner optimization problem becomes a discrete space).
+\item \strong{Continuous inner problem}: we optimize the criterion
+ over a continuous parameter space using the function \code{\link[nloptr]{nloptr}}.
+In this case, the tuning parameters can be regulated
+ via the argument \code{\link{crt.minimax.control}}, when the most influential one
+ is \strong{\code{maxeval}}.
+\item  \strong{Discrete inner problem}: we map the parameter space to
+ the grid points and optimize the criterion over a discrete parameter space.
 In this case, the number of grid points can be regulated via \code{n.grid}.
 This strategy is quite efficient (ans fast) when  the maxima most likely attain the vertices of the continuous parameter space at any given design.
 The output design here protects the experiment from the worst scenario
 over the grid points.
 }
 
-The \code{formula} is used to create the Fisher information matrix (FIM) for a nonlinear model when the distribution of the response variable belongs to the natural exponential family.
-User can also apply the argument  \code{fimfunc} to provide the FIM her/himself, directly.
- In this case,
+
+The \code{formula} is used to automatically create the Fisher information matrix (FIM)
+ for a nonlinear model provided that the distribution of the
+  response variable belongs to the natural exponential family.
+Function \code{minimax} also provides an
+ option to assign a user-defined FIM directly via the argument  \code{fimfunc}.
+ In this case, the
 argument \code{fimfunc} takes a \code{function} that has three arguments as follows:
  \enumerate{
   \item \code{x} a vector of design points. For design points with more than one dimension,
-   it is a concatenation of the design points, but \strong{dimension-wise}.
+   it is a concatenation of the design points, but dimension-wise.
    For example, let the model has three predictors   \eqn{(I, S, Z)}.
-    Then,  (three-dimensional) design points of a two-point optimal design are
+    Then,  a two-point design is of the format
    \eqn{\{\mbox{point1} = (I_1, S_1, Z_1), \mbox{point2} = (I_2, S_2, Z_2)\}}{{point1 = (I1, S1, Z1), point2 = (I2, S2, Z2)}}.
-    Then, the argument \code{x} is equivalent to
+    and the argument \code{x} is equivalent to
     \code{x = c(I1, I2, S1, S2, Z1, Z2)}.
   \item \code{w} a vector that includes the design weights associated with \code{x}.
   \item \code{param} a vector of parameter values associated with \code{lp} and \code{up}.
@@ -175,31 +186,34 @@ argument \code{fimfunc} takes a \code{function} that has three arguments as foll
  Minimax optimal designs can have very different criterion values depending on the nominal set of parameter values.
  Accordingly, it is desirable to standardize the criterion and control for the potentially widely varying magnitude of the criterion (Dette, 1997).
  Evaluating a standardized maximin criterion requires knowing locally optimal designs.
-We strongly advise setting \code{standardized = 'TRUE'}, only when analytical solutions for the locally D-optimal designs is available.
-When \code{standardized = 'TRUE'}, the user must  provide the closed-form of the locally optimal design (support points \code{x} and weights \code{w}) as a function of the model parameters.\cr
-\code{localdes} takes a function with the following arguments.
+We strongly advise setting \code{standardized = 'TRUE'} only when analytical solutions for the locally D-optimal designs is available.
+In this case, for any initial estimate of the unknown parameters,
+an analytical solution  for the locally optimal design, i.e, the support points \code{x}
+ and the corresponding weights \code{w}, must be provided via the argument \code{localdes}.
+Therefore, depending on how the model is specified, \code{localdes} is a \code{function} with the following arguments (input).
 \itemize{
 \item If \code{formula} is given (\code{!missing(formula)}):
     \itemize{
     \item The parameter names given by \code{parvars} in the same order.
 
     }
-\item FIM is given by the argument \code{fimfunc} (\code{missing(formula)}):
+\item If FIM is given via the argument \code{fimfunc} (\code{missing(formula)}):
    \itemize{
-   \item \code{param}: A vector of the parameters same as the argument \code{param} in \code{fimfunc}.
+   \item \code{param}: A vector of the parameters equal to the argument \code{param} in \code{fimfunc}.
     }
 }
-The function must return a list with components \code{x} and \code{w} (they match the same arguments in the function \code{fimfunc}).
+This function must return a list with the components \code{x} and \code{w} (they match the same arguments in the function \code{fimfunc}).
   See 'Examples'.\cr
-The standardized D-criterion is equal to the  D-efficiency and it must be between 0 and 1, theoretically.
- However, in practice, it may take values larger than one because the function given via \code{localdes} does not
-  return the true (accurate) locally optimal designs for some requested parameter values from \eqn{\Theta}.
+
+The standardized D-criterion is equal to the  D-efficiency and it must be between 0 and 1.
+ However, in practice, when running the algorithm,  it may be the case that
+ the criterion takes a value larger than one.
+  This may happen  because the user-function that is  given via \code{localdes} does not
+  return the true (accurate) locally optimal designs for some
+   requested initial estimates of the parameters  from \eqn{\Theta}.
  In this case, the function \code{minimax}
-stops and returns a set of values for the model parameters.
- The user here must investigate the accuracy of the locally D-optimal designs by
-  checking the output of the function set via the argument \code{localdes} given this set of parameter values.
-
-
+throw an error where the error message helps the user
+ to debug her/his function.
 
 
 Each row of \code{initial} is one design, i.e. a concatenation of values for design (support) points  and the associated design weights.
@@ -210,7 +224,7 @@ Let \code{x0} and \code{w0} be the vector of initial values with exactly the sam
 
  To verify the optimality of the output design by the general equivalence theorem,
  the user can either \code{plot} the results or set  \code{checkfreq} in \code{\link{ICA.control}}
- to \code{Inf}. In either case, the function \code{\link{sensminimax}} is called for verification.
+ to \code{Inf}. In either way, the function \code{\link{sensminimax}} is called for verification.
   Note that  the function \code{\link{sensminimax}} always verifies the optimality of a design assuming a continues parameter space.
 See 'Examples'.
 }
@@ -218,6 +232,13 @@ See 'Examples'.
 For larger parameter space or model with more number of unknown parameters,
  it is always important to increase the value of  \code{ncount} in \code{ICA.control}
 and \code{optslist$maxeval} in \code{crt.minimax.control} to produce very accurate designs.
+
+Although standardized criteria have been preferred theoretically,
+in practice, they should be applied only
+  when  an analytical solution for
+  the locally D-optimal designs is available for the model
+  of interest.
+   Otherwise, we encounter a three-level nested-optimization algorithm.
 }
 \examples{
 ########################################
@@ -226,6 +247,9 @@ and \code{optslist$maxeval} in \code{crt.minimax.control} to produce very accura
 res1 <- minimax (formula = ~a + exp(-b*x), predvars = "x", parvars = c("a", "b"),
                  lx = 0, ux = 1, lp = c(1, 1), up = c(1, 10),
                  iter = 1, k = 4, ICA.control= ICA.control(rseed = 100))
+# the optimal design has 3 points, but we set k = 4 for illustration purpose to
+#   show how the algorithm modify the design by assigning weights and locating
+#   the points.
 \dontrun{
   res1 <- iterate(res1, 150)
   # iterating the algorithm up to 150 more iterations
@@ -233,6 +257,15 @@ res1 <- minimax (formula = ~a + exp(-b*x), predvars = "x", parvars = c("a", "b")
 
 res1 # print method
 plot(res1) # veryfying the general equivalence theorem
+
+\dontrun{
+ ## fixed x
+res1.1 <- minimax (formula = ~a + exp(-b*x), predvars = "x", parvars = c("a", "b"),
+                 lx = 0, ux = 1, lp = c(1, 1), up = c(1, 10),
+                 x = c(0, .5, 1),
+                 iter = 150, k = 3, ICA.control= ICA.control(rseed = 100))
+# not optimal
+}
 
 ########################################
 # Two-parameter logistic model.
@@ -264,15 +297,15 @@ res3 <- minimax(formula =  ~ V*S/(Km * (1 + I/Kic)+ S * (1 + I/Kiu)),
                 predvars = c("S", "I"),
                 parvars = c("V", "Km", "Kic", "Kiu"),
                 lx = c(0, 0), ux = c(30, 60), k = 4,
-                iter = 1, lp = lower, up = upper,
+                iter = 100, lp = lower, up = upper,
                 ICA.control= list(rseed = 100),
                 crt.minimax.control = cont)
 
   res3 <- iterate(res3, 100)
   print(res3)
   plot(res3) # sensitivity plot
+  res3$arg$time
 }
-
 
 # Now consider grid points instead of assuming continuous parameter space
 # set n.grid to 5

@@ -4,6 +4,9 @@
 res1 <- minimax (formula = ~a + exp(-b*x), predvars = "x", parvars = c("a", "b"),
                  lx = 0, ux = 1, lp = c(1, 1), up = c(1, 10),
                  iter = 1, k = 4, ICA.control= ICA.control(rseed = 100))
+# the optimal design has 3 points, but we set k = 4 for illustration purpose to
+#   show how the algorithm modify the design by assigning weights and locating
+#   the points.
 \dontrun{
   res1 <- iterate(res1, 150)
   # iterating the algorithm up to 150 more iterations
@@ -11,6 +14,15 @@ res1 <- minimax (formula = ~a + exp(-b*x), predvars = "x", parvars = c("a", "b")
 
 res1 # print method
 plot(res1) # veryfying the general equivalence theorem
+
+\dontrun{
+ ## fixed x
+res1.1 <- minimax (formula = ~a + exp(-b*x), predvars = "x", parvars = c("a", "b"),
+                 lx = 0, ux = 1, lp = c(1, 1), up = c(1, 10),
+                 x = c(0, .5, 1),
+                 iter = 150, k = 3, ICA.control= ICA.control(rseed = 100))
+# not optimal
+}
 
 ########################################
 # Two-parameter logistic model.
@@ -42,15 +54,15 @@ res3 <- minimax(formula =  ~ V*S/(Km * (1 + I/Kic)+ S * (1 + I/Kiu)),
                 predvars = c("S", "I"),
                 parvars = c("V", "Km", "Kic", "Kiu"),
                 lx = c(0, 0), ux = c(30, 60), k = 4,
-                iter = 1, lp = lower, up = upper,
+                iter = 100, lp = lower, up = upper,
                 ICA.control= list(rseed = 100),
                 crt.minimax.control = cont)
 
   res3 <- iterate(res3, 100)
   print(res3)
   plot(res3) # sensitivity plot
+  res3$arg$time
 }
-
 
 # Now consider grid points instead of assuming continuous parameter space
 # set n.grid to 5

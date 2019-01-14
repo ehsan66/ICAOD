@@ -25,3 +25,4 @@ inst/.gitignore
 inst/.DS_Store
 src/.DS_Store
 R/.gitignore
+^inst/dont_upload$

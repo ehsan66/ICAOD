@@ -17,6 +17,8 @@ res1 <- bayescomp(formula = myformula1,
 \dontrun{
   res1 <- iterate(res1, 1000)
   plot(res1, sens.bayes.control = list(cubature = list(tol = 1e-3, maxEval = 1000)))
+  # or use quadrature method
+  plot(res1, sens_method = "quadrature")
 }
 
 ##########################################################################
@@ -54,6 +56,8 @@ res2 <- bayescomp(fimfunc = myfim,
                   prob = myprob, alpha = .5,
                   ICA.control = list(rseed = 1366))
   plot(res2, sens.bayes.control = list(cubature = list(maxEval = 1000, tol = 1e-4)))
+  # quadrature with 6 nodes (default)
+  plot(res2, sens_method = "quadrature")
 }
 
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/3-UserMinimaxFunctions.R
 \name{sensmultiple}
 \alias{sensmultiple}
-\title{Verifying Optimality of Multiple Objective Designs for The 4-Parameter Hill Model}
+\title{Verifying Optimality of The Multiple Objective Designs for The 4-Parameter Hill Model}
 \usage{
 sensmultiple(dose, w, minDose, maxDose, inipars, lambda, delta,
   Hill_par = FALSE, sens.minimax.control = list(),
@@ -10,9 +10,9 @@ sensmultiple(dose, w, minDose, maxDose, inipars, lambda, delta,
   tol = sqrt(.Machine$double.xmin), silent = FALSE)
 }
 \arguments{
-\item{dose}{A vector of design points. It is a vector of either dose values or logarithm of dose values, when \code{Hill_par = TRUE}.}
+\item{dose}{A vector of design points. It is  either dose values or logarithm of dose values when \code{Hill_par = TRUE}.}
 
-\item{w}{A vector of design weights, i.e. associated weights for \code{dose}.}
+\item{w}{A vector of design weights.}
 
 \item{minDose}{Minimum dose \eqn{D}. For the 4-parameter logistic model, i.e. when \code{Hill_par = FALSE}, it is the minimum of \eqn{log(D)}.}
 
@@ -42,27 +42,30 @@ When \eqn{\delta < 0 }, then \eqn{\theta_2 > 0} or when \eqn{\delta > 0}, then \
 \item{silent}{Do not print anything? Defaults to \code{FALSE}.}
 }
 \value{
-an object of class \code{sensminimax} that is a list contains:
+an object of class \code{sensminimax} that is a list with the following elements:
  \describe{
  \item{\code{type}}{Argument \code{type} that is required for print methods.}
- \item{\code{optima}}{A  \code{matrix} that stores all the local optima over the parameter space given the best design of the iteration. The cost  (criterion) values are stored in a column named \code{Criterion_Value}.
- The last column (\code{Answering_Set}) shows if the optimum, based on a merging tolerance \code{merge_tol}, belongs to the answering set (1) or not (0).
+ \item{\code{optima}}{A \code{matrix} that stores all the local optima over the parameter space.
+  The cost  (criterion) values are stored in a column named \code{Criterion_Value}.
+ The last column (\code{Answering_Set})
+  shows if the optimum belongs to the answering set (1) or not (0). See 'Details' of \code{\link{sens.minimax.control}}.
    Only applicable for minimax or standardized maximin designs.}
- \item{\code{mu}}{Probability measure on the answering set. Corresponds to the rows of \code{optima} when the associated row in column \code{Answering_Set} is equal to 1.
+ \item{\code{mu}}{Probability measure on the answering set.
+  Corresponds to the rows of \code{optima} for which the associated row in column \code{Answering_Set} is equal to 1.
    Only applicable for minimax or standardized maximin designs.}
  \item{\code{max_deriv}}{Global maximum of the sensitivity (derivative) function (\eqn{\epsilon} in 'Details').}
- \item{\code{ELB}}{D-efficiency lower bound. Can not be larger than 1. See 'Note' in \code{\link{sensminimax}} or 'Details' in \code{\link{sens.minimax.control}}.}
+ \item{\code{ELB}}{D-efficiency lower bound. Can not be larger than 1. If negative, see 'Note' in \code{\link{sensminimax}} or  \code{\link{sens.minimax.control}}.}
  \item{\code{merge_tol}}{Merging tolerance to create the answering set from the set of all local optima. See 'Details' in \code{\link{sens.minimax.control}}.
   Only applicable for minimax or standardized maximin designs.}
- \item{\code{crtval}}{Criterion value. Compare with column \code{Crtiterion_Value} in \code{optima} for minimax and standardized maximin designs.}
- \item{\code{time}}{Required CPU time (rough approximation).}
+ \item{\code{crtval}}{Criterion value. Compare it with the column \code{Crtiterion_Value} in \code{optima} for minimax and standardized maximin designs.}
+ \item{\code{time}}{Used CPU time (rough approximation).}
  }
 }
 \description{
 This function uses general equivalence theorem to verify
-optimality of a multiple objective optimal design found for either the 4-Parameter Hill model or
-its another re-parameterization, the 4-parameter logistic model.
-See, for details, Hyun and Wong (2015).
+the optimality of a multiple objective optimal design found for
+ the 4-Parameter Hill model and  the 4-parameter logistic model.
+For more details, See Hyun and Wong (2015).
 }
 \details{
 ELB is a measure of  proximity of a design to the optimal design without knowing the latter.

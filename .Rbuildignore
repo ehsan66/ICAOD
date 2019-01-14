@@ -13,13 +13,4 @@ NEWS.Rmd
 .travis.yml
 .DS_Store
 
-bug fixing-difference between fimfunc and formula.R
-normalization.R
-LLTM paper
-JCGS
-iws2018
-data from previous algorithm for examples
-draft for LLTM
-myexamples_old_version.R
-bayes with quadrature methods
-
+^LLTM$

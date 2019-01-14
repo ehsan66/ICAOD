@@ -2,14 +2,14 @@
 % Please edit documentation in R/3-UserMinimaxFunctions.R
 \name{crt.minimax.control}
 \alias{crt.minimax.control}
-\title{Control Parameters for Optimizing Minimax Criteria Over Parameter Space}
+\title{Control Parameters for Optimizing Minimax Criteria Over The Parameter Space}
 \usage{
 crt.minimax.control(x0 = NULL, optslist = list(stopval = -Inf,
   algorithm = "NLOPT_GN_DIRECT_L", xtol_rel = 1e-05, ftol_rel = 1e-08,
   maxeval = 1000), ...)
 }
 \arguments{
-\item{x0}{Vector of starting values for the optimization problem (must be from the parameter space).}
+\item{x0}{Vector of the starting values for the optimization problem (must be from the parameter space).}
 
 \item{optslist}{A list. It will be passed to the argument \code{opts} of the function \code{\link[nloptr]{nloptr}}. See 'Details'.}
 
@@ -20,10 +20,10 @@ A list of control parameters for the function \code{\link[nloptr]{nloptr}}.
 }
 \description{
 The function \code{crt.minimax.control} returns a list of \code{\link[nloptr]{nloptr}} control parameters for optimizing the minimax criterion over the parameter space.\cr
-The key tuning parameter here is \strong{\code{maxeval}.}
+The key tuning parameter for our application is \strong{\code{maxeval}.}
 Its value should be increased when either the dimension or the size of the parameter space becomes larger
  to avoid pre-mature convergence in the inner optimization problem over the parameter space.
- The user should find a trade-off between accuracy and speed for his/her example.
+If the CPU time matters, the user should find an appropriate speed-accuracy trade-off  for her/his own design problem.
 }
 \details{
 Argument \code{optslist} will be passed to the argument \code{opts} of the function \code{\link[nloptr]{nloptr}}:
@@ -34,7 +34,7 @@ Argument \code{optslist} will be passed to the argument \code{opts} of the funct
   \item{\code{ftol_rel}}{Stop when an optimization step (or an estimate of the optimum) changes the objective function value by less than \code{ftol_rel} multiplied by the absolute value of the function value. Criterion is disabled if \code{ftol_rel} is non-positive. Defaults to \code{1e-8}.}
   \item{\code{maxeval}}{Stop when the number of function evaluations exceeds maxeval. Criterion is disabled if maxeval is non-positive. Defaults to \code{1000}. See below.}
 }
- A full description of all options is shown by \code{nloptr.print.options()} in package \code{\link[nloptr]{nloptr}}.
+ A detailed explanation of all the options is shown by \code{nloptr.print.options()} in package \code{\link[nloptr]{nloptr}}.
 }
 \examples{
 crt.minimax.control(optslist = list(maxeval = 2000))

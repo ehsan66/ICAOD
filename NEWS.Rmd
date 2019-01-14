@@ -1,7 +1,11 @@
+# ICAOD 0.9.8
+# Quadrature formulas are added by package mvQuad.
+# A bug in CPU time is fixed.
+# Help pages are improved.
+
 # ICAOD 0.9.7
 # A bug is fixed in minimax designs.
 # Adding efficiency functions beff and leff.
-
 
 
 # ICAOD 0.9.6
