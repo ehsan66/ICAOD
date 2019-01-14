@@ -18,7 +18,7 @@
 #'  \code{"cubature"} corresponds to the adaptive multivariate integration method using the \code{\link[cubature]{hcubature}} algorithm (default).
 #'  \code{"quadrature"} corresponds the traditional quadrature formulas and calls the function \code{\link[mvQuad]{createNIGrid}}.
 #'  The tuning parameters are adjusted by \code{crt.bayes.control}. Default is set to \code{"cubature"}.
-#' @param sens_method Similar to \code{crt_method}, but for approximating the intergals in the sensitivity (derivative) function.
+#' @param sens_method Similar to \code{crt_method}, but for approximating the integrals in the sensitivity (derivative) function.
 #' The tuning parameters are adjusted by \code{sens.bayes.control}. Default is set to \code{"cubature"}.
 #' @param npar Number of model parameters.  Used when \code{fimfunc} is given instead of \code{formula} to specify the number of model parameters.
 #'   If not specified correctly, the sensitivity (derivative) plot may be shifted below the y-axis.
@@ -39,10 +39,10 @@
 #'
 #' An object of class \code{cprior}  is a  list with the following components:
 #' \itemize{
-#'  \item{fn: }{Prior distribution as an R \code{function} with argument \code{param} that is the vector of the unknown parameters. See below.}
-#'  \item{npar: }{Number of unknown parameters and is equal to the length of \code{param}}.
-#'  \item{lower: }{Argument \code{lower}. It has the same length as \code{param}}.
-#'  \item{upper: }{Argument \code{upper}. It has the same length as \code{param}}.
+#'  \item{\code{fn}: }{Prior distribution as an R \code{function} with argument \code{param} that is the vector of the unknown parameters. See below.}
+#'  \item{\code{npar}: }{Number of unknown parameters and is equal to the length of \code{param}}.
+#'  \item{\code{lower}: }{Argument \code{lower}. It has the same length as \code{param}}.
+#'  \item{\code{upper}: }{Argument \code{upper}. It has the same length as \code{param}}.
 #' }
 #' A \code{cprior} object  will be passed to the argument \code{prior} of the function \code{\link{bayes}}.
 #'  The argument \code{param} in \code{fn} has the same order as the argument \code{parvars} when the model is specified by a \code{formula}.
@@ -74,8 +74,8 @@
 #'       \code{x}                      \tab      \tab Design points. \cr
 #'       \code{w}                      \tab      \tab Design weights. \cr
 #'       \code{min_cost}               \tab      \tab Value of the criterion for the best imperialist (design).  \cr
-#'       \code{mean_cost}              \tab      \tab Mean of the critrion values of all the imperialists. \cr
-#'       \code{sens}                   \tab      \tab An object of class 'sensbayes'. See below.\cr
+#'       \code{mean_cost}              \tab      \tab Mean of the criterion values of all the imperialists. \cr
+#'       \code{sens}                   \tab      \tab An object of class \code{'sensbayes'}. See below.\cr
 #'     }
 #'   }
 #'
@@ -194,7 +194,7 @@ bayes <- function(formula,
 #' The default values of the tuning parameters in \code{sens.bayes.control} are set in a way that
 #' having accurate plots for the sensitivity (derivative) function
 #'  and calculating the ELB to a high precision  to be the primary goals,
-#'  eventhough the process may take too long. The user should choose a set of less conservative values
+#'  although the process may take too long. The user should choose a set of less conservative values
 #'  via the argument \code{sens.bayes.control} when the CPU-time is too long or matters.
 #'@export
 #'@example inst/examples/sensbayes_examples.R
@@ -385,7 +385,7 @@ bayescomp <- function(formula,
 #' The default values of the tuning parameters in \code{sens.bayes.control} are set in a way that
 #' having accurate plots for the sensitivity (derivative) function
 #'  and calculating the ELB to a high precision  to be the primary goals,
-#'  eventhough the process may take too long. The user should choose a set of less conservative values
+#'  although the process may take too long. The user should choose a set of less conservative values
 #'  via the argument \code{sens.bayes.control} when the CPU-time is too long or matters.
 #'
 #' @seealso \code{\link{bayescomp}}
@@ -478,14 +478,14 @@ sensbayescomp <- function(formula,
 #'  \code{"quadrature"} corresponds the traditional quadrature formulas and calls the function \code{\link[mvQuad]{createNIGrid}}.
 #'  The tuning parameters are adjusted by \code{crt.bayes.control}.
 #'   If \code{NULL} (default), it will use the method already applied to create the object \code{x}.
-#' @param sens_method Similar to \code{crt_method}, but for approximating the intergals in the sensitivity (derivative) function.
+#' @param sens_method Similar to \code{crt_method}, but for approximating the integrals in the sensitivity (derivative) function.
 #' The tuning parameters are adjusted by \code{sens.bayes.control}.
 #'  If \code{NULL} (default), it will use the method already applied to create the object \code{x}.
 #' @param ... Argument with no further use.
 #' @seealso \code{\link{bayes}}, \code{\link{bayescomp}}
 #' @details
-#' In addition to verfiying the general equivalence theorem,
-#'  this function makes it possible to  re-calcuate the criterion value for the output designs using a new (say, more conservative) set of tuning parameters.
+#' In addition to verifying the general equivalence theorem,
+#'  this function makes it possible to  re-calculate the criterion value for the output designs using a new (say, more conservative) set of tuning parameters.
 #'  This is useful for  Bayesian optimal designs to assess the robustness of the
 #'  criterion value with respect to different values of the tuning parameters.
 #'  To put it simple, for Bayesian generated designs, the user can re-calculate the
@@ -733,11 +733,11 @@ print.sensbayes <- function(x,  ...){
 #' Argument \code{optslist} is a list and it will be passed to the argument \code{opts} of the function \code{\link[nloptr]{nloptr}}.
 #' The most important components of  \code{optslist} are:
 #'  \describe{
-#'   \item{\code{stopval}}{Stop minimization when an objective value <= \code{stopval} is found. Setting stopval to \code{-Inf} disables this stopping criterion (default).}
+#'   \item{\code{stopval}}{Stop minimization when an objective value <= \code{stopval} is found. Setting \code{stopval} to \code{-Inf} disables this stopping criterion (default).}
 #'   \item{\code{algorithm}}{Defaults to \code{NLOPT_GN_DIRECT_L}. DIRECT-L is a deterministic-search algorithm based on systematic division of the search domain into smaller and smaller hyperrectangles.}
 #'   \item{\code{xtol_rel}}{Stop when an optimization step (or an estimate of the optimum) changes every parameter by less than \code{xtol_rel} multiplied by the absolute value of the parameter. Criterion is disabled if \code{xtol_rel} is non-positive. Defaults to \code{1e-8}.}
 #'   \item{\code{ftol_rel}}{Stop when an optimization step (or an estimate of the optimum) changes the objective function value by less than \code{ftol_rel} multiplied by the absolute value of the function value. Criterion is disabled if \code{ftol_rel} is non-positive. Defaults to \code{1e-10}.}
-#'   \item{\code{maxeval}}{Stop when the number of function evaluations exceeds maxeval. Criterion is disabled if maxeval is non-positive. Defaults to \code{6000}. See 'Note' on when to change its value.}
+#'   \item{\code{maxeval}}{Stop when the number of function evaluations exceeds \code{maxeval}. Criterion is disabled if \code{maxeval} is non-positive. Defaults to \code{6000}. See 'Note' on when to change its value.}
 #' }
 #'  More details are available by the function \code{nloptr.print.options()} in package \code{\link[nloptr]{nloptr}}.
 
@@ -746,7 +746,7 @@ print.sensbayes <- function(x,  ...){
 #'  To overcome this issue, please increase  the value of the parameter \code{maxeval} to allow the optimization algorithm to find the global maximum of the sensitivity (derivative) function over the design space.
 #'
 #'
-#' Please note the difference bewteen \code{maxEval} in \code{cubature} and \code{maxeval} in  \code{optslist}. They are quite two types of different tuning parameters.
+#' Please note the difference between \code{maxEval} in \code{cubature} and \code{maxeval} in  \code{optslist}. They are quite two types of different tuning parameters.
 #' The earlier is the (approximate) maximum number of function evaluations in the hcubature adaptive integration method and the latter is the maximum number of function evaluations in the maximization problem.
 #' @export
 #' @examples
@@ -814,9 +814,9 @@ sens.bayes.control <- function(cubature = list(tol = 1e-5,
 #'  This function returns two lists each corresponds
 #'  to an implemented integration method for approximating the integrals
 #'   in Bayesian criteria.
-#'  The first list is named \code{cubature} and containes the \code{\link[cubature]{hcubature}}
+#'  The first list is named \code{cubature} and contains the \code{\link[cubature]{hcubature}}
 #'   control parameters to  approximate the integrals with an adaptive multivariate integration method over hypercubes.
-#'  The second list is named \code{quadrature} and containes the \code{\link[mvQuad]{createNIGrid}}
+#'  The second list is named \code{quadrature} and contains the \code{\link[mvQuad]{createNIGrid}}
 #'  tuning parameters to approximate the integrals with the quadrature methods.
 #' @param cubature A list that will be passed to the arguments of the function \code{\link[cubature]{hcubature}} for the adaptive multivariate integration.
 #'  It is required and used when \code{crt_method = "cubature"} in the parent function, e.g.  \code{\link{bayes}}. See 'Details'.
@@ -858,7 +858,7 @@ sens.bayes.control <- function(cubature = list(tol = 1e-5,
 #' crt.bayes.control()
 #' crt.bayes.control(cubature = list(tol = 1e-4))
 #' crt.bayes.control(quadrature = list(level = 4))
-#' @return A list  of two lists each contains the  control parameters for \code{\link[cubature]{hcubature}} and \code{\link[mvQuad]{createNIGrid}}, repectively.
+#' @return A list  of two lists each contains the  control parameters for \code{\link[cubature]{hcubature}} and \code{\link[mvQuad]{createNIGrid}}, respectively.
 #' @export
 crt.bayes.control <- function(cubature = list(tol = 1e-5,
                                               maxEval = 50000,

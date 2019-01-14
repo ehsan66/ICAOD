@@ -28,7 +28,7 @@ This can be a family function, a call to a family function or a character string
 
 \item{x}{A vector of candidate design (support) points.
 When is not set to \code{NULL} (default),
- the agorithm only finds the optimal weights for the candidate points in  \code{x}.
+ the algorithm only finds the optimal weights for the candidate points in  \code{x}.
    Should be set when the user has a finite number of candidate design points  and the purpose
    is to find the optimal weight for each of them (when zero, they will be excluded from the design).
 For design points with more than one dimension, see 'Details' of \code{\link{sensminimax}}.}
@@ -55,7 +55,7 @@ For details, see \code{\link{crt.bayes.control}}.}
 \code{"quadrature"} corresponds the traditional quadrature formulas and calls the function \code{\link[mvQuad]{createNIGrid}}.
 The tuning parameters are adjusted by \code{crt.bayes.control}. Default is set to \code{"cubature"}.}
 
-\item{sens_method}{Similar to \code{crt_method}, but for approximating the intergals in the sensitivity (derivative) function.
+\item{sens_method}{Similar to \code{crt_method}, but for approximating the integrals in the sensitivity (derivative) function.
 The tuning parameters are adjusted by \code{sens.bayes.control}. Default is set to \code{"cubature"}.}
 
 \item{plot_3d}{Which package should be used to plot the sensitivity (derivative) function for two-dimensional design space. Defaults to \code{"lattice"}.}
@@ -108,7 +108,7 @@ In general, if the CPU time matters, the user should find an appropriate speed-a
 The default values of the tuning parameters in \code{sens.bayes.control} are set in a way that
 having accurate plots for the sensitivity (derivative) function
  and calculating the ELB to a high precision  to be the primary goals,
- eventhough the process may take too long. The user should choose a set of less conservative values
+ although the process may take too long. The user should choose a set of less conservative values
  via the argument \code{sens.bayes.control} when the CPU-time is too long or matters.
 }
 \examples{

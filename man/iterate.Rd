@@ -2,17 +2,17 @@
 % Please edit documentation in R/1-UserCommonFunctions.R
 \name{iterate}
 \alias{iterate}
-\title{Updating an Object of Class 'bayes' or 'minimax'}
+\title{Updating an Object of Class \code{'bayes'} or \code{'minimax'}}
 \usage{
 iterate(object, iter)
 }
 \arguments{
-\item{object}{An object of class 'minimax' or 'Bayesian'.}
+\item{object}{An object of class \code{'minimax'} or  \code{'bayes'}.}
 
 \item{iter}{Number of iterations.}
 }
 \value{
-An (updated) object of class 'bayes' or 'minimax'.
+An (updated) object of class \code{'bayes'} or \code{'minimax'}.
 }
 \description{
 Runs ICA for more number of iterations.

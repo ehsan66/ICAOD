@@ -67,8 +67,8 @@ an object of class \code{minimax} that is a list including three sub-lists:
       \code{x}                      \tab      \tab Design points. \cr
       \code{w}                      \tab      \tab Design weights. \cr
       \code{min_cost}               \tab      \tab Value of the criterion for the best imperialist (design).  \cr
-      \code{mean_cost}              \tab      \tab Mean of the critrion values of all the imperialists. \cr
-      \code{sens}                   \tab      \tab An object of class 'sensminimax'. See below. \cr
+      \code{mean_cost}              \tab      \tab Mean of the criterion values of all the imperialists. \cr
+      \code{sens}                   \tab      \tab An object of class \code{'sensminimax'}. See below. \cr
       \code{param}                  \tab      \tab Vector of parameters.\cr
     }
   }

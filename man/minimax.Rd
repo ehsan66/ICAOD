@@ -42,9 +42,9 @@ When a parameter is known (has a fixed value), its associated lower and upper bo
 going to be discretized.
 The total number of grid points from the parameter space is \code{n.grid^p}.
  When \code{n.grid > 0}, optimal design protects the experimenter against the worst case scenario only over the grid points, and not over the continuous parameter space.
-  The resulting designs may not be gloablly optimal.
+  The resulting designs may not be globally optimal.
   In some literature, this type of designs has been used as a compromise to
-  the minimax type designs to avoid continuous optimization probem over
+  the minimax type designs to avoid continuous optimization problem over
    the parameter space and simplify the minimax design problems.
     Especially when the design criterion is convex with respect to the
   given parameter space at every given design from the design space,
@@ -76,7 +76,7 @@ If not specified truly, the sensitivity (derivative) plot may be shifted below t
 
 \item{x}{A vector of candidate design (support) points.
 When is not set to \code{NULL} (default),
- the agorithm only finds the optimal weights for the candidate points in  \code{x}.
+ the algorithm only finds the optimal weights for the candidate points in  \code{x}.
    Should be set when the user has a finite number of candidate design points  and the purpose
    is to find the optimal weight for each of them (when zero, they will be excluded from the design).
 For design points with more than one dimension, see 'Details' of \code{\link{sensminimax}}.}
@@ -93,8 +93,8 @@ an object of class \code{minimax} that is a list including three sub-lists:
       \code{x}                      \tab      \tab Design points. \cr
       \code{w}                      \tab      \tab Design weights. \cr
       \code{min_cost}               \tab      \tab Value of the criterion for the best imperialist (design).  \cr
-      \code{mean_cost}              \tab      \tab Mean of the critrion values of all the imperialists. \cr
-      \code{sens}                   \tab      \tab An object of class 'sensminimax'. See below. \cr
+      \code{mean_cost}              \tab      \tab Mean of the criterion values of all the imperialists. \cr
+      \code{sens}                   \tab      \tab An object of class \code{'sensminimax'}. See below. \cr
       \code{param}                  \tab      \tab Vector of parameters.\cr
     }
   }

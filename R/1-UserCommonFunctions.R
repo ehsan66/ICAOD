@@ -127,11 +127,11 @@ ICA.control <- function(ncount = 40, nimp = ncount/10, assim_coeff = 4, revol_ra
 
 ######################################################################################################*
 ######################################################################################################*
-#'@title Updating an Object of Class 'bayes' or 'minimax'
+#'@title Updating an Object of Class \code{'bayes'} or \code{'minimax'}
 #' @description  Runs ICA for more number of iterations.
-#' @param object An object of class 'minimax' or 'Bayesian'.
+#' @param object An object of class \code{'minimax'} or  \code{'bayes'}.
 #' @param iter Number of iterations.
-#' @return An (updated) object of class 'bayes' or 'minimax'.
+#' @return An (updated) object of class \code{'bayes'} or \code{'minimax'}.
 #' @export
 #' @seealso \code{\link{iterate.minimax}} and \code{\link{iterate.bayes}}.
 iterate <- function(object, iter){

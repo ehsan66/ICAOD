@@ -54,7 +54,7 @@ If not given, the sensitivity plot may be shifted below the y-axis.
 
 \item{x}{A vector of candidate design (support) points.
 When is not set to \code{NULL} (default),
- the agorithm only finds the optimal weights for the candidate points in  \code{x}.
+ the algorithm only finds the optimal weights for the candidate points in  \code{x}.
    Should be set when the user has a finite number of candidate design points  and the purpose
    is to find the optimal weight for each of them (when zero, they will be excluded from the design).
 For design points with more than one dimension, see 'Details' of \code{\link{sensminimax}}.}
@@ -71,8 +71,8 @@ an object of class \code{minimax} that is a list including three sub-lists:
       \code{x}                      \tab      \tab Design points. \cr
       \code{w}                      \tab      \tab Design weights. \cr
       \code{min_cost}               \tab      \tab Value of the criterion for the best imperialist (design).  \cr
-      \code{mean_cost}              \tab      \tab Mean of the critrion values of all the imperialists. \cr
-      \code{sens}                   \tab      \tab An object of class 'sensminimax'. See below. \cr
+      \code{mean_cost}              \tab      \tab Mean of the criterion values of all the imperialists. \cr
+      \code{sens}                   \tab      \tab An object of class \code{'sensminimax'}. See below. \cr
       \code{param}                  \tab      \tab Vector of parameters.\cr
     }
   }

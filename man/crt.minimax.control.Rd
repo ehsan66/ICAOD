@@ -28,11 +28,11 @@ If the CPU time matters, the user should find an appropriate speed-accuracy trad
 \details{
 Argument \code{optslist} will be passed to the argument \code{opts} of the function \code{\link[nloptr]{nloptr}}:
  \describe{
-  \item{\code{stopval}}{Stop minimization when an objective value <= \code{stopval} is found. Setting stopval to \code{-Inf} disables this stopping criterion (default).}
+  \item{\code{stopval}}{Stop minimization when an objective value <= \code{stopval} is found. Setting \code{stopval} to \code{-Inf} disables this stopping criterion (default).}
   \item{\code{algorithm}}{Defaults to \code{NLOPT_GN_DIRECT_L}. DIRECT-L is a deterministic-search algorithm based on systematic division of the search domain into smaller and smaller hyperrectangles.}
   \item{\code{xtol_rel}}{Stop when an optimization step (or an estimate of the optimum) changes every parameter by less than \code{xtol_rel} multiplied by the absolute value of the parameter. Criterion is disabled if \code{xtol_rel} is non-positive. Defaults to \code{1e-5}.}
   \item{\code{ftol_rel}}{Stop when an optimization step (or an estimate of the optimum) changes the objective function value by less than \code{ftol_rel} multiplied by the absolute value of the function value. Criterion is disabled if \code{ftol_rel} is non-positive. Defaults to \code{1e-8}.}
-  \item{\code{maxeval}}{Stop when the number of function evaluations exceeds maxeval. Criterion is disabled if maxeval is non-positive. Defaults to \code{1000}. See below.}
+  \item{\code{maxeval}}{Stop when the number of function evaluations exceeds \code{maxeval}. Criterion is disabled if \code{maxeval} is non-positive. Defaults to \code{1000}. See below.}
 }
  A detailed explanation of all the options is shown by \code{nloptr.print.options()} in package \code{\link[nloptr]{nloptr}}.
 }

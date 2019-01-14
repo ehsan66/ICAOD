@@ -52,7 +52,7 @@ For details, see \code{\link{crt.bayes.control}}.}
 \code{"quadrature"} corresponds the traditional quadrature formulas and calls the function \code{\link[mvQuad]{createNIGrid}}.
 The tuning parameters are adjusted by \code{crt.bayes.control}. Default is set to \code{"cubature"}.}
 
-\item{sens_method}{Similar to \code{crt_method}, but for approximating the intergals in the sensitivity (derivative) function.
+\item{sens_method}{Similar to \code{crt_method}, but for approximating the integrals in the sensitivity (derivative) function.
 The tuning parameters are adjusted by \code{sens.bayes.control}. Default is set to \code{"cubature"}.}
 
 \item{initial}{A matrix of the  initial design points and weights that will be inserted into the initial solutions (countries) of the algorithm.
@@ -67,7 +67,7 @@ When \code{NULL} (default), it will be set to \code{length(parvars)} or
 
 \item{x}{A vector of candidate design (support) points.
 When is not set to \code{NULL} (default),
- the agorithm only finds the optimal weights for the candidate points in  \code{x}.
+ the algorithm only finds the optimal weights for the candidate points in  \code{x}.
    Should be set when the user has a finite number of candidate design points  and the purpose
    is to find the optimal weight for each of them (when zero, they will be excluded from the design).
 For design points with more than one dimension, see 'Details' of \code{\link{sensminimax}}.}
@@ -83,8 +83,8 @@ an object of class \code{bayes} that is a list including three sub-lists:
       \code{x}                      \tab      \tab Design points. \cr
       \code{w}                      \tab      \tab Design weights. \cr
       \code{min_cost}               \tab      \tab Value of the criterion for the best imperialist (design).  \cr
-      \code{mean_cost}              \tab      \tab Mean of the critrion values of all the imperialists. \cr
-      \code{sens}                   \tab      \tab An object of class 'sensbayes'. See below.\cr
+      \code{mean_cost}              \tab      \tab Mean of the criterion values of all the imperialists. \cr
+      \code{sens}                   \tab      \tab An object of class \code{'sensbayes'}. See below.\cr
     }
   }
 
@@ -122,10 +122,10 @@ Let \eqn{\Xi} be the space of all  approximate designs with
 
 An object of class \code{cprior}  is a  list with the following components:
 \itemize{
- \item{fn: }{Prior distribution as an R \code{function} with argument \code{param} that is the vector of the unknown parameters. See below.}
- \item{npar: }{Number of unknown parameters and is equal to the length of \code{param}}.
- \item{lower: }{Argument \code{lower}. It has the same length as \code{param}}.
- \item{upper: }{Argument \code{upper}. It has the same length as \code{param}}.
+ \item{\code{fn}: }{Prior distribution as an R \code{function} with argument \code{param} that is the vector of the unknown parameters. See below.}
+ \item{\code{npar}: }{Number of unknown parameters and is equal to the length of \code{param}}.
+ \item{\code{lower}: }{Argument \code{lower}. It has the same length as \code{param}}.
+ \item{\code{upper}: }{Argument \code{upper}. It has the same length as \code{param}}.
 }
 A \code{cprior} object  will be passed to the argument \code{prior} of the function \code{\link{bayes}}.
  The argument \code{param} in \code{fn} has the same order as the argument \code{parvars} when the model is specified by a \code{formula}.

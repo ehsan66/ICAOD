@@ -16,15 +16,15 @@ It is required and used when \code{crt_method = "cubature"} in the parent functi
 It is required and used when \code{crt_method = "quadrature"} in the parent function, e.g.  \code{\link{bayes}}. See 'Details'.}
 }
 \value{
-A list  of two lists each contains the  control parameters for \code{\link[cubature]{hcubature}} and \code{\link[mvQuad]{createNIGrid}}, repectively.
+A list  of two lists each contains the  control parameters for \code{\link[cubature]{hcubature}} and \code{\link[mvQuad]{createNIGrid}}, respectively.
 }
 \description{
 This function returns two lists each corresponds
  to an implemented integration method for approximating the integrals
   in Bayesian criteria.
- The first list is named \code{cubature} and containes the \code{\link[cubature]{hcubature}}
+ The first list is named \code{cubature} and contains the \code{\link[cubature]{hcubature}}
   control parameters to  approximate the integrals with an adaptive multivariate integration method over hypercubes.
- The second list is named \code{quadrature} and containes the \code{\link[mvQuad]{createNIGrid}}
+ The second list is named \code{quadrature} and contains the \code{\link[mvQuad]{createNIGrid}}
  tuning parameters to approximate the integrals with the quadrature methods.
 }
 \details{

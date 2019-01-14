@@ -58,7 +58,7 @@ The resulting maxima establish the answering set.
 Obviously, the answering set is a subset of all the local maxima.
 Therefore, it is very important to be able to find all the local maxima to create the true answering set with no missing elements.
  Otherwise, even when the design is optimal, the sensitivity (derivative) plot may not verify the optimality of the design.
-   Finding all the local optimal of a multimodal function like the sensitivity fucntion
+   Finding all the local optimal of a multimodal function like the sensitivity function
   is not an easy task and this is the main reason
   that checking the general equivalence theorem (even plotting) in minimax and standardized maximin problems
    is complicated. As a result,
@@ -88,11 +88,11 @@ in the function  \code{\link[nloptr]{nloptr}}.
 Argument \code{optslist} will be passed to the argument \code{opts} of the function \code{\link[nloptr]{nloptr}}.
 \code{optslist} is a \code{list} and the most important components are listed as follows:
  \describe{
-  \item{\code{stopval}}{Stop minimization when an objective value <= \code{stopval} is found. Setting stopval to \code{-Inf} disables this stopping criterion (default).}
+  \item{\code{stopval}}{Stop minimization when an objective value <= \code{stopval} is found. Setting \code{stopval} to \code{-Inf} disables this stopping criterion (default).}
   \item{\code{algorithm}}{Defaults to \code{NLOPT_GN_DIRECT_L}. DIRECT-L is a deterministic-search algorithm based on systematic division of the search domain into smaller and smaller hyperrectangles.}
   \item{\code{xtol_rel}}{Stop when an optimization step (or an estimate of the optimum) changes every parameter by less than \code{xtol_rel} multiplied by the absolute value of the parameter. Criterion is disabled if \code{xtol_rel} is non-positive. Defaults to \code{1e-8}.}
   \item{\code{ftol_rel}}{Stop when an optimization step (or an estimate of the optimum) changes the objective function value by less than \code{ftol_rel} multiplied by the absolute value of the function value. Criterion is disabled if \code{ftol_rel} is non-positive. Defaults to \code{1e-10}.}
-  \item{\code{maxeval}}{Stop when the number of function evaluations exceeds maxeval. Criterion is disabled if maxeval is non-positive. Defaults to \code{6000}. See 'Note' on when to change its value.}
+  \item{\code{maxeval}}{Stop when the number of function evaluations exceeds \code{maxeval}. Criterion is disabled if \code{maxeval} is non-positive. Defaults to \code{6000}. See 'Note' on when to change its value.}
 }
  A detailed explanation of all the options is shown by the function \code{nloptr.print.options()} in package \code{\link[nloptr]{nloptr}}.
 }

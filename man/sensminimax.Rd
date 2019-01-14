@@ -107,7 +107,7 @@ A design \eqn{\xi^*}{\xi*} is minimax D-optimal among all designs on \eqn{\chi} 
           with equality at all support points of \eqn{\xi^*}{\xi*}.
            Here, \eqn{p} is the number of model parameters. \eqn{c(\boldsymbol{x}, \mu^*, \xi^*)}{c(x, \mu*, \xi*)} is called \strong{sensitivity} or \strong{derivative} function.
 The set \eqn{A(\xi^*)}{A(\xi*)} is sometimes called \bold{answering set} of
- \eqn{\xi^*}{\xi*} and the measure \eqn{\mu^*}{\mu*} is a subgradient of the
+ \eqn{\xi^*}{\xi*} and the measure \eqn{\mu^*}{\mu*} is a sub-gradient of the
    non-differentiable criterion evaluated at \eqn{M(\xi^*,\nu)}{M(\xi*,\nu)}.\cr
 For the standardized maximin D-optimal designs, the answering set \eqn{N(\xi^*)}{N(\xi*)} is
    \deqn{N(\xi^*) = \left\{\boldsymbol{\nu} \in \Theta \mid \mbox{eff}_D(\xi^*, \boldsymbol{\nu}) = \min_{\boldsymbol{\theta} \in \Theta} \mbox{eff}_D(\xi^*, \boldsymbol{\theta}) \right\}.

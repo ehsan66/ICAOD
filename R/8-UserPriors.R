@@ -11,10 +11,10 @@
 #' @return
 #' An object of class \code{cprior} that is a  list with the following components:
 #' \itemize{
-#'  \item{fn: }{prior distribution as an R \code{function} with argument \code{param} that is the vector of the unknown parameters. See below.}
-#'  \item{npar: }{Number of unknown parameters and is equal to the length of \code{param}}.
-#'  \item{lower: }{Argument \code{lower}. It has the same length as \code{param}}.
-#'  \item{upper: }{Argument \code{lower}. It has the same length as \code{param}}.
+#'  \item{\code{fn}: }{prior distribution as an R \code{function} with argument \code{param} that is the vector of the unknown parameters. See below.}
+#'  \item{\code{npar}: }{Number of unknown parameters and is equal to the length of \code{param}}.
+#'  \item{\code{lower}: }{Argument \code{lower}. It has the same length as \code{param}}.
+#'  \item{\code{upper}: }{Argument \code{lower}. It has the same length as \code{param}}.
 #' }
 #' The list will be passed to the argument \code{prior} of the function \code{\link{bayes}}.
 #'  The order of the argument \code{param} in \code{fn} has the same order as the argument \code{parvars} when the model is specified by a formula.

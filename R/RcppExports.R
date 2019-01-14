@@ -88,8 +88,8 @@ FIM_exp_2par <- function(x, w, param) {
 
 #' @title Fisher Information Matrix for the Alcohol-Kinetics Model
 #' @description It provides the cpp function for FIM for the model \code{~(b3 * x1)/(1 + b1 * x1 + b2 * x2)}
-#' @param x1 Vector of design points (first dimenstion).
-#' @param x2 Vector of design points (second dimenstion).
+#' @param x1 Vector of design points (first dimension).
+#' @param x2 Vector of design points (second dimension).
 #' @param w Vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w) = 1}.
 #' @param param Vector of values for the model parameters \code{c(b1, b2, b3)}.
 #' @return Fisher information matrix.

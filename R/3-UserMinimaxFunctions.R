@@ -32,9 +32,9 @@
 #' going to be discretized.
 #' The total number of grid points from the parameter space is \code{n.grid^p}.
 #'  When \code{n.grid > 0}, optimal design protects the experimenter against the worst case scenario only over the grid points, and not over the continuous parameter space.
-#'   The resulting designs may not be gloablly optimal.
+#'   The resulting designs may not be globally optimal.
 #'   In some literature, this type of designs has been used as a compromise to
-#'   the minimax type designs to avoid continuous optimization probem over
+#'   the minimax type designs to avoid continuous optimization problem over
 #'    the parameter space and simplify the minimax design problems.
 #'     Especially when the design criterion is convex with respect to the
 #'   given parameter space at every given design from the design space,
@@ -56,7 +56,7 @@
 #' @param plot_3d Which package should be used to plot the sensitivity (derivative) function for two-dimensional design space. Defaults to \code{"lattice"}.
 #' @param x A vector of candidate design (support) points.
 #' When is not set to \code{NULL} (default),
-#'  the agorithm only finds the optimal weights for the candidate points in  \code{x}.
+#'  the algorithm only finds the optimal weights for the candidate points in  \code{x}.
 #'    Should be set when the user has a finite number of candidate design points  and the purpose
 #'    is to find the optimal weight for each of them (when zero, they will be excluded from the design).
 #' For design points with more than one dimension, see 'Details' of \code{\link{sensminimax}}.
@@ -176,8 +176,8 @@
 #'       \code{x}                      \tab      \tab Design points. \cr
 #'       \code{w}                      \tab      \tab Design weights. \cr
 #'       \code{min_cost}               \tab      \tab Value of the criterion for the best imperialist (design).  \cr
-#'       \code{mean_cost}              \tab      \tab Mean of the critrion values of all the imperialists. \cr
-#'       \code{sens}                   \tab      \tab An object of class 'sensminimax'. See below. \cr
+#'       \code{mean_cost}              \tab      \tab Mean of the criterion values of all the imperialists. \cr
+#'       \code{sens}                   \tab      \tab An object of class \code{'sensminimax'}. See below. \cr
 #'       \code{param}                  \tab      \tab Vector of parameters.\cr
 #'     }
 #'   }
@@ -315,7 +315,7 @@ minimax <- function(formula, predvars, parvars, family = gaussian(),
 #'           with equality at all support points of \eqn{\xi^*}{\xi*}.
 #'            Here, \eqn{p} is the number of model parameters. \eqn{c(\boldsymbol{x}, \mu^*, \xi^*)}{c(x, \mu*, \xi*)} is called \strong{sensitivity} or \strong{derivative} function.
 #' The set \eqn{A(\xi^*)}{A(\xi*)} is sometimes called \bold{answering set} of
-#'  \eqn{\xi^*}{\xi*} and the measure \eqn{\mu^*}{\mu*} is a subgradient of the
+#'  \eqn{\xi^*}{\xi*} and the measure \eqn{\mu^*}{\mu*} is a sub-gradient of the
 #'    non-differentiable criterion evaluated at \eqn{M(\xi^*,\nu)}{M(\xi*,\nu)}.\cr
 #' For the standardized maximin D-optimal designs, the answering set \eqn{N(\xi^*)}{N(\xi*)} is
 #'    \deqn{N(\xi^*) = \left\{\boldsymbol{\nu} \in \Theta \mid \mbox{eff}_D(\xi^*, \boldsymbol{\nu}) = \min_{\boldsymbol{\theta} \in \Theta} \mbox{eff}_D(\xi^*, \boldsymbol{\theta}) \right\}.
@@ -1265,8 +1265,8 @@ senslocallycomp <- function (formula, predvars, parvars,
 #' @seealso \code{\link{minimax}}, \code{\link{locally}}, \code{\link{robust}}
 #' @details
 #'
-#' In addition to verfiying the general equivalence theorem,
-#'  this function makes it possible to re-calculated the critrio value
+#' In addition to verifying the general equivalence theorem,
+#'  this function makes it possible to re-calculated the criterion value
 #'   for the output designs using a new set of tuning parameters, especially,
 #'    a large value for \code{maxeval} in the function \code{\link{crt.minimax.control}}.
 #'  This is useful for  minimax and standardized maximin optimal designs to assess
@@ -1501,11 +1501,11 @@ print.sensminimax <- function(x,...){
 #' @details
 #'  Argument \code{optslist} will be passed to the argument \code{opts} of the function \code{\link[nloptr]{nloptr}}:
 #'  \describe{
-#'   \item{\code{stopval}}{Stop minimization when an objective value <= \code{stopval} is found. Setting stopval to \code{-Inf} disables this stopping criterion (default).}
+#'   \item{\code{stopval}}{Stop minimization when an objective value <= \code{stopval} is found. Setting \code{stopval} to \code{-Inf} disables this stopping criterion (default).}
 #'   \item{\code{algorithm}}{Defaults to \code{NLOPT_GN_DIRECT_L}. DIRECT-L is a deterministic-search algorithm based on systematic division of the search domain into smaller and smaller hyperrectangles.}
 #'   \item{\code{xtol_rel}}{Stop when an optimization step (or an estimate of the optimum) changes every parameter by less than \code{xtol_rel} multiplied by the absolute value of the parameter. Criterion is disabled if \code{xtol_rel} is non-positive. Defaults to \code{1e-5}.}
 #'   \item{\code{ftol_rel}}{Stop when an optimization step (or an estimate of the optimum) changes the objective function value by less than \code{ftol_rel} multiplied by the absolute value of the function value. Criterion is disabled if \code{ftol_rel} is non-positive. Defaults to \code{1e-8}.}
-#'   \item{\code{maxeval}}{Stop when the number of function evaluations exceeds maxeval. Criterion is disabled if maxeval is non-positive. Defaults to \code{1000}. See below.}
+#'   \item{\code{maxeval}}{Stop when the number of function evaluations exceeds \code{maxeval}. Criterion is disabled if \code{maxeval} is non-positive. Defaults to \code{1000}. See below.}
 #' }
 #'  A detailed explanation of all the options is shown by \code{nloptr.print.options()} in package \code{\link[nloptr]{nloptr}}.
 #'
@@ -1588,7 +1588,7 @@ crt.minimax.control <- function (x0 = NULL,
 #' Obviously, the answering set is a subset of all the local maxima.
 #' Therefore, it is very important to be able to find all the local maxima to create the true answering set with no missing elements.
 #'  Otherwise, even when the design is optimal, the sensitivity (derivative) plot may not verify the optimality of the design.
-#'    Finding all the local optimal of a multimodal function like the sensitivity fucntion
+#'    Finding all the local optimal of a multimodal function like the sensitivity function
 #'   is not an easy task and this is the main reason
 #'   that checking the general equivalence theorem (even plotting) in minimax and standardized maximin problems
 #'    is complicated. As a result,
@@ -1618,11 +1618,11 @@ crt.minimax.control <- function (x0 = NULL,
 #' Argument \code{optslist} will be passed to the argument \code{opts} of the function \code{\link[nloptr]{nloptr}}.
 #' \code{optslist} is a \code{list} and the most important components are listed as follows:
 #'  \describe{
-#'   \item{\code{stopval}}{Stop minimization when an objective value <= \code{stopval} is found. Setting stopval to \code{-Inf} disables this stopping criterion (default).}
+#'   \item{\code{stopval}}{Stop minimization when an objective value <= \code{stopval} is found. Setting \code{stopval} to \code{-Inf} disables this stopping criterion (default).}
 #'   \item{\code{algorithm}}{Defaults to \code{NLOPT_GN_DIRECT_L}. DIRECT-L is a deterministic-search algorithm based on systematic division of the search domain into smaller and smaller hyperrectangles.}
 #'   \item{\code{xtol_rel}}{Stop when an optimization step (or an estimate of the optimum) changes every parameter by less than \code{xtol_rel} multiplied by the absolute value of the parameter. Criterion is disabled if \code{xtol_rel} is non-positive. Defaults to \code{1e-8}.}
 #'   \item{\code{ftol_rel}}{Stop when an optimization step (or an estimate of the optimum) changes the objective function value by less than \code{ftol_rel} multiplied by the absolute value of the function value. Criterion is disabled if \code{ftol_rel} is non-positive. Defaults to \code{1e-10}.}
-#'   \item{\code{maxeval}}{Stop when the number of function evaluations exceeds maxeval. Criterion is disabled if maxeval is non-positive. Defaults to \code{6000}. See 'Note' on when to change its value.}
+#'   \item{\code{maxeval}}{Stop when the number of function evaluations exceeds \code{maxeval}. Criterion is disabled if \code{maxeval} is non-positive. Defaults to \code{6000}. See 'Note' on when to change its value.}
 #' }
 #'  A detailed explanation of all the options is shown by the function \code{nloptr.print.options()} in package \code{\link[nloptr]{nloptr}}.
 #'

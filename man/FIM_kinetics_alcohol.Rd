@@ -7,9 +7,9 @@
 FIM_kinetics_alcohol(x1, x2, w, param)
 }
 \arguments{
-\item{x1}{Vector of design points (first dimenstion).}
+\item{x1}{Vector of design points (first dimension).}
 
-\item{x2}{Vector of design points (second dimenstion).}
+\item{x2}{Vector of design points (second dimension).}
 
 \item{w}{Vector of design weight. Its length must be equal to the length of \code{x} and \code{sum(w) = 1}.}
 

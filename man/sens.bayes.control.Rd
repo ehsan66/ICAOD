@@ -51,11 +51,11 @@ in the function  \code{\link[nloptr]{nloptr}}.
 Argument \code{optslist} is a list and it will be passed to the argument \code{opts} of the function \code{\link[nloptr]{nloptr}}.
 The most important components of  \code{optslist} are:
  \describe{
-  \item{\code{stopval}}{Stop minimization when an objective value <= \code{stopval} is found. Setting stopval to \code{-Inf} disables this stopping criterion (default).}
+  \item{\code{stopval}}{Stop minimization when an objective value <= \code{stopval} is found. Setting \code{stopval} to \code{-Inf} disables this stopping criterion (default).}
   \item{\code{algorithm}}{Defaults to \code{NLOPT_GN_DIRECT_L}. DIRECT-L is a deterministic-search algorithm based on systematic division of the search domain into smaller and smaller hyperrectangles.}
   \item{\code{xtol_rel}}{Stop when an optimization step (or an estimate of the optimum) changes every parameter by less than \code{xtol_rel} multiplied by the absolute value of the parameter. Criterion is disabled if \code{xtol_rel} is non-positive. Defaults to \code{1e-8}.}
   \item{\code{ftol_rel}}{Stop when an optimization step (or an estimate of the optimum) changes the objective function value by less than \code{ftol_rel} multiplied by the absolute value of the function value. Criterion is disabled if \code{ftol_rel} is non-positive. Defaults to \code{1e-10}.}
-  \item{\code{maxeval}}{Stop when the number of function evaluations exceeds maxeval. Criterion is disabled if maxeval is non-positive. Defaults to \code{6000}. See 'Note' on when to change its value.}
+  \item{\code{maxeval}}{Stop when the number of function evaluations exceeds \code{maxeval}. Criterion is disabled if \code{maxeval} is non-positive. Defaults to \code{6000}. See 'Note' on when to change its value.}
 }
  More details are available by the function \code{nloptr.print.options()} in package \code{\link[nloptr]{nloptr}}.
 }
@@ -64,7 +64,7 @@ Whenever the value of ELB is computationally larger than 1, it is a sign that  t
  To overcome this issue, please increase  the value of the parameter \code{maxeval} to allow the optimization algorithm to find the global maximum of the sensitivity (derivative) function over the design space.
 
 
-Please note the difference bewteen \code{maxEval} in \code{cubature} and \code{maxeval} in  \code{optslist}. They are quite two types of different tuning parameters.
+Please note the difference between \code{maxEval} in \code{cubature} and \code{maxeval} in  \code{optslist}. They are quite two types of different tuning parameters.
 The earlier is the (approximate) maximum number of function evaluations in the hcubature adaptive integration method and the latter is the maximum number of function evaluations in the maximization problem.
 }
 \examples{

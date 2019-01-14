@@ -25,7 +25,7 @@
 The tuning parameters are adjusted by \code{crt.bayes.control}.
  If \code{NULL} (default), it will use the method already applied to create the object \code{x}.}
 
-\item{sens_method}{Similar to \code{crt_method}, but for approximating the intergals in the sensitivity (derivative) function.
+\item{sens_method}{Similar to \code{crt_method}, but for approximating the integrals in the sensitivity (derivative) function.
 The tuning parameters are adjusted by \code{sens.bayes.control}.
  If \code{NULL} (default), it will use the method already applied to create the object \code{x}.}
 
@@ -50,8 +50,8 @@ This function plots the evolution of the ICA algorithm (iteration vs the best (m
  using  the general equivalence theorem. It plots the sensitivity function and calculates the ELB for the best design generated  at iteration number \code{iter}.
 }
 \details{
-In addition to verfiying the general equivalence theorem,
- this function makes it possible to  re-calcuate the criterion value for the output designs using a new (say, more conservative) set of tuning parameters.
+In addition to verifying the general equivalence theorem,
+ this function makes it possible to  re-calculate the criterion value for the output designs using a new (say, more conservative) set of tuning parameters.
  This is useful for  Bayesian optimal designs to assess the robustness of the
  criterion value with respect to different values of the tuning parameters.
  To put it simple, for Bayesian generated designs, the user can re-calculate the

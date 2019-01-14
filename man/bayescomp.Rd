@@ -59,7 +59,7 @@ For details, see \code{\link{crt.bayes.control}}.}
 \code{"quadrature"} corresponds the traditional quadrature formulas and calls the function \code{\link[mvQuad]{createNIGrid}}.
 The tuning parameters are adjusted by \code{crt.bayes.control}. Default is set to \code{"cubature"}.}
 
-\item{sens_method}{Similar to \code{crt_method}, but for approximating the intergals in the sensitivity (derivative) function.
+\item{sens_method}{Similar to \code{crt_method}, but for approximating the integrals in the sensitivity (derivative) function.
 The tuning parameters are adjusted by \code{sens.bayes.control}. Default is set to \code{"cubature"}.}
 
 \item{initial}{A matrix of the  initial design points and weights that will be inserted into the initial solutions (countries) of the algorithm.
@@ -83,8 +83,8 @@ an object of class \code{bayes} that is a list including three sub-lists:
       \code{x}                      \tab      \tab Design points. \cr
       \code{w}                      \tab      \tab Design weights. \cr
       \code{min_cost}               \tab      \tab Value of the criterion for the best imperialist (design).  \cr
-      \code{mean_cost}              \tab      \tab Mean of the critrion values of all the imperialists. \cr
-      \code{sens}                   \tab      \tab An object of class 'sensbayes'. See below.\cr
+      \code{mean_cost}              \tab      \tab Mean of the criterion values of all the imperialists. \cr
+      \code{sens}                   \tab      \tab An object of class \code{'sensbayes'}. See below.\cr
     }
   }
 

@@ -39,8 +39,8 @@ This function plots the evolution of the ICA algorithm (iteration vs the best (m
  using  the general equivalence theorem. It plots the sensitivity function and calculates the ELB for the  best design generated at iteration number  \code{iter}.
 }
 \details{
-In addition to verfiying the general equivalence theorem,
- this function makes it possible to re-calculated the critrio value
+In addition to verifying the general equivalence theorem,
+ this function makes it possible to re-calculated the criterion value
   for the output designs using a new set of tuning parameters, especially,
    a large value for \code{maxeval} in the function \code{\link{crt.minimax.control}}.
  This is useful for  minimax and standardized maximin optimal designs to assess
