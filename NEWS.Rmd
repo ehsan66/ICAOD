@@ -1,5 +1,5 @@
 # ICAOD 0.9.8
-# Quadrature formulas are added by package mvQuad.
+# Quadrature formulas are added from package mvQuad.
 # A bug in CPU time is fixed.
 # Help pages are improved.
 

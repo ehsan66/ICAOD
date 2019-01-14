@@ -14,7 +14,8 @@ install_and_load("ICAOD")
 install_and_load("rgl")
 
 ## the tuning parameters for the hcubature algorithm
-tun1 <- list(cubature = list(tol = 1e-5, maxEval = 50000))
+# I decreased the maxEval to have faster code
+tun1 <- list(cubature = list(tol = 1e-5, maxEval = 10000))
 
 #############################**
 # Section 4.1 Table 1 ----
