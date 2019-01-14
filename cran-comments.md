@@ -1,7 +1,7 @@
 # This is a new version (Version 0.9.8)
 * Quadrature formulas for Bayesian designs are added (package mvQuad).
-
 * A bug for CPU time is fixed.
+* spell checking passed
 ##### Test environments
 * local OS X install, R version 3.5.2 
 * Rcmd check: Passed 
