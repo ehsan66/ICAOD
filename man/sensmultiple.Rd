@@ -5,9 +5,8 @@
 \title{Verifying Optimality of The Multiple Objective Designs for The 4-Parameter Hill Model}
 \usage{
 sensmultiple(dose, w, minDose, maxDose, inipars, lambda, delta,
-  Hill_par = FALSE, sens.minimax.control = list(),
-  calculate_criterion = TRUE, plot_sens = TRUE,
-  tol = sqrt(.Machine$double.xmin), silent = FALSE)
+  Hill_par = TRUE, sens.control = list(), calculate_criterion = TRUE,
+  plot_sens = TRUE, tol = sqrt(.Machine$double.xmin), silent = FALSE)
 }
 \arguments{
 \item{dose}{A vector of design points. It is  either dose values or logarithm of dose values when \code{Hill_par = TRUE}.}
@@ -31,7 +30,7 @@ When \eqn{\delta < 0 }, then \eqn{\theta_2 > 0} or when \eqn{\delta > 0}, then \
 
 \item{Hill_par}{Hill model parameterization? Defaults to \code{TRUE}.}
 
-\item{sens.minimax.control}{Control parameters to verify the general equivalence theorem. For details, see the function \code{\link{sens.minimax.control}}.}
+\item{sens.control}{Control Parameters for Calculating the ELB. For details, see \code{\link{sens.control}}.}
 
 \item{calculate_criterion}{Calculate the criterion? Defaults to \code{TRUE}.}
 
@@ -123,6 +122,7 @@ sensmultiple (dose = c(0.001, 0.009426562, 0.01973041, 999.9974),
 # first row second column: c-optimal design for estimating ED50 of the 4-parameter logistic model
 sensmultiple (dose = c(log(.001), -4.80, log(1000)),
               w = c(.276, .500, .224),
+              Hill_par = FALSE,
               minDose = log(.001), maxDose = log(1000),
               inipars =  c(d - c, -b, b * log(a), c),
               lambda = c(0, 1, 0),
@@ -135,6 +135,7 @@ sensmultiple (dose = c(log(.001), -4.80, log(1000)),
 sensmultiple (dose = c(-6.907755, -4.664224, -3.925594, 6.907753 ),
               w =   c(0.4806477, 0.40815, 0.06114173, 0.05006055 ),
               minDose = log(.001), maxDose = log(1000),
+              Hill_par = FALSE,
               inipars = c(d - c, -b, b * log(a), c),
               lambda = c(0.05, 0.05, .90),
               delta = -1)

@@ -4,12 +4,14 @@
 \alias{print.bayes}
 \title{Printing \code{bayes} Objects}
 \usage{
-\method{print}{bayes}(x, iter = NULL, ...)
+\method{print}{bayes}(x, iter = NULL, all.info = FALSE, ...)
 }
 \arguments{
 \item{x}{an object of class \code{bayes}.}
 
 \item{iter}{Iteration number. if \code{NULL}, it will be set to the last iteration.}
+
+\item{all.info}{Print all the information? Defaults to \code{FALSE}.}
 
 \item{...}{Argument with no further use.}
 }

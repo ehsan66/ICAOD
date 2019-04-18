@@ -6,8 +6,9 @@
 \usage{
 \method{plot}{minimax}(x, iter = NULL, sensitivity = TRUE,
   calculate_criterion = FALSE, sens.minimax.control = list(),
-  crt.minimax.control = list(), silent = FALSE,
-  plot_3d = c("lattice", "rgl"), evolution = FALSE, ...)
+  crt.minimax.control = list(), sens.control = list(),
+  silent = FALSE, plot_3d = c("lattice", "rgl"), evolution = FALSE,
+  ...)
 }
 \arguments{
 \item{x}{An object of class \code{minimax}.}
@@ -24,6 +25,8 @@ If \code{NULL} (default), it will be set to the  tuning parameters used to creat
 \item{crt.minimax.control}{Control parameters to optimize the minimax or standardized maximin criterion at a given design over a \strong{continuous} parameter space.
 For details, see \code{\link{crt.minimax.control}}.
 If \code{NULL} (default), it will be set to the  tuning parameters used to create object \code{x}.}
+
+\item{sens.control}{Control Parameters for Calculating the ELB. For details, see the function \code{\link{sens.control}}.}
 
 \item{silent}{Do not print anything? Defaults to \code{FALSE}.}
 

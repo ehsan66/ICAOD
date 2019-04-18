@@ -6,10 +6,10 @@
 \usage{
 sensbayescomp(formula, predvars, parvars, family = gaussian(), x, w, lx,
   ux, fimfunc = NULL, prior = list(), prob, alpha,
-  sens.bayes.control = list(), crt.bayes.control = list(),
-  crt_method = c("cubature", "quadrature"), sens_method = c("cubature",
-  "quadrature"), plot_3d = c("lattice", "rgl"), plot_sens = TRUE,
-  npar = NULL, calculate_criterion = TRUE, silent = FALSE)
+  sens.control = list(), sens.bayes.control = list(),
+  crt.bayes.control = list(), plot_3d = c("lattice", "rgl"),
+  plot_sens = TRUE, npar = NULL, calculate_criterion = TRUE,
+  silent = FALSE)
 }
 \arguments{
 \item{formula}{A nonlinear model \code{\link[stats]{formula}}.
@@ -52,18 +52,12 @@ See 'Examples'.}
 \item{alpha}{A value between 0 and 1.
 Compound or combined DP-criterion  is the product of the efficiencies of a design  with respect to D- and average P- optimality, weighted by \code{alpha}.}
 
+\item{sens.control}{Control Parameters for Calculating the ELB. For details, see \code{\link{sens.control}}.}
+
 \item{sens.bayes.control}{A list. Control parameters to verify the general equivalence theorem. For details, see \code{\link{sens.bayes.control}}.}
 
 \item{crt.bayes.control}{A list. Control parameters to approximate the integral in  the Bayesian criterion at a given design over the parameter space.
 For details, see \code{\link{crt.bayes.control}}.}
-
-\item{crt_method}{A character denotes which method to be used to approximate the integrals in Bayesian criteria.
-\code{"cubature"} corresponds to the adaptive multivariate integration method using the \code{\link[cubature]{hcubature}} algorithm (default).
-\code{"quadrature"} corresponds the traditional quadrature formulas and calls the function \code{\link[mvQuad]{createNIGrid}}.
-The tuning parameters are adjusted by \code{crt.bayes.control}. Default is set to \code{"cubature"}.}
-
-\item{sens_method}{Similar to \code{crt_method}, but for approximating the integrals in the sensitivity (derivative) function.
-The tuning parameters are adjusted by \code{sens.bayes.control}. Default is set to \code{"cubature"}.}
 
 \item{plot_3d}{Which package should be used to plot the sensitivity (derivative) function for two-dimensional design space. Defaults to \code{"lattice"}.}
 
@@ -90,7 +84,8 @@ design is optimal or close enough to the true optimal design (ELB tells us that 
 \details{
 Depending on the complexity of the problem at hand, sometimes, the CPU time can be considerably reduced
 by choosing a set of  less conservative values for the tuning parameters \code{tol} and \code{maxEval} in
-the function \code{\link{sens.bayes.control}} when \code{sens_method = "cubature"}. Similarly, this applies  when \code{sens_method = "quadrature"}.
+the function \code{\link{sens.bayes.control}} when its  \code{method} component is equal to \code{"cubature"}.
+ Similarly, this applies  when \code{sens.bayes.control$method = "quadrature"}.
 In general, if the CPU time matters, the user should find an appropriate speed-accuracy trade-off  for her/his own problem.
  See 'Examples' for more details.
 }

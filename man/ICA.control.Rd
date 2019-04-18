@@ -2,7 +2,7 @@
 % Please edit documentation in R/1-UserCommonFunctions.R
 \name{ICA.control}
 \alias{ICA.control}
-\title{ICA Control Optimization Parameters}
+\title{Returns ICA Control Optimization Parameters}
 \usage{
 ICA.control(ncount = 40, nimp = ncount/10, assim_coeff = 4,
   revol_rate = 0.3, damp = 0.99, uniting_threshold = 0.02,

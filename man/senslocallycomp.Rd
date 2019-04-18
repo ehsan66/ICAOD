@@ -6,7 +6,7 @@
 \usage{
 senslocallycomp(formula, predvars, parvars, alpha, prob,
   family = gaussian(), x, w, lx, ux, inipars, fimfunc = NULL,
-  sens.minimax.control = list(), calculate_criterion = TRUE,
+  sens.control = list(), calculate_criterion = TRUE,
   plot_3d = c("lattice", "rgl"), plot_sens = TRUE,
   npar = length(inipars), silent = FALSE)
 }
@@ -45,7 +45,7 @@ It must match \code{parvars} or argument \code{param} of the function provided i
 
 \item{fimfunc}{A function. Returns the FIM as a \code{matrix}. Required when \code{formula} is missing. See 'Details' of \code{\link{minimax}}.}
 
-\item{sens.minimax.control}{Control parameters to verify the general equivalence theorem. For details, see the function \code{\link{sens.minimax.control}}.}
+\item{sens.control}{Control Parameters for Calculating the ELB. For details, see \code{\link{sens.control}}.}
 
 \item{calculate_criterion}{Calculate the optimality criterion? See 'Details' of \code{\link{sensminimax}}.}
 

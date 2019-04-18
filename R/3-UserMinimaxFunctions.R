@@ -6,7 +6,7 @@
 #'
 #'  Finds minimax and standardized maximin D-optimal designs for nonlinear models.
 #'  It should be used when the user assumes the unknown parameters belong to a parameter region
-#'  \eqn{\Theta}, which is called ``region of uncertainty'',  where the
+#'  \eqn{\Theta}, which is called ``region of uncertainty'',  and the
 #'    purpose is to protect the experiment from the worst case scenario
 #'   over \eqn{\Theta}.
 #'
@@ -42,7 +42,8 @@
 #'   See 'Details' of \code{\link{minimax}}.
 #' @param fimfunc A function. Returns the FIM as a \code{matrix}. Required when \code{formula} is missing. See 'Details' of \code{\link{minimax}}.
 #' @param ICA.control ICA control parameters. For details, see \code{\link{ICA.control}}.
-#' @param sens.minimax.control Control parameters to verify the general equivalence theorem. For details, see the function \code{\link{sens.minimax.control}}.
+#' @param sens.minimax.control Control parameters to construct the answering set required for verify the general equivalence theorem and calculating the ELB. For details, see the function \code{\link{sens.minimax.control}}.
+#' @param sens.control Control Parameters for Calculating the ELB. For details, see \code{\link{sens.control}}.
 #' @param crt.minimax.control Control parameters to optimize the minimax or standardized maximin criterion at a given design over a \strong{continuous} parameter space (when \code{n.grid = 0}).
 #'  For details, see the function \code{\link{crt.minimax.control}}.
 #' @param standardized  Maximin standardized design? When \code{standardized = TRUE}, the argument \code{localdes} must be given.
@@ -60,6 +61,8 @@
 #'    Should be set when the user has a finite number of candidate design points  and the purpose
 #'    is to find the optimal weight for each of them (when zero, they will be excluded from the design).
 #' For design points with more than one dimension, see 'Details' of \code{\link{sensminimax}}.
+#' @param crtfunc (Optional) a function that specifies an arbitrary criterion. It must have especial arguments and output. See 'Details' of \code{\link{minimax}}.
+#' @param sensfunc (Optional) a function that specifies the sensitivity function for \code{crtfunc}. See 'Details' of \code{\link{minimax}}.
 #' @details
 #'
 #' Let \eqn{\Xi} be the space of all  approximate designs with
@@ -163,6 +166,30 @@
 #'  to \code{Inf}. In either way, the function \code{\link{sensminimax}} is called for verification.
 #'   Note that  the function \code{\link{sensminimax}} always verifies the optimality of a design assuming a continues parameter space.
 #' See 'Examples'.
+#'
+#'  \code{crtfunc} is a function that is used
+#'  to specify a new criterion.
+#'   Its arguments are:
+#'   \itemize{
+#'  \item design points \code{x} (as a \code{vector}).
+#'  \item design weights \code{w} (as a \code{vector}).
+#'  \item model parameters as follows.
+#'      \itemize{
+#'          \item If \code{formula} is specified:
+#'                they should be the same parameter specified by \code{parvars}.
+#'          \item If FIM is specified via the argument \code{fimfunc}:
+#'              \code{param} that is a vector of the parameters in \code{fimfunc}.
+#'               }
+#'        \item \code{fimfunc} is a \code{function} that takes the other arguments of \code{crtfunc}
+#'        and returns the computed Fisher information matrix as a \code{matrix}.
+#'      }
+#'    The \code{crtfunc} function must return the criterion value.
+#'     \code{crtfunc}. It has one more argument than  \code{crtfunc},
+#'      which is  \code{xi_x}. It denotes the design point of the degenerate design
+#'      and  must be a vector with the same length as the number of  predictors.
+#'     For more details, see 'Examples'.
+#'
+#'
 #' @return
 #'
 #'  an object of class \code{minimax} that is a list including three sub-lists:
@@ -211,11 +238,12 @@
 #'   when  an analytical solution for
 #'   the locally D-optimal designs is available for the model
 #'   of interest.
-#'    Otherwise, we encounter a three-level nested-optimization algorithm.
+#'    Otherwise, we encounter a three-level nested-optimization algorithm, which is very slow.
 #'
 #' @references
-#' Masoudi E, Holling H, Wong W.K. (2017). Application of Imperialist Competitive Algorithm to Find Minimax and Standardized Maximin Optimal Designs. Computational Statistics and Data Analysis, 113, 330-345. \cr
+#' Atashpaz-Gargari, E, & Lucas, C (2007). Imperialist competitive algorithm: an algorithm for optimization inspired by imperialistic competition. In 2007 IEEE congress on evolutionary computation (pp. 4661-4667). IEEE.\cr
 #' Dette, H. (1997). Designing experiments with respect to 'standardized' optimality criteria. Journal of the Royal Statistical Society: Series B (Statistical Methodology), 59(1), 97-110. \cr
+#' Masoudi E, Holling H, Wong WK (2017). Application of Imperialist Competitive Algorithm to Find Minimax and Standardized Maximin Optimal Designs. Computational Statistics and Data Analysis, 113, 330-345. <doi:10.1016/j.csda.2016.06.014>\cr
 #' @example inst/examples/minimax_examples.R
 #' @export
 #' @seealso \code{\link{sensminimax}}
@@ -224,6 +252,7 @@ minimax <- function(formula, predvars, parvars, family = gaussian(),
                     n.grid = 0,
                     fimfunc = NULL,
                     ICA.control = list(),
+                    sens.control = list(),
                     sens.minimax.control = list(),
                     crt.minimax.control = list(),
                     standardized = FALSE,
@@ -231,7 +260,9 @@ minimax <- function(formula, predvars, parvars, family = gaussian(),
                     localdes = NULL,
                     npar = length(lp),
                     plot_3d = c("lattice", "rgl"),
-                    x = NULL){
+                    x = NULL,
+                    crtfunc = NULL,
+                    sensfunc = NULL){
   ### how to control ICA.control sens.minimax.control
   if (!is.numeric(n.grid) || n.grid < 0)
     stop("value of 'n.grid' must be >= 0")
@@ -256,21 +287,30 @@ minimax <- function(formula, predvars, parvars, family = gaussian(),
       crt.minimax.control$inner_space <- "discrete"
     }else
       crt.minimax.control$inner_space <- "continuous"
+    if (is.null(crtfunc))
+      crt_type = "D" else
+        crt_type = "user"
+    if (!is.null(x))
+      k <- length(x)/length(lx)
     out <- minimax_inner(formula = formula,
                          predvars = predvars, parvars = parvars, family = family,
-                         lx = lx, ux = ux, lp = lp, up = up, iter = iter, k = k,
+                         lx = lx, ux = ux, lp = lp, up = up, iter = iter,
+                         k = k,
                          fimfunc = fimfunc,
                          ICA.control = ICA.control,
+                         sens.control = sens.control,
                          sens.minimax.control = sens.minimax.control,
                          crt.minimax.control = crt.minimax.control,
                          type = type,
                          initial = initial,
                          localdes = localdes,
                          npar = npar,
-                         crt_type = "D",
+                         crt_type = crt_type,
                          multipars = list(),
                          plot_3d = plot_3d[1],
-                         only_w_varlist = list(x = x))
+                         only_w_varlist = list(x = x),
+                         user_crtfunc = crtfunc,
+                         user_sensfunc = sensfunc)
 
     return(out)
 }
@@ -288,7 +328,7 @@ minimax <- function(formula, predvars, parvars, family = gaussian(),
 #' to the optimality criterion.
 #' For an approximate (continuous) design, when the design space is one or two-dimensional,
 #'  the user can visually verify the optimality of the design by observing the
-#' sensitivity plot. Furthermore, the approximity of the design to the optimal design
+#' sensitivity plot. Furthermore, the proximity of the design to the optimal design
 #'  can be measured by the  ELB without knowing the latter.
 #'  See, for more details, Masoudi et al. (2017).
 #'
@@ -303,7 +343,8 @@ minimax <- function(formula, predvars, parvars, family = gaussian(),
 #'   Only applicable when \code{calculate_criterion = TRUE}.
 #'   For more details, see \code{\link{crt.minimax.control}}.
 #' @param silent Do not print anything? Defaults to \code{FALSE}.
-#'
+#' @param crtfunc (Optional) a function that specifies an arbitrary criterion. It must have especial arguments and output. See 'Details' of \code{\link{minimax}}.
+#' @param sensfunc (Optional) a function that specifies the sensitivity function for \code{crtfunc}. See 'Details' of \code{\link{minimax}}.
 #' @details
 #' Let the unknown parameters belong to \eqn{\Theta}.
 #' A design \eqn{\xi^*}{\xi*} is minimax D-optimal among all designs on \eqn{\chi} if and only if there exists a probability measure \eqn{\mu^*}{\mu*} on
@@ -394,13 +435,17 @@ sensminimax <- function (formula, predvars, parvars,
                          fimfunc = NULL,
                          standardized = FALSE,
                          localdes = NULL,
+                         sens.control = list(),
                          sens.minimax.control = list(),
                          calculate_criterion = TRUE,
                          crt.minimax.control = list(),
                          plot_3d = c("lattice", "rgl"),
                          plot_sens = TRUE,
                          npar = length(lp),
-                         silent = FALSE){
+                         silent = FALSE,
+                         crtfunc = NULL,
+                         sensfunc = NULL
+){
 
   if (!is.logical(standardized))
     stop("'standardized' must be logical")
@@ -412,35 +457,41 @@ sensminimax <- function (formula, predvars, parvars,
       crt.minimax.control <- do.call("crt.minimax.control", crt.minimax.control)
       crt.minimax.control$inner_space <- "continuous"
     }
-    # check if the length of x0 be equal to the length of lp and up!!
-    #minimax.control$inner_maxeval <-  param_maxeval
+    if (is.null(crtfunc))
+      crt_type = "D" else
+        crt_type = "user"
+      # check if the length of x0 be equal to the length of lp and up!!
+      #minimax.control$inner_maxeval <-  param_maxeval
 
-    # if (n.grid>0){
-    #   crt.minimax.control$param_set <- make_grid(lp = lp, up = up, n.grid = n.grid)
-    #   crt.minimax.control$inner_space <- "discrete"
-    # }else
+      # if (n.grid>0){
+      #   crt.minimax.control$param_set <- make_grid(lp = lp, up = up, n.grid = n.grid)
+      #   crt.minimax.control$inner_space <- "discrete"
+      # }else
 
 
-    out <- sensminimax_inner(formula = formula, predvars = predvars, parvars = parvars,
-                             family = family,
-                             x = x, w = w,
-                             lx = lx, ux = ux,
-                             lp = lp, up = up,
-                             fimfunc = fimfunc,
-                             sens.minimax.control =  sens.minimax.control,
-                             type = type,
-                             localdes = localdes,
-                             plot_3d = plot_3d[1],
-                             plot_sens = plot_sens,
-                             varlist = list(),
-                             calledfrom = "sensfuncs",
-                             npar = npar,
-                             crt.minimax.control = crt.minimax.control,
-                             calculate_criterion = calculate_criterion,
-                             crt_type = "D",
-                             multipars = list(),
-                             silent = silent)
-    return(out)
+      out <- sensminimax_inner(formula = formula, predvars = predvars, parvars = parvars,
+                               family = family,
+                               x = x, w = w,
+                               lx = lx, ux = ux,
+                               lp = lp, up = up,
+                               fimfunc = fimfunc,
+                               sens.minimax.control =  sens.minimax.control,
+                               sens.control = sens.control,
+                               type = type,
+                               localdes = localdes,
+                               plot_3d = plot_3d[1],
+                               plot_sens = plot_sens,
+                               varlist = list(),
+                               calledfrom = "sensfuncs",
+                               npar = npar,
+                               crt.minimax.control = crt.minimax.control,
+                               calculate_criterion = calculate_criterion,
+                               crt_type = crt_type,
+                               multipars = list(),
+                               silent = silent,
+                               user_crtfunc = crtfunc,
+                               user_sensfunc = sensfunc)
+      return(out)
 }
 ######################################################################################################*
 ######################################################################################################*
@@ -467,6 +518,8 @@ sensminimax <- function (formula, predvars, parvars,
 #' One can adjust the tuning parameters in \code{\link{ICA.control}} to set a stopping rule
 #' based on the general equivalence theorem. See "Examples" below.
 #' @inherit minimax return
+#'
+#'
 #' @references
 #' Masoudi E, Holling H, Wong W.K. (2017). Application of Imperialist Competitive Algorithm to Find Minimax and Standardized Maximin Optimal Designs. Computational Statistics and Data Analysis, 113, 330-345. \cr
 #' @example inst/examples/locally_examples.R
@@ -475,11 +528,13 @@ locally <- function(formula, predvars, parvars, family = gaussian(),
                     inipars,
                     fimfunc = NULL,
                     ICA.control = list(),
-                    sens.minimax.control = list(),
+                    sens.control = list(),
                     initial = NULL,
                     npar = length(inipars),
                     plot_3d = c("lattice", "rgl"),
-                    x = NULL){
+                    x = NULL,
+                    crtfunc = NULL,
+                    sensfunc = NULL){
 
 
   if (!missing(formula)){
@@ -489,6 +544,8 @@ locally <- function(formula, predvars, parvars, family = gaussian(),
   if (is.null(x))
     if (k < length(inipars))
       stop("\"k\" must be larger than the number of parameters to avoid singularity")
+  if (!is.null(x))
+    k <- length(x)/length(lx) # Bug!!! how you can understand the number of
 
   # if (!is.null(x)){
   #   #dim(x)[2] is the dimension of the predictors
@@ -506,24 +563,29 @@ locally <- function(formula, predvars, parvars, family = gaussian(),
   #   #lx <- rep(0, length(x)/k)
   #   #ux <- rep(1, length(x)/k)
   # }
-  out <- minimax_inner(formula = formula,
-                       predvars = predvars, parvars = parvars, family = family,
-                       lx = lx, ux = ux, lp = inipars, up = inipars, iter = iter, k = k,
-                       fimfunc = fimfunc,
-                       ICA.control = ICA.control,
-                       sens.minimax.control = sens.minimax.control,
-                       crt.minimax.control = list(inner_space = "locally"),
-                       type = "locally",
-                       initial = initial,
-                       localdes = NULL,
-                       npar = npar,
-                       robpars = list(),
-                       crt_type = "D",
-                       multipars = list(),
-                       plot_3d = plot_3d[1],
-                       only_w_varlist = list(x = x))
+  if (is.null(crtfunc))
+    crt_type = "D" else
+      crt_type = "user"
+    out <- minimax_inner(formula = formula,
+                         predvars = predvars, parvars = parvars, family = family,
+                         lx = lx, ux = ux, lp = inipars, up = inipars, iter = iter, k = k,
+                         fimfunc = fimfunc,
+                         ICA.control = ICA.control,
+                         sens.control = sens.control,
+                         crt.minimax.control = list(inner_space = "locally"),
+                         type = "locally",
+                         initial = initial,
+                         localdes = NULL,
+                         npar = npar,
+                         robpars = list(),
+                         crt_type = crt_type,
+                         multipars = list(),
+                         plot_3d = plot_3d[1],
+                         only_w_varlist = list(x = x),
+                         user_crtfunc = crtfunc,
+                         user_sensfunc = sensfunc)
 
-  return(out)
+    return(out)
 }
 
 ######################################################################################################*
@@ -537,7 +599,7 @@ locally <- function(formula, predvars, parvars, family = gaussian(),
 #' to the optimality criterion.
 #' For an approximate (continuous) design, when the design space is one or two-dimensional,
 #'  the user can visually verify the optimality of the design by observing the
-#' sensitivity plot. Furthermore, the approximity of the design to the optimal design
+#' sensitivity plot. Furthermore, the proximity of the design to the optimal design
 #'  can be measured by the  ELB without knowing the latter.
 #'  See, for more details, Masoudi et al. (2017).
 #' @inheritParams sensminimax
@@ -587,12 +649,14 @@ senslocally <- function (formula, predvars, parvars,
                          lx, ux,
                          inipars,
                          fimfunc = NULL,
-                         sens.minimax.control = list(),
+                         sens.control = list(),
                          calculate_criterion = TRUE,
                          plot_3d = c("lattice", "rgl"),
                          plot_sens = TRUE,
                          npar = length(inipars),
-                         silent = FALSE){
+                         silent = FALSE,
+                         crtfunc = NULL,
+                         sensfunc = NULL){
 
 
   if (!missing(formula)){
@@ -602,28 +666,33 @@ senslocally <- function (formula, predvars, parvars,
   if (is.null(npar))
     npar <- length(inipars)
 
+  if (is.null(crtfunc))
+    crt_type = "D" else
+      crt_type = "user"
 
-  out <- sensminimax_inner(formula = formula, predvars = predvars, parvars = parvars,
-                           family = family,
-                           x = x, w = w,
-                           lx = lx, ux = ux,
-                           lp = inipars, up = inipars,
-                           fimfunc = fimfunc,
-                           sens.minimax.control =  sens.minimax.control,
-                           type = "locally",
-                           localdes = NULL,
-                           plot_3d = plot_3d[1],
-                           plot_sens = plot_sens,
-                           varlist = list(),
-                           calledfrom = "sensfuncs",
-                           npar = npar,
-                           crt.minimax.control = list(inner_space = "locally"),
-                           calculate_criterion = calculate_criterion,
-                           robpars = list(),
-                           crt_type = "D",
-                           multipars = list(),
-                           silent = silent)
-  return(out)
+    out <- sensminimax_inner(formula = formula, predvars = predvars, parvars = parvars,
+                             family = family,
+                             x = x, w = w,
+                             lx = lx, ux = ux,
+                             lp = inipars, up = inipars,
+                             fimfunc = fimfunc,
+                             sens.control = sens.control,
+                             type = "locally",
+                             localdes = NULL,
+                             plot_3d = plot_3d[1],
+                             plot_sens = plot_sens,
+                             varlist = list(),
+                             calledfrom = "sensfuncs",
+                             npar = npar,
+                             crt.minimax.control = list(inner_space = "locally"),
+                             calculate_criterion = calculate_criterion,
+                             robpars = list(),
+                             crt_type = crt_type,
+                             multipars = list(),
+                             silent = silent,
+                             user_crtfunc = crtfunc,
+                             user_sensfunc = sensfunc)
+    return(out)
 }
 
 ######################################################################################################*
@@ -677,11 +746,13 @@ robust <- function(formula, predvars, parvars, family = gaussian(),
                    parset,
                    fimfunc = NULL,
                    ICA.control = list(),
-                   sens.minimax.control = list(),
+                   sens.control = list(),
                    initial = NULL,
                    npar = dim(parset)[2],
                    plot_3d = c("lattice", "rgl"),
-                   x = NULL){
+                   x = NULL,
+                   crtfunc = NULL,
+                   sensfunc = NULL){
 
 
   if (length(prob) != dim(parset)[1])
@@ -692,29 +763,35 @@ robust <- function(formula, predvars, parvars, family = gaussian(),
   }
   if (k < dim(parset)[2])
     stop("\"k\" must be larger than the number of parameters to avoid singularity")
+  if (is.null(crtfunc))
+    crt_type = "D" else
+      crt_type = "user"
+    # if (is.null(npar))
+    #   npar <- dim(parset)[2]
+    ## you must provide npar
+    if (!is.null(x))
+      k <- length(x)/length(lx)
+    out <- minimax_inner(formula = formula,
+                         predvars = predvars, parvars = parvars,
+                         family = family,
+                         lx = lx, ux = ux, lp = NA, up = NA, iter = iter, k = k,
+                         fimfunc = fimfunc,
+                         ICA.control = ICA.control,
+                         sens.control = sens.control,
+                         crt.minimax.control = list(inner_space = "robust_set"),
+                         type = "robust",
+                         initial = initial,
+                         localdes = NULL,
+                         npar = npar,
+                         robpars = list(prob = prob, parset = parset),
+                         crt_type = crt_type,
+                         multipars = list(),
+                         plot_3d = plot_3d[1],
+                         only_w_varlist = list(x = x),
+                         user_crtfunc = crtfunc,
+                         user_sensfunc = sensfunc)
 
-  # if (is.null(npar))
-  #   npar <- dim(parset)[2]
-  ## you must provide npar
-  out <- minimax_inner(formula = formula,
-                       predvars = predvars, parvars = parvars,
-                       family = family,
-                       lx = lx, ux = ux, lp = NA, up = NA, iter = iter, k = k,
-                       fimfunc = fimfunc,
-                       ICA.control = ICA.control,
-                       sens.minimax.control = sens.minimax.control,
-                       crt.minimax.control = list(inner_space = "robust_set"),
-                       type = "robust",
-                       initial = initial,
-                       localdes = NULL,
-                       npar = npar,
-                       robpars = list(prob = prob, parset = parset),
-                       crt_type = "D",
-                       multipars = list(),
-                       plot_3d = plot_3d[1],
-                       only_w_varlist = list(x = x))
-
-  return(out)
+    return(out)
 }
 ######################################################################################################*
 ######################################################################################################*
@@ -728,7 +805,7 @@ robust <- function(formula, predvars, parvars, family = gaussian(),
 #' to the optimality criterion.
 #' For an approximate (continuous) design, when the design space is one or two-dimensional,
 #'  the user can visually verify the optimality of the design by observing the
-#' sensitivity plot. Furthermore, the approximity of the design to the optimal design
+#' sensitivity plot. Furthermore, the proximity of the design to the optimal design
 #'  can be measured by the  ELB without knowing the latter.
 #'  See, for more details, Masoudi et al. (2017).
 #' @inheritParams robust
@@ -771,12 +848,14 @@ sensrobust <- function (formula, predvars, parvars, family = gaussian(),
                         prob,
                         parset,
                         fimfunc = NULL,
-                        sens.minimax.control = list(),
+                        sens.control = list(),
                         calculate_criterion = TRUE,
                         plot_3d = c("lattice", "rgl"),
                         plot_sens = TRUE,
                         npar = dim(parset)[2],
-                        silent = FALSE){
+                        silent = FALSE,
+                        crtfunc = NULL,
+                        sensfunc = NULL){
 
 
   if (length(prob) != dim(parset)[1])
@@ -785,31 +864,35 @@ sensrobust <- function (formula, predvars, parvars, family = gaussian(),
     if (dim(parset)[2] != length(parvars))
       stop("number of columns of  'parset' is not equal to the length of 'parvars'")
   }
-
-  # if (is.null(npar))
-  #   npar <- dim(parset)[2]
-  ## you must provide npar
-  out <- sensminimax_inner(formula = formula, predvars = predvars, parvars = parvars,
-                           family = family,
-                           x = x, w = w,
-                           lx = lx, ux = ux,
-                           lp = NA, up = NA,
-                           fimfunc = fimfunc,
-                           sens.minimax.control =  sens.minimax.control,
-                           type = "robust",
-                           localdes = NULL,
-                           plot_3d = plot_3d[1],
-                           plot_sens = plot_sens,
-                           varlist = list(),
-                           calledfrom = "sensfuncs",
-                           npar = npar,
-                           crt.minimax.control = list(inner_space = "robust_set"),
-                           calculate_criterion = calculate_criterion,
-                           robpars = list(prob = prob, parset = parset),
-                           crt_type = "D",
-                           multipars = list(),
-                           silent = silent)
-  return(out)
+  if (is.null(crtfunc))
+    crt_type = "D" else
+      crt_type = "user"
+    # if (is.null(npar))
+    #   npar <- dim(parset)[2]
+    ## you must provide npar
+    out <- sensminimax_inner(formula = formula, predvars = predvars, parvars = parvars,
+                             family = family,
+                             x = x, w = w,
+                             lx = lx, ux = ux,
+                             lp = NA, up = NA,
+                             fimfunc = fimfunc,
+                             sens.control = sens.control,
+                             type = "robust",
+                             localdes = NULL,
+                             plot_3d = plot_3d[1],
+                             plot_sens = plot_sens,
+                             varlist = list(),
+                             calledfrom = "sensfuncs",
+                             npar = npar,
+                             crt.minimax.control = list(inner_space = "robust_set"),
+                             calculate_criterion = calculate_criterion,
+                             robpars = list(prob = prob, parset = parset),
+                             crt_type = crt_type,
+                             multipars = list(),
+                             silent = silent,
+                             user_crtfunc = crtfunc,
+                             user_sensfunc = sensfunc)
+    return(out)
 }
 ######################################################################################################*
 ######################################################################################################*
@@ -876,14 +959,15 @@ sensrobust <- function (formula, predvars, parvars, family = gaussian(),
 multiple <- function(minDose, maxDose,
                      iter, k,
                      inipars,
-                     Hill_par = FALSE,
+                     Hill_par = TRUE,
                      delta,
                      lambda,
                      fimfunc = NULL,
                      ICA.control = list(),
-                     sens.minimax.control = list(),
+                     sens.control = list(),
                      initial = NULL,
-                     tol = sqrt(.Machine$double.xmin)){
+                     tol = sqrt(.Machine$double.xmin),
+                     x = NULL){
 
   lx <- minDose
   ux <- maxDose
@@ -928,13 +1012,15 @@ multiple <- function(minDose, maxDose,
     if (any(is.nan(c(lx, ux))))
       stop("'NaN produced for 'lx' or 'ux' when taking logarithm. Provide 'lx' and 'ux' accroding to the Hill model parameterization")
     inipars <- c(theta1 = inipars["d"]-inipars["c"], theta2 = -inipars["b"], theta3 = inipars["b"] * log(inipars["a"]), theta4 = inipars["c"])
+    if (!is.null(x)) # we should convert the x to the scale of the 4PL model
+      x <- log(x)
   }
   ## you must provide npar
   out <- minimax_inner(lx = lx, ux = ux, lp = inipars, up = inipars,
                        iter = iter, k = k,
                        fimfunc = FIM_logistic_4par,
                        ICA.control = ICA.control,
-                       sens.minimax.control = sens.minimax.control,
+                       sens.control = sens.control,
                        crt.minimax.control = list(inner_space = "locally"),
                        type = "locally",
                        initial = initial,
@@ -943,10 +1029,11 @@ multiple <- function(minDose, maxDose,
                        robpars = list(),
                        crt_type = "multiple",
                        multipars = list(delta = delta, lambda = lambda, tol = tol),
-                       plot_3d = "lattice")
-  if (Hill_par)
-    for (j in 1:length(out$evol))
-      out$evol[[j]]$x <- exp(out$evol[[j]]$x)
+                       plot_3d = "lattice",
+                       only_w_varlist = list(x = x))
+  #if (Hill_par)
+  #  for (j in 1:length(out$evol))
+  #    out$evol[[j]]$x <- exp(out$evol[[j]]$x)
 
 
   return(out)
@@ -1002,8 +1089,8 @@ sensmultiple <- function (dose, w,
                           inipars,
                           lambda,
                           delta,
-                          Hill_par = FALSE,
-                          sens.minimax.control = list(),
+                          Hill_par = TRUE,
+                          sens.control = list(),
                           calculate_criterion = TRUE,
                           plot_sens = TRUE,
                           tol = sqrt(.Machine$double.xmin),
@@ -1058,7 +1145,7 @@ sensmultiple <- function (dose, w,
                            lx = lx, ux = ux,
                            lp = inipars, up = inipars,
                            fimfunc = FIM_logistic_4par,
-                           sens.minimax.control =  sens.minimax.control,
+                           sens.control = sens.control,
                            type = "locally",
                            localdes = NULL,
                            plot_3d = "lattice", # not used
@@ -1122,7 +1209,7 @@ locallycomp <- function(formula, predvars, parvars, family = gaussian(),
                         inipars,
                         fimfunc = NULL,
                         ICA.control = list(),
-                        sens.minimax.control = list(),
+                        sens.control = list(),
                         initial = NULL,
                         npar = length(inipars),
                         plot_3d = c("lattice", "rgl")){
@@ -1149,7 +1236,7 @@ locallycomp <- function(formula, predvars, parvars, family = gaussian(),
                        lx = lx, ux = ux, lp = inipars, up = inipars, iter = iter, k = k,
                        fimfunc = fimfunc,
                        ICA.control = ICA.control,
-                       sens.minimax.control = sens.minimax.control,
+                       sens.control = sens.control,
                        crt.minimax.control = list(inner_space = "locally"),
                        type = "locally",
                        initial = initial,
@@ -1194,7 +1281,7 @@ senslocallycomp <- function (formula, predvars, parvars,
                              lx, ux,
                              inipars,
                              fimfunc = NULL,
-                             sens.minimax.control = list(),
+                             sens.control = list(),
                              calculate_criterion = TRUE,
                              plot_3d = c("lattice", "rgl"),
                              plot_sens = TRUE,
@@ -1223,7 +1310,7 @@ senslocallycomp <- function (formula, predvars, parvars,
                            lx = lx, ux = ux,
                            lp = inipars, up = inipars,
                            fimfunc = fimfunc,
-                           sens.minimax.control =  sens.minimax.control,
+                           sens.control =  sens.control,
                            type = "locally",
                            localdes = NULL,
                            plot_3d = plot_3d[1],
@@ -1252,6 +1339,7 @@ senslocallycomp <- function (formula, predvars, parvars,
 #' @param iter Iteration number. if \code{NULL} (default), it will be set to the last iteration.
 #' @param sensitivity Logical. If \code{TRUE} (default), the general equivalence theorem is used to check the optimality if the best design in iteration number \code{iter} and the sensitivity function will be plotted.
 #' @param calculate_criterion  Logical. Re-calculate the criterion value (maybe with a set of new tuning parameters to be sure of the globality of the maximum over the parameter space given the design)? It only assumes a continuous parameter space for the minimax and standardized maximin designs.  Defaults to \code{FALSE}. See 'Details'.
+#' @param sens.control Control Parameters for Calculating the ELB. For details, see the function \code{\link{sens.control}}.
 #' @param sens.minimax.control Control parameters to verify general equivalence theorem. For details, see \code{\link{sens.minimax.control}}.
 #' If \code{NULL} (default), it will be set to the  tuning parameters used to create object \code{x}.
 #' @param crt.minimax.control Control parameters to optimize the minimax or standardized maximin criterion at a given design over a \strong{continuous} parameter space.
@@ -1286,6 +1374,7 @@ plot.minimax <- function(x, iter = NULL,
                          calculate_criterion = FALSE,
                          sens.minimax.control = list(),
                          crt.minimax.control = list(),
+                         sens.control = list(),
                          silent = FALSE,
                          plot_3d = c("lattice", "rgl"),
                          evolution = FALSE,
@@ -1312,6 +1401,11 @@ plot.minimax <- function(x, iter = NULL,
     else {
       sens.minimax.control <- do.call("sens.minimax.control", sens.minimax.control)
     }
+    if (is.null(sens.control)){
+      sens.control <- arg$sens.control}
+    else {
+      sens.control <- do.call("sens.control", sens.control)
+    }
     if (is.null(crt.minimax.control)){
       crt.minimax.control <- arg$crt.minimax.control}
     else {
@@ -1325,7 +1419,7 @@ plot.minimax <- function(x, iter = NULL,
         q1 <- c(x, w) else
           q1 <- w
         out <- optim2(fn = fn, lower = lower, upper = upper,
-                      n_seg = sens.minimax.control$answering.set$n_seg,
+                      n_seg = sens.minimax.control$n_seg,
                       q = q1,
                       fixedpar = fixedpar, fixedpar_id = fixedpar_id,
                       npred= npred)
@@ -1351,6 +1445,7 @@ plot.minimax <- function(x, iter = NULL,
                                   lp = arg$lp_nofixed, up = arg$up_nofixed,
                                   fimfunc = arg$FIM,
                                   sens.minimax.control = sens.minimax.control,
+                                  sens.control = sens.control,
                                   type = arg$type,
                                   localdes = arg$localdes,
                                   plot_sens = TRUE,
@@ -1422,11 +1517,12 @@ plot.minimax <- function(x, iter = NULL,
 #' Print method for an object of class \code{minimax}.
 #' @param x An object of class \code{minimax}.
 #' @param iter Iteration number. if \code{NULL}, will be set equal to the last iteration.
+#' @param all.info Print all the information? Defaults to \code{FALSE}.
 #' @param ... Argument with no further use.
 #' @export
 #' @seealso \code{\link{minimax}}, \code{\link{locally}}, \code{\link{robust}}
 
-print.minimax <- function(x, iter = NULL, ...){
+print.minimax <- function(x, iter = NULL, all.info = FALSE, ...){
 
   if (any(class(x) != c("list", "minimax")))
     stop("'x' must be of class 'minimax'")
@@ -1440,22 +1536,43 @@ print.minimax <- function(x, iter = NULL, ...){
   # if( grepl("on_average", x$arg$type))
   #   type <- "robust" else
   type <- x$arg$type
-  ### printing, match with cat in iterate functions
-  cat("\n***********************************************************************",
-      "\nICA iter:", totaliter, "\n",
-      print_xw_char(x = object$evol[[totaliter]]$x, w =  object$evol[[totaliter]]$w, npred = length(object$arg$lx), is.only.w = object$arg$is.only.w),
-      "\nCriterion value: ", object$evol[[totaliter]]$min_cost,
-      "\nTotal number of function evaluations:", object$alg$nfeval,
-      "\nTotal number of successful local search moves:", object$alg$nlocal,
-      "\nTotal number of successful revolution moves:", object$alg$nrevol,
-      "\nConvergence:", object$alg$convergence)
-  if (object$arg$ICA.control$only_improve)
-    cat("\nTotal number of successful assimilation moves:", object$alg$nimprove, "\n")
-  if (type == "minimax")
-    cat( "Vector of maximum parameter values: ", object$evol[[totaliter]]$param,"\n")
-  if (type == "standardized")
-    cat( "Vector of minimum parameter values: ", object$evol[[totaliter]]$param,"\n")
-  cat("***********************************************************************")
+  ### printing, match with cat in update functions
+  if (all.info){
+    cat("\n***********************************************************************",
+        "\nICA iter:", totaliter, "\n",
+        print_xw_char(x = object$evol[[totaliter]]$x, w =  object$evol[[totaliter]]$w,
+                      npred = length(object$arg$lx), is.only.w = object$arg$is.only.w,
+                      equal_weight = object$arg$ICA.control$equal_weight),
+        "\nCriterion value: ", object$evol[[totaliter]]$min_cost,
+        "\nTotal number of function evaluations:", object$alg$nfeval,
+        "\nTotal number of successful local search moves:", object$alg$nlocal,
+        "\nTotal number of successful revolution moves:", object$alg$nrevol,
+        "\nConvergence:", object$alg$convergence)
+    if (object$arg$ICA.control$only_improve)
+      cat("\nTotal number of successful assimilation moves:", object$alg$nimprove, "\n")
+    if (type == "minimax")
+      cat( "Vector of maximum parameter values: ", object$evol[[totaliter]]$param,"\n")
+    if (type == "standardized")
+      cat( "Vector of minimum parameter values: ", object$evol[[totaliter]]$param,"\n")
+    if (is.null(iter))
+      cat("CPU time:", object$arg$time[1], " seconds!\n")
+    cat("***********************************************************************")
+  } else{
+    cat("\n***********************************************************************",
+        "\nICA iter:", totaliter, "\n",
+        print_xw_char(x = object$evol[[totaliter]]$x, w =  object$evol[[totaliter]]$w,
+                      npred = length(object$arg$lx), is.only.w = object$arg$is.only.w,
+                      equal_weight = object$arg$ICA.control$equal_weight),
+        "\nCriterion value: ", object$evol[[totaliter]]$min_cost,
+        "\nConvergence:", object$alg$convergence, "\n")
+    if (is.null(iter))
+      cat("CPU time:", object$arg$time[1], " seconds!\n")
+    # if (type == "minimax")
+    #   cat( "Vector of maximum parameter values: ", object$evol[[totaliter]]$param,"\n")
+    # if (type == "standardized")
+    #   cat( "Vector of minimum parameter values: ", object$evol[[totaliter]]$param,"\n")
+    cat("***********************************************************************")
+  }
   if (!is.null(object$evol[[totaliter]]$sens))
     print(object$evol[[totaliter]]$sens)
   return(invisible(NULL))
@@ -1478,12 +1595,14 @@ print.sensminimax <- function(x,...){
     cat("\nMaximum of the sensitivity function is ", x$max_deriv, "\nEfficiency lower bound (ELB) is ", x$ELB)
   if (!is.null(x$crtval))
     cat("\nCriterion value is ", x$crtval)
-  cat("\nVerification required",x$time, "seconds!", "\nAdjust the control parameters in 'sens.minimax.control' for higher speed", "\n***********************************************************************")
+  if (x$type != "locally" & x$type != "robust")
+    cat("\nVerification required",x$time, "seconds!", "\nAdjust the value of 'n_seg' in 'sens.minimax.control' for higher speed.", "\n***********************************************************************")else
+      cat("\nVerification required",x$time, "seconds!", "\n***********************************************************************")
   return(invisible(NULL))
 }
 ######################################################################################################*
 ######################################################################################################*
-#' Control Parameters for Optimizing Minimax Criteria Over The Parameter Space
+#' Returns Control Parameters for Optimizing Minimax Criteria Over The Parameter Space
 #'
 #'
 #' The function \code{crt.minimax.control} returns a list of \code{\link[nloptr]{nloptr}} control parameters for optimizing the minimax criterion over the parameter space.\cr
@@ -1515,8 +1634,8 @@ print.sensminimax <- function(x,...){
 crt.minimax.control <- function (x0 = NULL,
                                  optslist = list(stopval = -Inf,
                                                  algorithm = "NLOPT_GN_DIRECT_L",
-                                                 xtol_rel = 1e-5,
-                                                 ftol_rel = 1e-8,
+                                                 xtol_rel = 1e-6,
+                                                 ftol_rel = 0,
                                                  maxeval = 1000), ...){
 
   optstlist2 <- do.call(c, list(optslist, list(...)))
@@ -1530,9 +1649,9 @@ crt.minimax.control <- function (x0 = NULL,
   if (is.null(optslist$stopval))
     outlist$stopval<- -Inf
   if (is.null(optslist$xtol_rel))
-    outlist$xtol_rel <- 1e-5
+    outlist$xtol_rel <- 1e-6
   if (is.null(optslist$ftol_rel))
-    outlist$ftol_rel <- 1e-8
+    outlist$ftol_rel <- 0
   if (is.null(optslist$maxeval))
     outlist$maxeval <- 1000
 
@@ -1540,43 +1659,38 @@ crt.minimax.control <- function (x0 = NULL,
 }
 ######################################################################################################*
 ######################################################################################################*
-#' @title Control Parameters for Verifying General Equivalence Theorem
+#' @title Returns Control Parameters for Verifying General Equivalence Theorem For Minimax Optimal Designs
 #'
 #'
 #' @description
 #' This function returns a list of control parameters that are used to find
-#' the ``asnwering set'' for minimax and
-#' standardized maximin generated designs.
+#' the ``answering set'' for minimax and
+#' standardized maximin designs.
 #'  The answering set is required to  obtain the sensitivity (derivative) function in order to verify the optimality of
 #'  a given design.
-#' Moreover, it contains a list of \code{\link[nloptr]{nloptr}} control parameters to find maximum of the sensitivity (derivative) function over the design space,
-#'  used to calculate the efficiency lower bound (ELB).
 #'
 #'
-#' @param  answering.set A list of control parameters to find the answering set in minimax and standardized maximin optimal design problems. See 'Details'.
-#' @param x0 Vector of starting values for maximizing the sensitivity (derivative) function over the design space \eqn{x}.
-#' It will be passed to the optimization function \code{\link[nloptr]{nloptr}}.
-#' @param optslist A list. It will be passed to the argument \code{opts}  of the function \code{\link[nloptr]{nloptr}} to find the maximum of the sensitivity function over the design space. See 'Details'.
-#' @param ... Further arguments will be passed to \code{\link{nl.opts}} from package \code{\link[nloptr]{nloptr}}.
-#' @importFrom nloptr nl.opts
-#' @importFrom nloptr nloptr.print.options
-#' @return A list of control parameters for verifying the general equivalence theorem for minimax, standardized maximin and locally optimal designs.
+#' @param n_seg For a given design, the number of starting points in the local search to find all the local maxima of the minimax criterion over the parameter space is equal to \code{(n_seg + 1)^p}. Defaults to \code{6}.
+#' Please increase its value when the parameter space is large. It is also applicable for standardized maximin designs. See 'Details' of \link{sens.minimax.control}.
+#' @param merge_tol Merging tolerance. It is used  to  specify the elements of the answering set
+#' by choosing only the local maxima (found by the local search) that are nearer to
+#' the global maximum.  See 'Details' of \link{sens.minimax.control}. Defaults to \code{0.005}.
+#' We advise to not change its default value because it has been successfully tested on many optimal design problems.
+#' @return A list of control parameters for verifying the general equivalence
+#'  theorem for minimax and standardized maximin optimal designs.
 #' @details
-#'  Given a design, an ``answering set'' is a subset of all local optima of the
-#'   optimality criterion over the parameter space
-#'   (only applicable for minimax and standardized maximin design problems).
-#'   For an optimality verification by the general equivalence theorem,
-#'   finding the true answering set is important because the sensitivity (derivative) function in
-#'    a  minimax or standardized maximin problem is
-#'   obtained based on it.
-#'    An invalid  answering set may result in a false
+#'  Given a design, an ``answering set'' is a subset of all the local optima
+#'   of the optimality criterion over the parameter space.
+#' Answering set is used to obtain the sensitivity function
+#' of a minimax or standardized maximin criterion.
+#'    Therefore, an invalid  answering set may result in a false
 #'   sensitivity plot and ELB.
 #'  Unfortunately, there is no theoretical rule on how to choose the number of elements of
-#'   an answering set, and they would have to be found by trial and error.
+#'   the answering set; and they  have to be found by trial and error.
 #'  Given a design, the answering set for a minimax criterion is obtained as follows:
 #'  \itemize{
 #'  \item{Step 1: }{Find all the local maxima of the optimality criterion (minimax)  over the parameter space.
-#'   For this purpose, in our algorithm, the parameter space is divided into \code{(n_seg + 1)^p} segments,
+#'   For this purpose,  the parameter space is divided into \code{(n_seg + 1)^p} segments,
 #'    where p is the number of unknown model parameters.
 #'    Then, each boundary point of the resulted segments (intervals) is assigned to the argument
 #'    \code{par} of the function \code{optim} in order to start a local search
@@ -1584,97 +1698,29 @@ crt.minimax.control <- function (x0 = NULL,
 #'  \item{Step 2: }{Pick the ones nearest to the global minimum subject to a merging tolerance
 #'   \code{merge_tol} (default \code{0.005}).}
 #' }
-#' The resulting maxima establish the answering set.
-#' Obviously, the answering set is a subset of all the local maxima.
+#' Obviously, the answering set is a subset of all the local maxima over the parameter space (or local minima in case of standardized maximin criteria)
 #' Therefore, it is very important to be able to find all the local maxima to create the true answering set with no missing elements.
-#'  Otherwise, even when the design is optimal, the sensitivity (derivative) plot may not verify the optimality of the design.
-#'    Finding all the local optimal of a multimodal function like the sensitivity function
-#'   is not an easy task and this is the main reason
-#'   that checking the general equivalence theorem (even plotting) in minimax and standardized maximin problems
-#'    is complicated. As a result,
-#'  the argument \code{answering.set} is a list with two elements:
-#'    \describe{
-#'   \item{\code{n_seg}}{Please increase the value of \code{n_seg} for  models with larger number of unknown  parameters or large parameter space.}
-#'   \item{\code{merge_tol}}{ We advise to not change the default value of the parameter \code{merge_tol} as it has been successfully tested for many examples.}
-#' }
+#'  Otherwise, even when the design is optimal, the sensitivity (derivative) plot may not reveal its optimality.
 #'
-#'
-#'
-#' ELB is a measure of  proximity of a design to the optimal design without knowing the latter.
-#' Given a design, let \eqn{\epsilon} be the global maximum
-#'  of the sensitivity (derivative) function with respect the vector of the model predictors \eqn{x} over the design space.
-#' ELB is given by \deqn{ELB = p/(p + \epsilon),}
-#' where \eqn{p} is the number of model parameters. Obviously,
-#' calculating ELB requires finding \eqn{\epsilon} and therefore,
-#' a maximization problem to be solved. The function \code{\link[nloptr]{nloptr}}
-#' is used here to solve this maximization problem. The arguments \code{x0} and \code{optslist}
-#' will be passed to this function as follows:
-#'
-#' Argument \code{x0} provides the user initial values for this maximization problem
-#'  and will be passed to the argument with the same name
-#' in the function  \code{\link[nloptr]{nloptr}}.
-#'
-#'
-#' Argument \code{optslist} will be passed to the argument \code{opts} of the function \code{\link[nloptr]{nloptr}}.
-#' \code{optslist} is a \code{list} and the most important components are listed as follows:
-#'  \describe{
-#'   \item{\code{stopval}}{Stop minimization when an objective value <= \code{stopval} is found. Setting \code{stopval} to \code{-Inf} disables this stopping criterion (default).}
-#'   \item{\code{algorithm}}{Defaults to \code{NLOPT_GN_DIRECT_L}. DIRECT-L is a deterministic-search algorithm based on systematic division of the search domain into smaller and smaller hyperrectangles.}
-#'   \item{\code{xtol_rel}}{Stop when an optimization step (or an estimate of the optimum) changes every parameter by less than \code{xtol_rel} multiplied by the absolute value of the parameter. Criterion is disabled if \code{xtol_rel} is non-positive. Defaults to \code{1e-8}.}
-#'   \item{\code{ftol_rel}}{Stop when an optimization step (or an estimate of the optimum) changes the objective function value by less than \code{ftol_rel} multiplied by the absolute value of the function value. Criterion is disabled if \code{ftol_rel} is non-positive. Defaults to \code{1e-10}.}
-#'   \item{\code{maxeval}}{Stop when the number of function evaluations exceeds \code{maxeval}. Criterion is disabled if \code{maxeval} is non-positive. Defaults to \code{6000}. See 'Note' on when to change its value.}
-#' }
-#'  A detailed explanation of all the options is shown by the function \code{nloptr.print.options()} in package \code{\link[nloptr]{nloptr}}.
-#'
-#' @note
-#' Whenever the value of ELB is computationally larger than 1, it is a sign that  the obtained \eqn{\epsilon} is not global maximum.
-#'  To overcome this issue, please increase
-#'  the value of the parameter \code{maxeval} to allow the
-#'   optimization algorithm to find the global maximum
-#'   of the sensitivity (derivative) function over the design space.
-#'
+#'    Note that the minimax criterion (or standardized maximin criterion)
+#'    is a multimodel function especially near the optimal design and
+#'    this makes the job of finding all the locall maxima (minima) over the
+#'    parameter space very complicated.
 #'
 #'
 #' @export
 #' @examples
 #' sens.minimax.control()
-#' sens.minimax.control(answering.set = list(n_seg = 4))
-#' sens.minimax.control(answering.set = list(n_seg = 4), optslist = list(maxeval = 1000))
-#' # faster checking process
-#' sens.minimax.control(answering.set = list(n_seg = 4), optslist = list(maxeval = 2000))
-sens.minimax.control <- function(#sens_maxeval = 6000,
-  answering.set = list(n_seg = 6, merge_tol = .005),
-  x0 = NULL,
-  optslist = list(stopval = -Inf,
-                  algorithm = "NLOPT_GN_DIRECT_L",
-                  xtol_rel = 1e-8,
-                  ftol_rel = 1e-10,
-                  maxeval = 6000), ...){
-  # functionality = c("minimax", "sensitivity"),
-  # ...){
-  # if (is.null(optslist$algorithm))
-  #   stop("'algorithm' must be set. See the 'nloptr' documentation.")
-  optstlist2 <- do.call(c, list(optslist, list(...)))
-  outlist <- suppressWarnings(nloptr::nl.opts(optstlist2))
-  outlist["algorithm"] <- optslist$algorithm
+#' sens.minimax.control(n_seg = 4)
+sens.minimax.control <- function(n_seg = 6, merge_tol = .005){
 
-  ## outlist has the defaut values of the nl.opts, when any component is null.
-  # we play with that here
-  if (is.null(optslist$algorithm))
-    outlist$algorithm <- "NLOPT_GN_DIRECT_L"
-  if (is.null(optslist$stopval))
-    outlist$stopval<- -Inf
-  if (is.null(optslist$xtol_rel))
-    outlist$xtol_rel <- 1e-5
-  if (is.null(optslist$ftol_rel))
-    outlist$ftol_rel <- 1e-8
-  if (is.null(optslist$maxeval))
-    outlist$maxeval <- 6000
-
-  answering.set  <- do.call(control.answering, answering.set)
   # the default value is tha same as the ones in the list, so no modification is
+  if (!is.numeric(n_seg) || n_seg <= 0)
+    stop("The value of 'n_seg' must be > 0")
+  if (!is.numeric(merge_tol) || merge_tol <= 0)
+    stop("The value of 'merge_tol' must be > 0")
 
-  return(list(x0 = x0, optslist = outlist, answering.set = answering.set))
+  return(list(n_seg = n_seg, merge_tol = merge_tol))
 }
 ######################################################################################################*
 ######################################################################################################*
@@ -1685,10 +1731,12 @@ sens.minimax.control <- function(#sens_maxeval = 6000,
 #'
 #' @param object An object of class \code{minimax}.
 #' @param iter Number of iterations.
+#' @param ... An argument of no further use.
 #' @importFrom nloptr directL
 #' @seealso \code{\link{minimax}}
 #' @export
-iterate.minimax <- function(object, iter){
+update.minimax <- function(object, iter, ...){
+  # ... is an argument of no use. Only to match the generic update
   if (all(class(object) != c("list", "minimax")))
     stop("''object' must be of class 'minimax'")
   if (missing(iter))
@@ -1697,16 +1745,17 @@ iterate.minimax <- function(object, iter){
   ICA.control <- object$arg$ICA.control
   crt.minimax.control <- object$arg$crt.minimax.control
   sens.minimax.control <-  object$arg$sens.minimax.control
+  sens.control <-  object$arg$sens.control
   evol <- object$evol
   #if (!arg$is.only.w)
   npred <- length(arg$lx) #else
-    #    npred <- NA #dim(arg$x)[2]
-    ## all fo the types for optim_on_average will be set to be equal to "robust"
-    ## but the arg$type remains unchanged to be used in equivalence function!!
-    # if( grepl("on_average", arg$type))
-    #   type = "robust" else
-    #     type <- arg$type
-    type <- arg$type
+  #    npred <- NA #dim(arg$x)[2]
+  ## all fo the types for optim_on_average will be set to be equal to "robust"
+  ## but the arg$type remains unchanged to be used in equivalence function!!
+  # if( grepl("on_average", arg$type))
+  #   type = "robust" else
+  #     type <- arg$type
+  type <- arg$type
 
   # warning: no arg$type must be used further
 
@@ -1842,7 +1891,7 @@ iterate.minimax <- function(object, iter){
       q1 <- c(x, w) else
         q1 <- w
       out <- optim2(fn = fn, lower = lower, upper = upper,
-                    n_seg = sens.minimax.control$answering.set$n_seg,
+                    n_seg = sens.minimax.control$n_seg,
                     q = q1,
                     fixedpar = fixedpar, fixedpar_id = fixedpar_id,
                     npred= npred)
@@ -1904,8 +1953,6 @@ iterate.minimax <- function(object, iter){
 
   if (type == "robust")
     fixed_arg$parset <- arg$robpars$parset
-
-
 
   ## for sensitivity checking
   sens_varlist <-list(fixedpar = arg$fixedpar, fixedpar_id = arg$fixedpar_id,
@@ -1988,7 +2035,7 @@ iterate.minimax <- function(object, iter){
     ## reset the seed!
     if (exists(".Random.seed")){
       GlobalSeed <- get(".Random.seed", envir = .GlobalEnv)
-      #if you call directly from iterate and not minimax!
+      #if you call directly from update and not minimax!
       on.exit(assign(".Random.seed", GlobalSeed, envir = .GlobalEnv))
     }
 
@@ -1999,7 +2046,7 @@ iterate.minimax <- function(object, iter){
     mean_cost <- sapply(1:(totaliter), FUN = function(j) evol[[j]]$mean_cost)
     min_cost <- sapply(1:(totaliter), FUN = function(j) evol[[j]]$min_cost)
     Empires <- object$empires
-   prev_time <- arg$time
+    prev_time <- arg$time
 
     check_counter <- arg$updating$check_counter
     total_nfeval <- object$alg$nfeval
@@ -2245,13 +2292,16 @@ iterate.minimax <- function(object, iter){
       sens_res <- sensminimax_inner(x = x, w = w, lx = arg$lx, ux = arg$ux, lp = arg$lp_nofixed, up = arg$up_nofixed,
                                     fimfunc = arg$FIM,
                                     sens.minimax.control = sens.minimax.control,
+                                    sens.control = sens.control,
                                     #nloptr.control.sens = nloptr.control.sens,
                                     type = type, localdes = NULL, plot_sens = ICA.control$plot_sens,
                                     varlist = sens_varlist, calledfrom = "iter",
-                                    npar = arg$npar, calculate_criterion = FALSE,
+                                    npar = arg$npar,
+                                    calculate_criterion = FALSE,
                                     robpars = arg$robpars,
                                     plot_3d = arg$plot_3d,
                                     silent = !arg$ICA.control$trace)
+
 
       ##########################################################################*
       GE_confirmation <- ( sens_res$ELB >= ICA.control$stoptol)

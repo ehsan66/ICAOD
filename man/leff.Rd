@@ -5,7 +5,7 @@
 \title{Calculates Relative Efficiency for Locally Optimal Designs}
 \usage{
 leff(formula, predvars, parvars, family = gaussian(), inipars,
-  type = c("D", "PA"), fimfunc = NULL, xopt, wopt, x, w,
+  type = c("D", "PA"), fimfunc = NULL, x2, w2, x1, w1,
   npar = length(inipars), prob = NULL)
 }
 \arguments{
@@ -29,13 +29,13 @@ This can be a family function, a call to a family function or a character string
 
 \item{fimfunc}{A function. Returns the FIM as a \code{matrix}. Required when \code{formula} is missing. See 'Details' of \code{\link{minimax}}.}
 
-\item{xopt}{Vector of design (support) points of the optimal design (\eqn{\xi_2}). Similar to \code{x}.}
+\item{x2}{Vector of design (support) points of the optimal design (\eqn{\xi_2}). Similar to \code{x1}.}
 
-\item{wopt}{Vector of corresponding design weights for \code{xopt}.}
+\item{w2}{Vector of corresponding design weights for \code{x2}.}
 
-\item{x}{Vector of design (support) points of \eqn{\xi_1}. See 'Details' of \code{\link{leff}}.}
+\item{x1}{Vector of design (support) points of \eqn{\xi_1}. See 'Details' of \code{\link{leff}}.}
 
-\item{w}{Vector of corresponding design weights for \code{x}.}
+\item{w1}{Vector of corresponding design weights for \code{x1}.}
 
 \item{npar}{Number of model parameters.  Used when \code{fimfunc} is given instead of \code{formula} to specify the number of model parameters.
 If not given, the sensitivity plot may be shifted below the y-axis. When \code{NULL}, it will be set here to \code{length(inipars)}.}
@@ -53,21 +53,21 @@ Usually, \eqn{\xi_2} is an  optimal design.
 }
 \details{
 For a known \eqn{\theta_0}, relative D-efficiency is
-\deqn{exp(\frac{log|M(\xi, \theta_0)| - log|M(\xi^*, \theta_0)|}{npar})}{
-exp\{(log|M(\xi, \theta_0)| - log|M(\xi*, \theta_0)|)/npar\}.}
+\deqn{exp(\frac{log|M(\xi_1, \theta_0)| - log|M(\xi_2, \theta_0)|}{npar})}{
+exp\{(log|M(\xi_1, \theta_0)| - log|M(\xi_2, \theta_0)|)/npar\}.}
 The relative P-efficiency is
-\deqn{\exp(\log(\sum_{i=1}^k w_ip(x_i, \theta_0) - \log(\sum_{i=1}^k w^*_ip(x^*_i, \theta_0))}{
-exp(log (\sum w_i p(x_i, \theta_0) - log(\sum w*_i p(x*_i, \theta_0)),
+\deqn{\exp(\log(\sum_{i=1}^k w_{1i}p(x_{1i}, \theta_0) - \log(\sum_{i=1}^k w_{2i}p(x{2_i}, \theta_0))}{
+exp(log (\sum w1_i p(x1_i, \theta_0) - log(\sum w2_i p(x2_i, \theta_0)),
 }
-where \eqn{x^*}{x*} and \eqn{w^*}{w*} are the support points and the corresponding weights of the optimal design, respectively.
+where \eqn{x_2}{x1} and \eqn{w_2}{w1} are usually the support points and the corresponding weights of the optimal design, respectively.
 
-The argument  \code{x} is the vector of design points.
+The argument  \code{x1} is the vector of design points.
  For design points with more than one dimension (the models with more than one predictors),
    it is a concatenation of the design points, but \strong{dimension-wise}.
    For example, let the model has three predictors   \eqn{(I, S, Z)}.
     Then,  a two-point optimal design has the following points:
    \eqn{\{\mbox{point1} = (I_1, S_1, Z_1), \mbox{point2} = (I_2, S_2, Z_2)\}}{{point1 = (I1, S1, Z1), point2 = (I2, S2, Z2)}}.
-    Then, the argument \code{x} is equal to
+    Then, the argument \code{x1} is equal to
     \code{x = c(I1, I2, S1, S2, Z1, Z2)}.
 }
 \examples{
@@ -92,9 +92,9 @@ wopt_D <- rep(.25, 4)
 
 # Let see if we use only three of the design points, what is the relative efficiency.
 leff(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4, family = binomial(),
-     x = c(1, -1, .0680,  -1, -1, 1), w = c(.33, .33, .33),
+     x1 = c(1, -1, .0680,  -1, -1, 1), w1 = c(.33, .33, .33),
      inipars = p,
-     xopt = xopt_D, wopt = wopt_D)
+     x2 = xopt_D, w2 = wopt_D)
 # Wow, it heavily drops!
 
 
@@ -104,11 +104,11 @@ wopt_P <- 1
 
 # What is the relative P-efficiency of the D-optimal design with respect to P-optimal design?
 leff(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4, family = binomial(),
-     x = xopt_D, w = wopt_D,
+     x1 = xopt_D, w1 = wopt_D,
      inipars = p,
      type = "PA",
      prob = prob4.4,
-     xopt = xopt_P, wopt = wopt_P)
+     x2 = xopt_P, w2 = wopt_P)
 # .535
 
 

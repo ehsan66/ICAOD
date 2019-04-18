@@ -332,7 +332,6 @@ ImperialisticCompetition <- function(Empires, Zeta){
   # perform an imperialistic competition
   # Zeta: a cofficient needed to compute the total cost
   # updating 'ColoniesPosition', "ColoniesCost"
-
   NumOfEmpires <- length(Empires)
   # competition pressure
   if (NumOfEmpires == 1 || runif(1)>.11){
@@ -340,13 +339,15 @@ ImperialisticCompetition <- function(Empires, Zeta){
   }else{
     #we first select the the empire that possess the weakest colony from the weakest empire.
     TotalCosts <- sapply(Empires, "[[", "TotalCost", simplify =TRUE )
+    # maybe you should move the following syntax in a better position!
+    if (any(is.infinite(TotalCosts)))
+      stop("Please check the inputs of your design problem.\n  The value of the criterion is not finite for some imperialists from the design space. It may be a sign that the FIM for the given design setting is (computationaly) singular.")
     WeakestEmpireInd <- which.max(TotalCosts)
 
     TotalPowers <- TotalCosts[WeakestEmpireInd] - TotalCosts
     if (all(TotalPowers == 0))
       return(Empires)
     PossessionProbability <- TotalPowers/sum(TotalPowers)
-
 
     SelectedEmpireInd <- sample(1:NumOfEmpires, 1, prob = PossessionProbability)
 
@@ -774,7 +775,6 @@ optim2 <- function(fn, ..., lower , upper, control = list(factr = sqrt(.Machine$
 ######################################################################################################*
 ######################################################################################################*
 construct_pen <- function(const, npred, k){
-
   dim_ind <- list()
   count1 <- 1
   count2 <- k
@@ -808,7 +808,8 @@ is.formula <- function(x){
 ######################################################################################################*
 #' @importFrom methods formalArgs
 check_common_args <- function(fimfunc, formula, predvars, parvars, family,
-                              lx, ux, iter, k, paramvectorized, prior, x){
+                              lx, ux, iter, k, paramvectorized, prior, x,
+                              user_crtfunc, user_sensfunc){
   ### it checks the formula, k , lx, ux and iter and returns the fisher information matrix
   if (is.null(fimfunc) & missing(formula))
     stop("either 'fimfunc' or 'formula' must be given")
@@ -864,9 +865,7 @@ check_common_args <- function(fimfunc, formula, predvars, parvars, family,
     ## checking if parvars and predvars have interaction
     if (any(parvars %in% predvars))
       stop(paste(parvars[which((predvars %in% parvars))], sep = ", "), " is (are) repeated in both 'parvars' and 'predvars'")
-
     mu <- create_mu(formula = formula, predvars = predvars, parvars = parvars,  paramvectorized = paramvectorized, fixedpars = fixedpars)
-
     grad <- create_grad(formula = formula, predvars = predvars, parvars = parvars,  paramvectorized = paramvectorized, fixedpars = fixedpars)
 
     mu_sens <- create_mu(formula = formula, predvars = predvars, parvars = parvars,  paramvectorized = FALSE, fixedpars = fixedpars)
@@ -882,7 +881,6 @@ check_common_args <- function(fimfunc, formula, predvars, parvars, family,
     fimfunc_sens_formula <- function(x, w, param){
       fim(x = x, w =w, param = param, grad = grad_sens, mu = mu_sens, family = family, paramvectorized = FALSE)
     }
-
   }else{
 
     if (!is.function(fimfunc))
@@ -904,18 +902,14 @@ check_common_args <- function(fimfunc, formula, predvars, parvars, family,
   if (is.null(fimfunc))
     if (length(predvars) != length(lx))
       stop("length of 'lx' is not equal to the number of design parameters")
-
   if (missing(k))
     stop("\"k\" is missing")
   if (!is.numeric(k) || (k %% 1) != 0 || k <= 0)
     stop("\"k\" must be a positive integer number")
-
-
   if (missing(iter))
     stop("\"iter\" is missing")
   if (!is.numeric(iter) || (iter %% 1) != 0 || iter <= 0)
     stop("\"iter\" must be a positive integer number")
-
   if (!is.null(prior)){
     if (class(prior) != "cprior")
       stop("'prior' must be a list of class 'cprior'. See ?normal")
@@ -930,10 +924,52 @@ check_common_args <- function(fimfunc, formula, predvars, parvars, family,
     fixedpars <- NULL
   }
   if (!is.null(x)){
-    if (length(x)/k != length(lx))
-      stop("Length of 'lx' is not equal to 'length(x)/k'. Check 'k', 'x', 'lx' and 'ux' to match.")
+    if (is.null(k))
+      if (length(x)/k != length(lx))
+        stop("Length of 'lx' is not equal to 'length(x)/k'. Check 'k', 'x', 'lx' and 'ux' to match.")
   }
-  return(list(fimfunc_formula = fimfunc_formula, fimfunc_sens_formula = fimfunc_sens_formula, num_unknown_param = num_unknown_param ))
+  ###############*
+  # user ----
+  ###############*
+  if (!is.null(user_crtfunc)){
+    if (!is.function(user_crtfunc))
+      stop("'user_crtfunc' must be a 'function'")
+    if (!all(c("x", "w", "fimfunc") %in% formalArgs(user_crtfunc)))
+      stop("'user_crtfunc' must have arguments 'x', 'w' and 'fimfunc'")
+    if (!is.null(fimfunc)){
+      if (!any(formalArgs(user_crtfunc) == "param"))
+        stop("'user_crtfunc' must have an argument named 'param'")
+      user_crtfunc2 <- user_crtfunc
+    }else{
+      if (!all(c(parvars) %in% formalArgs(user_crtfunc)))
+        stop("'crtfunc' must additionally have arguments, ", paste(parvars, collapse = ", "))
+      user_crtfunc2 <- create_user_crtfunc(parvars = parvars, user_crtfunc = user_crtfunc, paramvectorized = paramvectorized)
+      fimfunc_sens_formula <- fimfunc_formula <- create_user_fim(parvars = parvars, grad = grad, mu = mu, family = family, paramvectorized = paramvectorized)
+    }
+  }else
+    user_crtfunc2 <- NULL
+  if (!is.null(user_sensfunc)){
+    if (is.null(user_crtfunc))
+      warning("The sensitivity function for the criterion is already implemented. Forgot to specify your 'crtfunc'?")
+    if (!is.function(user_sensfunc))
+      stop("'user_sensfunc' must be a 'function'")
+    if (!all(c("xi_x", "x", "w", "fimfunc") %in% formalArgs(user_sensfunc)))
+      stop("'user_sensfunc' must have arguments 'xi_x', 'x', 'w' and 'fimfunc'")
+    if (!is.null(fimfunc)){
+      if (!any(formalArgs(user_sensfunc) == "param"))
+        stop("'user_sensfunc' must have an argument named 'param'")
+      user_sensfunc2 <- user_sensfunc
+    }else{
+      if (!all(c(parvars) %in% formalArgs(user_sensfunc)))
+        stop("'sensfunc' must additionally have arguments, ", paste(parvars, collapse = ", "))
+      user_sensfunc2 <- create_user_sensfunc(parvars = parvars, user_sensfunc = user_sensfunc, paramvectorized = paramvectorized)
+    }
+  }else
+    user_sensfunc2 <- NULL
+  return(list(fimfunc_formula = fimfunc_formula,
+              fimfunc_sens_formula = fimfunc_sens_formula,
+              num_unknown_param = num_unknown_param,
+              user_crtfunc = user_crtfunc2, user_sensfunc = user_sensfunc2))
 
 
 }
@@ -1001,7 +1037,7 @@ check_initial <- function(initial, ld, ud){
 }
 ######################################################################################################*
 ######################################################################################################*
-print_xw_char <- function(x, w,  npred, is.only.w){
+print_xw_char <- function(x, w,  npred, is.only.w, equal_weight){
   # if (npred == 1)
   #   return(x)
   if (!is.only.w){
@@ -1024,11 +1060,14 @@ print_xw_char <- function(x, w,  npred, is.only.w){
     # adding a row points
     point_char <- format(paste("Points", 1:k, sep = ""), width = max(nchar(x_char)), justify = "centre")
     # adding the weights
-    w <- sprintf("%.3f", round(w,3))
-    w <- format(w, width = max(nchar(x_char)), justify = "centre")
-    weight_char <- format(paste("Weights", 1:k, sep = ""), width = max(nchar(x_char)), justify = "centre")
+    if (!equal_weight){
+      w <- sprintf("%.3f", round(w,3))
+      w <- format(w, width = max(nchar(x_char)), justify = "centre")
+      weight_char <- format(paste("Weights", 1:k, sep = ""), width = max(nchar(x_char)), justify = "centre")
+      x_char <- rbind(point_char, x_char, weight_char, w)
+    } else
+      x_char <- rbind(point_char, x_char)
 
-    x_char <- rbind(point_char, x_char, weight_char, w)
     x_char <- sapply(X = 1:nrow(x_char), function(i)paste(x_char[i, ], collapse = " "))
     outchar <- paste(x_char, collapse = "\n ")
   }else{
@@ -1082,3 +1121,107 @@ create_FIM_LLTM <- function(Q, normalization){
   fimfunc <- fim_LLTM
   return(fimfunc = fim_LLTM)
 }
+
+
+#############################################################################################################*
+#############################################################################################################*
+
+
+create_user_crtfunc <- function(parvars, user_crtfunc, paramvectorized = FALSE){
+  npar <- length(parvars)
+  crtfunc_formula <- NA ## to define the variable in the global environment and avoid R CMD check Note
+  crtfunc_char <- "crtfunc_formula <- function(x, w, fimfunc, param)\n{\n  "
+  ### for parameters
+  if (!paramvectorized){
+    crtfunc_char <- paste(crtfunc_char,  parvars[1], " <- param[1]", " \n  ", sep = "")
+    if (npar > 1) {
+      for (j in 2:npar) {
+        crtfunc_char <- paste(crtfunc_char, parvars[j], " <- param[", j, "]", " \n  ", sep = "")
+      }
+    }
+  }else{
+    crtfunc_char <- paste(crtfunc_char,  parvars[1], " <- param[, 1]", " \n  ", sep = "")
+    if (npar > 1) {
+      for (j in 2:npar) {
+        crtfunc_char <- paste(crtfunc_char, parvars[j], " <- param[, ", j, "]", " \n  ", sep = "")
+      }
+    }
+  }
+  crtfunc_char_func <- paste("out <-  user_crtfunc(", paste(parvars, parvars, sep = " = ", collapse = ", "), ",x = x, w = w, fimfunc = fimfunc)", sep = "")
+  crtfunc_char <- paste( crtfunc_char,  crtfunc_char_func, "\n  return(out)\n}",  sep = "")
+  #cat(crtfunc_char)
+  eval(parse(text =  crtfunc_char))
+  return( crtfunc_formula)
+}
+
+#############################################################################################################*
+#############################################################################################################*
+create_user_sensfunc <- function(parvars, user_sensfunc, paramvectorized = FALSE){
+  npar <- length(parvars)
+  sensfunc_formula <- NA ## to define the variable in the global environment and avoid R CMD check Note
+  sensfunc_char <- "sensfunc_formula <- function(xi_x, x, w, fimfunc, param)\n{\n  "
+  ### for parameters
+  if (!paramvectorized){
+    sensfunc_char <- paste(sensfunc_char,  parvars[1], " <- param[1]", " \n  ", sep = "")
+    if (npar > 1) {
+      for (j in 2:npar) {
+        sensfunc_char <- paste(sensfunc_char, parvars[j], " <- param[", j, "]", " \n  ", sep = "")
+      }
+    }
+  }else{
+    sensfunc_char <- paste(sensfunc_char,  parvars[1], " <- param[, 1]", " \n  ", sep = "")
+    if (npar > 1) {
+      for (j in 2:npar) {
+        sensfunc_char <- paste(sensfunc_char, parvars[j], " <- param[, ", j, "]", " \n  ", sep = "")
+      }
+    }
+  }
+  sensfunc_char_func <- paste("out <-  user_sensfunc(", paste(parvars, parvars, sep = " = ", collapse = ", "), ",xi_x = xi_x, x = x, w = w, fimfunc = fimfunc)", sep = "")
+  sensfunc_char <- paste( sensfunc_char,  sensfunc_char_func, "\n  return(out)\n}",  sep = "")
+  eval(parse(text =  sensfunc_char))
+
+  return(sensfunc_formula)
+}
+#############################################################################################################*
+#############################################################################################################*
+create_user_fim <- function(parvars, grad, mu, family, paramvectorized = FALSE){
+  # I need the arguments grad, mu and family to be present
+  # to be recognised in the eval function
+
+  npar <- length(parvars)
+  ## to define the variables in the global environment and avoid R CMD check Note
+  fimfunc_formula_original <- NA
+  if (npar >=2)
+    pars_char <- paste(parvars, collapse = ", ") else
+      pars_char <- parvars
+  if (paramvectorized) # for bayesian designs every parameter will be in one row
+    pars_char_vec <- paste0("param <- cbind(", paste(pars_char, collapse = ","), ")") else
+      pars_char_vec <- paste0("param <- c(", paste(pars_char, collapse = ","), ")")
+  fim_char <- paste0("fimfunc_formula_original <- function(",
+                     pars_char,
+                     ", x, w)\n{\n",
+                     pars_char_vec, "\n",
+                     "out <-  fim(x = x, w = w, param = param, grad = grad, mu = mu, family = family, paramvectorized = paramvectorized)\nreturn(out)\n}")
+  eval(parse(text =  fim_char))
+  return(fimfunc_formula_original)
+}
+#############################################################################################################*
+#############################################################################################################*
+# create_FIM_paramvectorizes <- function(parvars, FIM){
+#   npar <- length(parvars)
+#   FIM_formula_parallel <- NA ## to define the variable in the global environment and avoid R CMD check Note
+#   FIM_char <- "FIM_formula_parallel <- function(x, w, param)\n{\n  "
+#   ### for parameters
+#   FIM_char <- paste(FIM_char,  parvars[1], " <- param[, 1]", " \n  ", sep = "")
+#   if (npar > 1) {
+#     for (j in 2:npar) {
+#       FIM_char <- paste(FIM_char, parvars[j], " <- param[, ", j, "]", " \n  ", sep = "")
+#     }
+#
+#   }
+#   FIM_char_func <- paste("out <-  FIM(", paste(parvars, parvars, sep = " = ", collapse = ", "), ", x = x, w = w)", sep = "")
+#   FIM_char <- paste(FIM_char,  FIM_char_func, "\n  return(out)\n}",  sep = "")
+#   #cat(crtfunc_char)
+#   eval(parse(text =  FIM_char))
+#   return(FIM_formula_parallel)
+# }

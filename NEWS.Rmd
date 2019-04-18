@@ -1,12 +1,17 @@
+# ICAOD 0.9.9 
+* a vignette is added.
+* The crt_method and sens_method arguments in bayes are now placed in crt.bayes.control and sens.bayes.control with a new name method.
+* Adding a new argument in all optimal design functions: sens.control
+
 # ICAOD 0.9.8
-# Quadrature formulas are added from package mvQuad.
-# A bug in CPU time is fixed.
-# Help pages are improved.
-# spell checking passed
+* Gaussian Quadrature formulas are added from package mvQuad.
+* A bug in CPU time is fixed.
+* Help pages are improved.
+* spell checking passed
 
 # ICAOD 0.9.7
-# A bug is fixed in minimax designs.
-# Adding efficiency functions beff and leff.
+* A bug is fixed in minimax designs.
+* Adding efficiency functions beff and leff.
 
 
 # ICAOD 0.9.6
@@ -16,7 +21,7 @@
 * Please use only the last version
 
 # ICAOD 0.9.2
-* ##### fixing Bug1: exporting the S3 itertate method
+* ##### fixing Bug1: exporting the S3 iterate method
 * improving the documentation.
 * changing the name of "equivalence_on_average"" to "equivalence_ave"
 * changing the name of "on_average_ICA" to "ave"

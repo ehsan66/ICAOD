@@ -5,11 +5,11 @@
 \title{Verifying Optimality of Bayesian D-optimal Designs}
 \usage{
 sensbayes(formula, predvars, parvars, family = gaussian(), x, w, lx, ux,
-  fimfunc = NULL, prior = list(), sens.bayes.control = list(),
-  crt.bayes.control = list(), crt_method = c("cubature", "quadrature"),
-  sens_method = c("cubature", "quadrature"), plot_3d = c("lattice",
-  "rgl"), plot_sens = TRUE, npar = NULL, calculate_criterion = TRUE,
-  silent = FALSE)
+  fimfunc = NULL, prior = list(), sens.control = list(),
+  sens.bayes.control = list(), crt.bayes.control = list(),
+  plot_3d = c("lattice", "rgl"), plot_sens = TRUE, npar = NULL,
+  calculate_criterion = TRUE, silent = FALSE, crtfunc = NULL,
+  sensfunc = NULL)
 }
 \arguments{
 \item{formula}{A nonlinear model \code{\link[stats]{formula}}.
@@ -45,18 +45,12 @@ For design points with more than one dimension, see 'Details' of \code{\link{sen
  \code{\link{uniform}}, \code{\link{normal}},
 \code{\link{skewnormal}} or \code{\link{student}}  to create the  prior. See 'Details' of \code{\link{bayes}}.}
 
+\item{sens.control}{Control Parameters for Calculating the ELB. For details, see \code{\link{sens.control}}.}
+
 \item{sens.bayes.control}{A list. Control parameters to verify the general equivalence theorem. For details, see \code{\link{sens.bayes.control}}.}
 
 \item{crt.bayes.control}{A list. Control parameters to approximate the integral in  the Bayesian criterion at a given design over the parameter space.
 For details, see \code{\link{crt.bayes.control}}.}
-
-\item{crt_method}{A character denotes which method to be used to approximate the integrals in Bayesian criteria.
-\code{"cubature"} corresponds to the adaptive multivariate integration method using the \code{\link[cubature]{hcubature}} algorithm (default).
-\code{"quadrature"} corresponds the traditional quadrature formulas and calls the function \code{\link[mvQuad]{createNIGrid}}.
-The tuning parameters are adjusted by \code{crt.bayes.control}. Default is set to \code{"cubature"}.}
-
-\item{sens_method}{Similar to \code{crt_method}, but for approximating the integrals in the sensitivity (derivative) function.
-The tuning parameters are adjusted by \code{sens.bayes.control}. Default is set to \code{"cubature"}.}
 
 \item{plot_3d}{Which package should be used to plot the sensitivity (derivative) function for two-dimensional design space. Defaults to \code{"lattice"}.}
 
@@ -70,6 +64,10 @@ When \code{NULL} (default), it will be set to \code{length(parvars)} or
 \item{calculate_criterion}{Calculate the optimality criterion? See 'Details' of \code{\link{sensminimax}}.}
 
 \item{silent}{Do not print anything? Defaults to \code{FALSE}.}
+
+\item{crtfunc}{(Optional) a function that specifies an arbitrary criterion. It must have especial arguments and output. See 'Details' of \code{\link{bayes}}.}
+
+\item{sensfunc}{(Optional) a function that specifies the sensitivity function for \code{crtfunc}. See 'Details' of \code{\link{bayes}}.}
 }
 \description{
 Plots the sensitivity (derivative) function  and calculates the efficiency lower bound (ELB) for a  given  Bayesian design.
@@ -79,7 +77,7 @@ is non-positive for all \eqn{\boldsymbol{x}}{x} in \eqn{\chi} and zero when
  \eqn{\boldsymbol{x}}{x} belongs to the support of \eqn{\xi^*}{\xi*} (be equal to the one of the design points).
 
 For an approximate (continuous) design, when the design space is one or two-dimensional, the user can visually verify the optimality of the design by observing the
-sensitivity plot. Furthermore, the approximity of the design to the optimal design
+sensitivity plot. Furthermore, the proximity of the design to the optimal design
  can be measured by the  ELB without knowing the latter.
 }
 \details{
@@ -99,8 +97,8 @@ A design \eqn{\xi^*}{\xi*} is Bayesian D-optimal among all designs on \eqn{\chi}
 
 Depending on the complexity of the problem at hand, sometimes, the CPU time can be considerably reduced
 by choosing a set of  less conservative values for the tuning parameters \code{tol} and \code{maxEval} in
-the function \code{\link{sens.bayes.control}} when \code{sens_method = "cubature"}.
-Similarly, this applies  when \code{sens_method = "quadrature"}.
+the function \code{\link{sens.bayes.control}} when \code{sens.bayes.control$method = "cubature"}.
+Similarly, this applies  when \code{sens.bayes.control$method = "quadrature"}.
 In general, if the CPU time matters, the user should find an appropriate speed-accuracy trade-off  for her/his own problem.
  See 'Examples' for more details.
 }
@@ -187,7 +185,7 @@ ub <- c(9, 17, 140, 10)
             predvars = c("x"), parvars = c("theta1", "theta2", "theta3", "theta4"),
             x = c(0.78990, 95.66297, 118.42964,147.55809, 500),
             w = c(0.23426, 0.17071, 0.17684, 0.1827, 0.23549),
-            sens_method = "quadrature",
+            sens.bayes.control = list(method = "quadrature"),
             lx = .001, ux = 500,  prior = uniform(lb, ub))
   # 166.519 s
 
@@ -196,8 +194,8 @@ ub <- c(9, 17, 140, 10)
             predvars = c("x"), parvars = c("theta1", "theta2", "theta3", "theta4"),
             x = c(0.78990, 95.66297, 118.42964,147.55809, 500),
             w = c(0.23426, 0.17071, 0.17684, 0.1827, 0.23549),
-            sens_method = "quadrature",
-            sens.bayes.control = list(quadrature = list(level = 3)),
+            sens.bayes.control = list(method = "quadrature",
+                                      quadrature = list(level = 3)),
             lx = .001, ux = 500,  prior = uniform(lb, ub))
   # we don't have an accurate plot
 
@@ -206,8 +204,8 @@ ub <- c(9, 17, 140, 10)
             predvars = c("x"), parvars = c("theta1", "theta2", "theta3", "theta4"),
             x = c(0.78990, 95.66297, 118.42964,147.55809, 500),
             w = c(0.23426, 0.17071, 0.17684, 0.1827, 0.23549),
-            sens_method = "quadrature",
-            sens.bayes.control = list(quadrature = list(level = 4)),
+            sens.bayes.control = list(method = "quadrature",
+                                      quadrature = list(level = 4)),
             lx = .001, ux = 500,  prior = uniform(lb, ub))
 
 }

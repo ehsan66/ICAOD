@@ -5,7 +5,7 @@
 \title{Plotting \code{bayes} Objects}
 \usage{
 \method{plot}{bayes}(x, iter = NULL, sensitivity = TRUE,
-  calculate_criterion = FALSE, crt_method = NULL, sens_method = NULL,
+  calculate_criterion = FALSE, sens.control = list(),
   sens.bayes.control = list(), crt.bayes.control = list(),
   silent = FALSE, plot_3d = c("lattice", "rgl"), evolution = FALSE,
   ...)
@@ -19,15 +19,7 @@
 
 \item{calculate_criterion}{Logical. Re-calculate the Bayesian criterion value (maybe with a set of new tuning parameters to be sure of the accuracy of the integral approximation)? Defaults to \code{FALSE}. See 'Details'.}
 
-\item{crt_method}{A character denotes which method to be used to approximate the integrals in Bayesian criteria.
-\code{"cubature"} corresponds to the adaptive multivariate integration method using the \code{\link[cubature]{hcubature}} algorithm (default).
-\code{"quadrature"} corresponds the traditional quadrature formulas and calls the function \code{\link[mvQuad]{createNIGrid}}.
-The tuning parameters are adjusted by \code{crt.bayes.control}.
- If \code{NULL} (default), it will use the method already applied to create the object \code{x}.}
-
-\item{sens_method}{Similar to \code{crt_method}, but for approximating the integrals in the sensitivity (derivative) function.
-The tuning parameters are adjusted by \code{sens.bayes.control}.
- If \code{NULL} (default), it will use the method already applied to create the object \code{x}.}
+\item{sens.control}{Control Parameters for Calculating the ELB. For details, see the function \code{\link{sens.control}}.}
 
 \item{sens.bayes.control}{Control parameters to verify general equivalence theorem. For details, see \code{\link{sens.bayes.control}}.
 If \code{NULL} (default), it will be set to the  tuning parameters used to create object \code{x}.}

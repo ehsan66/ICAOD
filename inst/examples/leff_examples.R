@@ -19,9 +19,9 @@ wopt_D <- rep(.25, 4)
 
 # Let see if we use only three of the design points, what is the relative efficiency.
 leff(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4, family = binomial(),
-     x = c(1, -1, .0680,  -1, -1, 1), w = c(.33, .33, .33),
+     x1 = c(1, -1, .0680,  -1, -1, 1), w1 = c(.33, .33, .33),
      inipars = p,
-     xopt = xopt_D, wopt = wopt_D)
+     x2 = xopt_D, w2 = wopt_D)
 # Wow, it heavily drops!
 
 
@@ -31,11 +31,11 @@ wopt_P <- 1
 
 # What is the relative P-efficiency of the D-optimal design with respect to P-optimal design?
 leff(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4, family = binomial(),
-     x = xopt_D, w = wopt_D,
+     x1 = xopt_D, w1 = wopt_D,
      inipars = p,
      type = "PA",
      prob = prob4.4,
-     xopt = xopt_P, wopt = wopt_P)
+     x2 = xopt_P, w2 = wopt_P)
 # .535
 
 

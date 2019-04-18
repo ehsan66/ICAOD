@@ -5,7 +5,7 @@
 \title{Calculates Relative Efficiency for Bayesian Optimal Designs}
 \usage{
 beff(formula, predvars, parvars, family = gaussian(), prior,
-  fimfunc = NULL, xopt, wopt, x, w, crt.bayes.control = list(),
+  fimfunc = NULL, x2, w2, x1, w1, crt.bayes.control = list(),
   npar = NULL, type = c("D", "PA"), prob = NULL)
 }
 \arguments{
@@ -29,13 +29,13 @@ This can be a family function, a call to a family function or a character string
 
 \item{fimfunc}{A function. Returns the FIM as a \code{matrix}. Required when \code{formula} is missing. See 'Details' of \code{\link{minimax}}.}
 
-\item{xopt}{Vector of design (support) points of the optimal design (\eqn{\xi_2}). Similar to \code{x}.}
+\item{x2}{Vector of design (support) points of the optimal design (\eqn{\xi_2}). Similar to \code{x1}.}
 
-\item{wopt}{Vector of corresponding design weights for \code{xopt}.}
+\item{w2}{Vector of corresponding design weights for \code{x2}.}
 
-\item{x}{Vector of design (support) points of \eqn{\xi_1}. See 'Details' of \code{\link{leff}}.}
+\item{x1}{Vector of design (support) points of \eqn{\xi_1}. See 'Details' of \code{\link{leff}}.}
 
-\item{w}{Vector of corresponding design weights for \code{x}.}
+\item{w1}{Vector of corresponding design weights for \code{x1}.}
 
 \item{crt.bayes.control}{A list. Control parameters to approximate the integral in  the Bayesian criterion at a given design over the parameter space.
 For details, see \code{\link{crt.bayes.control}}.}
@@ -57,7 +57,7 @@ This function is especially useful for investigating the robustness of Bayesian 
 \details{
 See Masoudi et al. (2018) for formula details (the paper is under review and will be updated as soon as accepted).
 
-The argument  \code{x} is the vector of design points.
+The argument  \code{x1} is the vector of design points.
  For design points with more than one dimension (the models with more than one predictors),
    it is a concatenation of the design points, but \strong{dimension-wise}.
    For example, let the model has three predictors   \eqn{(I, S, Z)}.
@@ -125,10 +125,10 @@ for (i in 1:6)
                          parvars = parvars4.1,
                          family = binomial(),
                          prior = des4.1[[i]]$prior,
-                         xopt = des4.1[[i]]$x,
-                         wopt = des4.1[[i]]$w,
-                         x = des4.1[[j]]$x,
-                         w = des4.1[[j]]$w)
+                         x2 = des4.1[[i]]$x,
+                         w2 = des4.1[[i]]$w,
+                         x1 = des4.1[[j]]$x,
+                         w1 = des4.1[[j]]$w)
 # For example the first row represents Bayesian D-efficiencies of different
 # Bayesian optimal design found assuming different priors with respect to
 # the Bayesian D-optimal design found under uniform prior distribution.
@@ -180,30 +180,30 @@ beff(formula = formula4.4,
      parvars = parvars4.4,
      family = binomial(),
      prior = prior4.4,
-     xopt = des4.4[[5]]$x,
-     wopt = des4.4[[5]]$w,
-     x = des4.4[[2]]$x,
-     w = des4.4[[2]]$w)
+     x2 = des4.4[[5]]$x,
+     w2 = des4.4[[5]]$w,
+     x1 = des4.4[[2]]$x,
+     w1 = des4.4[[2]]$w)
 
 beff(formula = formula4.4,
      predvars = predvars4.4,
      parvars = parvars4.4,
      family = binomial(),
      prior = prior4.4,
-     xopt = des4.4[[5]]$x,
-     wopt = des4.4[[5]]$w,
-     x = des4.4[[3]]$x,
-     w = des4.4[[3]]$w)
+     x2 = des4.4[[5]]$x,
+     w2 = des4.4[[5]]$w,
+     x1 = des4.4[[3]]$x,
+     w1 = des4.4[[3]]$w)
 
 beff(formula = formula4.4,
      predvars = predvars4.4,
      parvars = parvars4.4,
      family = binomial(),
      prior = prior4.4,
-     xopt = des4.4[[5]]$x,
-     wopt = des4.4[[5]]$w,
-     x = des4.4[[4]]$x,
-     w = des4.4[[4]]$w)
+     x2 = des4.4[[5]]$x,
+     w2 = des4.4[[5]]$w,
+     x1 = des4.4[[4]]$x,
+     w1 = des4.4[[4]]$w)
 
 # must be one!
 beff(formula = formula4.4,
@@ -213,10 +213,10 @@ beff(formula = formula4.4,
      prior = prior4.4,
      prob = prob4.4,
      type = "PA",
-     xopt = des4.4[[5]]$x,
-     wopt = des4.4[[5]]$w,
-     x = des4.4[[5]]$x,
-     w = des4.4[[5]]$w)
+     x2 = des4.4[[5]]$x,
+     w2 = des4.4[[5]]$w,
+     x1 = des4.4[[5]]$x,
+     w1 = des4.4[[5]]$w)
 
 ## P-efficiency
 # reported in Table 4 as eff_P
@@ -228,10 +228,10 @@ beff(formula = formula4.4,
      prior = prior4.4,
      prob = prob4.4,
      type = "PA",
-     xopt = des4.4[[1]]$x,
-     wopt = des4.4[[1]]$w,
-     x = des4.4[[2]]$x,
-     w = des4.4[[2]]$w)
+     x2 = des4.4[[1]]$x,
+     w2 = des4.4[[1]]$w,
+     x1 = des4.4[[2]]$x,
+     w1 = des4.4[[2]]$w)
 
 beff(formula = formula4.4,
      predvars = predvars4.4,
@@ -240,10 +240,10 @@ beff(formula = formula4.4,
      prior = prior4.4,
      prob = prob4.4,
      type = "PA",
-     xopt = des4.4[[1]]$x,
-     wopt = des4.4[[1]]$w,
-     x = des4.4[[3]]$x,
-     w = des4.4[[3]]$w)
+     x2 = des4.4[[1]]$x,
+     w2 = des4.4[[1]]$w,
+     x1 = des4.4[[3]]$x,
+     w1 = des4.4[[3]]$w)
 
 beff(formula = formula4.4,
      predvars = predvars4.4,
@@ -252,10 +252,10 @@ beff(formula = formula4.4,
      prior = prior4.4,
      prob = prob4.4,
      type = "PA",
-     xopt = des4.4[[1]]$x,
-     wopt = des4.4[[1]]$w,
-     x = des4.4[[4]]$x,
-     w = des4.4[[4]]$w)
+     x2 = des4.4[[1]]$x,
+     w2 = des4.4[[1]]$w,
+     x1 = des4.4[[4]]$x,
+     w1 = des4.4[[4]]$w)
 
 beff(formula = formula4.4,
      predvars = predvars4.4,
@@ -264,10 +264,10 @@ beff(formula = formula4.4,
      prior = prior4.4,
      prob = prob4.4,
      type = "PA",
-     xopt = des4.4[[1]]$x,
-     wopt = des4.4[[1]]$w,
-     x = des4.4[[5]]$x,
-     w = des4.4[[5]]$w)
+     x2 = des4.4[[1]]$x,
+     w2 = des4.4[[1]]$w,
+     x1 = des4.4[[5]]$x,
+     w1 = des4.4[[5]]$w)
 
 
 

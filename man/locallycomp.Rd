@@ -6,8 +6,8 @@
 \usage{
 locallycomp(formula, predvars, parvars, family = gaussian(), lx, ux,
   alpha, prob, iter, k, inipars, fimfunc = NULL, ICA.control = list(),
-  sens.minimax.control = list(), initial = NULL,
-  npar = length(inipars), plot_3d = c("lattice", "rgl"))
+  sens.control = list(), initial = NULL, npar = length(inipars),
+  plot_3d = c("lattice", "rgl"))
 }
 \arguments{
 \item{formula}{A nonlinear model \code{\link[stats]{formula}}.
@@ -45,7 +45,7 @@ See 'Examples'.}
 
 \item{ICA.control}{ICA control parameters. For details, see \code{\link{ICA.control}}.}
 
-\item{sens.minimax.control}{Control parameters to verify the general equivalence theorem. For details, see the function \code{\link{sens.minimax.control}}.}
+\item{sens.control}{Control Parameters for Calculating the ELB. For details, see \code{\link{sens.control}}.}
 
 \item{initial}{A matrix of the  initial design points and weights that will be inserted into the initial solutions (countries) of the algorithm.
 Every row is a design, i.e.  a concatenation of \code{x} and \code{w}. Will be coerced to a \code{matrix} if necessary.  See 'Details' of \code{\link{minimax}}.}
@@ -164,25 +164,25 @@ res.1 <- locallycomp(formula = formula4.4, predvars = predvars4.4, parvars = par
 # locally D-optimal design is locally DP-optimal design when alpha = 1.
 
 leff(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4, family = binomial(),
-     x = res.0$evol[[10]]$x, w = res.0$evol[[10]]$w,
+     x1 = res.0$evol[[10]]$x, w1 = res.0$evol[[10]]$w,
      inipars = p,
-     xopt = res.1$evol[[350]]$x, wopt = res.1$evol[[350]]$w)
+     x2 = res.1$evol[[350]]$x, w2 = res.1$evol[[350]]$w)
 
 leff(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4, family = binomial(),
-     x = res.25$evol[[350]]$x, w = res.25$evol[[350]]$w,
+     x1 = res.25$evol[[350]]$x, w1 = res.25$evol[[350]]$w,
      inipars = p,
-     xopt = res.1$evol[[350]]$x, wopt = res.1$evol[[350]]$w)
+     x2 = res.1$evol[[350]]$x, w2 = res.1$evol[[350]]$w)
 
 leff(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4, family = binomial(),
-     x = res.5$evol[[350]]$x, w = res.5$evol[[350]]$w,
+     x1 = res.5$evol[[350]]$x, w1 = res.5$evol[[350]]$w,
      inipars = p,
-     xopt = res.1$evol[[350]]$x, wopt = res.1$evol[[350]]$w)
+     x2 = res.1$evol[[350]]$x, w2 = res.1$evol[[350]]$w)
 
 
 leff(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4, family = binomial(),
-     x = res.75$evol[[350]]$x, w = res.75$evol[[350]]$w,
+     x1 = res.75$evol[[350]]$x, w1 = res.75$evol[[350]]$w,
      inipars = p,
-     xopt = res.1$evol[[350]]$x, wopt = res.1$evol[[350]]$w)
+     x2 = res.1$evol[[350]]$x, w2 = res.1$evol[[350]]$w)
 
 
 
@@ -190,33 +190,33 @@ leff(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4, family 
 # locally p-optimal design is locally DP-optimal design when alpha = 0.
 
 leff(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4, family = binomial(),
-     xopt = res.0$evol[[10]]$x, wopt = res.0$evol[[10]]$w,
+     x2 = res.0$evol[[10]]$x, w2 = res.0$evol[[10]]$w,
      prob = prob4.4,
      type = "PA",
      inipars = p,
-     x = res.25$evol[[350]]$x, w = res.25$evol[[350]]$w)
+     x1 = res.25$evol[[350]]$x, w1 = res.25$evol[[350]]$w)
 
 leff(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4, family = binomial(),
-     xopt = res.0$evol[[10]]$x, wopt = res.0$evol[[10]]$w,
+     x2 = res.0$evol[[10]]$x, w2 = res.0$evol[[10]]$w,
      prob = prob4.4,
      inipars = p,
      type = "PA",
-     x = res.5$evol[[350]]$x, w = res.5$evol[[350]]$w)
+     x1 = res.5$evol[[350]]$x, w1 = res.5$evol[[350]]$w)
 
 leff(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4, family = binomial(),
-     xopt = res.0$evol[[10]]$x, wopt = res.0$evol[[10]]$w,
+     x2 = res.0$evol[[10]]$x, w2 = res.0$evol[[10]]$w,
      prob = prob4.4,
      inipars = p,
      type = "PA",
-     x = res.75$evol[[350]]$x, w = res.75$evol[[350]]$w)
+     x1 = res.75$evol[[350]]$x, w1 = res.75$evol[[350]]$w)
 
 
 leff(formula = formula4.4, predvars = predvars4.4, parvars = parvars4.4, family = binomial(),
-     xopt = res.0$evol[[10]]$x, wopt = res.1$evol[[10]]$w,
+     x2 = res.0$evol[[10]]$x, w2 = res.1$evol[[10]]$w,
      prob = prob4.4,
      type = "PA",
      inipars = p,
-     x = res.1$evol[[350]]$x, w = res.1$evol[[350]]$w)
+     x1 = res.1$evol[[350]]$x, w1 = res.1$evol[[350]]$w)
 
 
 }

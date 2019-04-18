@@ -14,16 +14,12 @@
 #' @param crt.bayes.control A list. Control parameters to approximate the integral in  the Bayesian criterion at a given design over the parameter space.
 #'  For details, see \code{\link{crt.bayes.control}}.
 #' @param sens.bayes.control A list. Control parameters to verify the general equivalence theorem. For details, see \code{\link{sens.bayes.control}}.
-#' @param crt_method A character denotes which method to be used to approximate the integrals in Bayesian criteria.
-#'  \code{"cubature"} corresponds to the adaptive multivariate integration method using the \code{\link[cubature]{hcubature}} algorithm (default).
-#'  \code{"quadrature"} corresponds the traditional quadrature formulas and calls the function \code{\link[mvQuad]{createNIGrid}}.
-#'  The tuning parameters are adjusted by \code{crt.bayes.control}. Default is set to \code{"cubature"}.
-#' @param sens_method Similar to \code{crt_method}, but for approximating the integrals in the sensitivity (derivative) function.
-#' The tuning parameters are adjusted by \code{sens.bayes.control}. Default is set to \code{"cubature"}.
 #' @param npar Number of model parameters.  Used when \code{fimfunc} is given instead of \code{formula} to specify the number of model parameters.
 #'   If not specified correctly, the sensitivity (derivative) plot may be shifted below the y-axis.
 #'   When \code{NULL} (default), it will be set to \code{length(parvars)} or
 #'   \code{prior$npar} when \code{missing(formula)}.
+#' @param crtfunc (Optional) a function that specifies an arbitrary criterion. It must have especial arguments and output. See 'Details' of \code{\link{bayes}}.
+#' @param sensfunc (Optional) a function that specifies the sensitivity function for \code{crtfunc}. See 'Details' of \code{\link{bayes}}.
 #' @export
 #'
 #' @details
@@ -54,8 +50,8 @@
 #' use \code{\link{plot}} function or change the value of the \code{checkfreq} in the argument \code{\link{ICA.control}}.
 #'
 #' To increase the speed of the algorithm, change the value of the tuning parameters \code{tol} and \code{maxEval} via
-#' the argument  \code{crt.bayes.control} when \code{crt_method = "cubature"}.
-#' Similarly, this applies  when \code{crt_method = "quadrature"}.
+#' the argument  \code{crt.bayes.control} when \code{crt.bayes.control$method = "cubature"}.
+#' Similarly, this applies  when \code{crt.bayes.control$method = "quadrature"}.
 #' In general, if the CPU time matters, the user should find an appropriate speed-accuracy trade-off  for her/his own problem.
 #'  See 'Examples' for more details.
 #'
@@ -63,6 +59,34 @@
 #' to their values via the argument \code{paravars} when the model is given by \code{formula}. In this case,
 #' the user must provide the number of parameters via the argument \code{npar} for verifying the general equivalence theorem.
 #'  See 'Examples', Section 'Weibull',  'Richards' and 'Exponential' model.
+#'
+#'  \code{crtfunc} is a function that is used
+#'  to specify a new criterion.
+#'   Its arguments are:
+#'   \itemize{
+#'  \item design points \code{x} (as a \code{vector}).
+#'  \item design weights \code{w} (as a \code{vector}).
+#'  \item model parameters as follows.
+#'      \itemize{
+#'          \item If \code{formula} is specified:
+#'                they should be the same parameter specified by \code{parvars}.
+#'                Note that \code{crtfunc} must be vectorized with respect to the parameters.
+#'                The parameters enter the body of \code{crtfunc} as a \code{vector} with dynamic length.
+#'          \item If FIM is specified via the argument \code{fimfunc}:
+#'              \code{param} that is a matrix where its row is a
+#'              vector of parameters values.
+#'               }
+#'        \item \code{fimfunc} is a \code{function} that takes the other arguments of \code{crtfunc}
+#'        and returns the computed Fisher information matrices for each parameter vector.
+#'        The output is a list of matrices.
+#'      }
+#'    The \code{crtfunc} function must return a vector of  criterion values associated with the vector of parameter values.
+#'     The \code{sensfunc} is the optional sensitivity function for the criterion
+#'     \code{crtfunc}. It has one more argument than  \code{crtfunc},
+#'      which is  \code{xi_x}. It denotes the design point of the degenerate design
+#'      and  must be a vector with the same length as the number of  predictors.
+#'     For more details, see 'Examples'.
+#'
 #' @return
 #'  an object of class \code{bayes} that is a list including three sub-lists:
 #' \describe{
@@ -100,6 +124,9 @@
 #' @importFrom cubature hcubature
 #' @importFrom stats gaussian
 #' @importFrom stats binomial
+#' @references
+#' Atashpaz-Gargari, E, & Lucas, C (2007). Imperialist competitive algorithm: an algorithm for optimization inspired by imperialistic competition. In 2007 IEEE congress on evolutionary computation (pp. 4661-4667). IEEE.\cr
+#' Masoudi E, Holling H, Duarte BP, Wong Wk (2019). Metaheuristic Adaptive Cubature Based Algorithm to Find Bayesian Optimal Designs for Nonlinear Models. Journal of Computational and Graphical Statistics. <doi:10.1080/10618600.2019.1601097>
 bayes <- function(formula,
                   predvars,
                   parvars,
@@ -111,14 +138,15 @@ bayes <- function(formula,
                   k,
                   fimfunc = NULL,
                   ICA.control =  list(),
+                  sens.control = list(),
                   crt.bayes.control = list(),
                   sens.bayes.control = list(),
-                  crt_method = c("cubature", "quadrature"),
-                  sens_method = c("cubature", "quadrature"),
                   initial = NULL,
                   npar = NULL,
                   plot_3d = c("lattice", "rgl"),
-                  x = NULL) {
+                  x = NULL,
+                  crtfunc = NULL,
+                  sensfunc = NULL) {
   #cat("bayes:", get(".Random.seed")[2], "\n")
   if (is.null(npar)){
     if (!missing(formula))
@@ -128,30 +156,38 @@ bayes <- function(formula,
   }
   if (!is.numeric(npar))
     stop("'npar' is the number of parameters and must be numeric")
-  output <-  bayes_inner(fimfunc = fimfunc,
-                         formula = formula,
-                         predvars = predvars,
-                         parvars = parvars,
-                         family = family,
-                         lx = lx,
-                         ux = ux,
-                         type = "D",
-                         crt_method = crt_method[1],
-                         sens_method = sens_method[1],
-                         iter = iter,
-                         k = k,
-                         npar = npar,
-                         prior = prior,
-                         compound = list(prob = NULL, alpha = NULL),
-                         multiple.control = list(),
-                         ICA.control =  ICA.control,
-                         crt.bayes.control = crt.bayes.control,
-                         sens.bayes.control = sens.bayes.control,
-                         initial = initial,
-                         plot_3d = plot_3d[1],
-                         const = list(ui = NULL, ci = NULL, coef = NULL),
-                         only_w_varlist = list(x = x))
-  return(output)
+  if (is.null(crtfunc))
+    type = "D" else
+      type = "user"
+    if (!is.null(x))
+      k <- length(x)/length(lx)
+    # in minimax it is crt_type
+    output <-  bayes_inner(fimfunc = fimfunc,
+                           formula = formula,
+                           predvars = predvars,
+                           parvars = parvars,
+                           family = family,
+                           lx = lx,
+                           ux = ux,
+                           type = type,
+                           iter = iter,
+                           k = k,
+                           npar = npar,
+                           prior = prior,
+                           compound = list(prob = NULL, alpha = NULL),
+                           multiple.control = list(),
+                           ICA.control =  ICA.control,
+                           crt.bayes.control = crt.bayes.control,
+                           sens.bayes.control = sens.bayes.control,
+                           sens.control = sens.control,
+                           initial = initial,
+                           plot_3d = plot_3d[1],
+                           const = list(ui = NULL, ci = NULL, coef = NULL),
+                           #const = const,
+                           only_w_varlist = list(x = x),
+                           user_crtfunc = crtfunc,
+                           user_sensfunc = sensfunc)
+    return(output)
 }
 ######################################################################################################*
 ######################################################################################################*
@@ -166,7 +202,7 @@ bayes <- function(formula,
 #'  \eqn{\boldsymbol{x}}{x} belongs to the support of \eqn{\xi^*}{\xi*} (be equal to the one of the design points).
 #'
 #' For an approximate (continuous) design, when the design space is one or two-dimensional, the user can visually verify the optimality of the design by observing the
-#' sensitivity plot. Furthermore, the approximity of the design to the optimal design
+#' sensitivity plot. Furthermore, the proximity of the design to the optimal design
 #'  can be measured by the  ELB without knowing the latter.
 #'@details
 #' Let \eqn{\Xi} be the space of all  approximate designs with
@@ -185,8 +221,8 @@ bayes <- function(formula,
 #'
 #' Depending on the complexity of the problem at hand, sometimes, the CPU time can be considerably reduced
 #' by choosing a set of  less conservative values for the tuning parameters \code{tol} and \code{maxEval} in
-#' the function \code{\link{sens.bayes.control}} when \code{sens_method = "cubature"}.
-#' Similarly, this applies  when \code{sens_method = "quadrature"}.
+#' the function \code{\link{sens.bayes.control}} when \code{sens.bayes.control$method = "cubature"}.
+#' Similarly, this applies  when \code{sens.bayes.control$method = "quadrature"}.
 #' In general, if the CPU time matters, the user should find an appropriate speed-accuracy trade-off  for her/his own problem.
 #'  See 'Examples' for more details.
 #'
@@ -205,15 +241,16 @@ sensbayes <- function(formula,
                       lx, ux,
                       fimfunc = NULL,
                       prior = list(),
+                      sens.control = list(),
                       sens.bayes.control = list(),
                       crt.bayes.control = list(),
-                      crt_method = c("cubature", "quadrature"),
-                      sens_method = c("cubature", "quadrature"),
                       plot_3d = c("lattice", "rgl"),
                       plot_sens = TRUE,
                       npar = NULL,
                       calculate_criterion = TRUE,
-                      silent = FALSE){
+                      silent = FALSE,
+                      crtfunc = NULL,
+                      sensfunc = NULL){
 
 
   if (is.null(npar)){
@@ -224,6 +261,9 @@ sensbayes <- function(formula,
   }
   if (!is.numeric(npar))
     stop("'npar' is the number of parameters and must be numeric")
+  if (is.null(crtfunc))
+    type = "D" else
+      type = "user"
   output <- sensbayes_inner (formula = formula,
                              predvars = predvars, parvars = parvars,
                              family =  family,
@@ -231,6 +271,7 @@ sensbayes <- function(formula,
                              lx = lx, ux = ux,
                              fimfunc = fimfunc,
                              prior = prior,
+                             sens.control = sens.control,
                              sens.bayes.control = sens.bayes.control,
                              crt.bayes.control = crt.bayes.control,
                              type = "D",
@@ -239,12 +280,12 @@ sensbayes <- function(formula,
                              const = list(ui = NULL, ci = NULL, coef = NULL),
                              compound = list(prob = NULL, alpha = NULL),
                              varlist = list(),
-                             crt_method = crt_method[1],
-                             sens_method = sens_method[1],
                              calledfrom = "sensfuncs",
                              npar = npar,
                              calculate_criterion = calculate_criterion,
-                             silent = silent)
+                             silent = silent,
+                             user_crtfunc = crtfunc,
+                             user_sensfunc = sensfunc)
   return(output)
 }
 ######################################################################################################*
@@ -284,7 +325,7 @@ sensbayes <- function(formula,
 #' use \code{\link{plot}} function or change the value of the \code{checkfreq} in the argument \code{\link{ICA.control}}.
 #'
 #' To increase the speed of the algorithm, change the value of the tuning parameters \code{tol} and \code{maxEval} via
-#' the argument  \code{crt.bayes.control} when \code{crt_method = "cubature"}.
+#' the argument  \code{crt.bayes.control} when its \code{method} component  is equal to  \code{"cubature"}.
 #' In general, if the CPU time matters, the user should find an appropriate speed-accuracy trade-off  for her/his own problem.
 #'  See 'Examples' for more details.
 #'
@@ -306,10 +347,9 @@ bayescomp <- function(formula,
                       k,
                       fimfunc = NULL,
                       ICA.control =  list(),
+                      sens.control = list(),
                       crt.bayes.control = list(),
                       sens.bayes.control = list(),
-                      crt_method = c("cubature", "quadrature"),
-                      sens_method = c("cubature", "quadrature"),
                       initial = NULL,
                       npar = NULL,
                       plot_3d = c("lattice", "rgl")) {
@@ -339,8 +379,6 @@ bayescomp <- function(formula,
                          lx = lx,
                          ux = ux,
                          type = "DPA",
-                         crt_method = crt_method[1],
-                         sens_method = sens_method[1],
                          iter = iter,
                          k = k,
                          npar = npar,
@@ -348,6 +386,7 @@ bayescomp <- function(formula,
                          compound = list(prob = prob, alpha = alpha),
                          multiple.control = list(),
                          ICA.control =  ICA.control,
+                         sens.control = sens.control,
                          crt.bayes.control = crt.bayes.control,
                          sens.bayes.control = sens.bayes.control,
                          initial = initial,
@@ -377,7 +416,8 @@ bayescomp <- function(formula,
 #'@details
 #' Depending on the complexity of the problem at hand, sometimes, the CPU time can be considerably reduced
 #' by choosing a set of  less conservative values for the tuning parameters \code{tol} and \code{maxEval} in
-#' the function \code{\link{sens.bayes.control}} when \code{sens_method = "cubature"}. Similarly, this applies  when \code{sens_method = "quadrature"}.
+#' the function \code{\link{sens.bayes.control}} when its  \code{method} component is equal to \code{"cubature"}.
+#'  Similarly, this applies  when \code{sens.bayes.control$method = "quadrature"}.
 #' In general, if the CPU time matters, the user should find an appropriate speed-accuracy trade-off  for her/his own problem.
 #'  See 'Examples' for more details.
 #'
@@ -398,10 +438,9 @@ sensbayescomp <- function(formula,
                           fimfunc = NULL,
                           prior = list(),
                           prob, alpha,
+                          sens.control = list(),
                           sens.bayes.control = list(),
                           crt.bayes.control = list(),
-                          crt_method = c("cubature", "quadrature"),
-                          sens_method = c("cubature", "quadrature"),
                           plot_3d = c("lattice", "rgl"),
                           plot_sens = TRUE,
                           npar = NULL,
@@ -432,11 +471,10 @@ sensbayescomp <- function(formula,
                              lx = lx, ux = ux,
                              fimfunc = fimfunc,
                              prior = prior,
+                             sens.control = sens.control,
                              sens.bayes.control = sens.bayes.control,
                              crt.bayes.control = crt.bayes.control,
                              type = "DPA",
-                             crt_method = crt_method[1],
-                             sens_method = sens_method[1],
                              plot_3d = plot_3d[1],
                              plot_sens =  plot_sens,
                              const = list(ui = NULL, ci = NULL, coef = NULL),
@@ -463,6 +501,7 @@ sensbayescomp <- function(formula,
 #' @param x An object of class \code{bayes}.
 #' @param iter Iteration number. if \code{NULL} (default), it will be set to the last iteration.
 #' @param sensitivity Logical. If \code{TRUE} (default), the general equivalence theorem is used to check the optimality if the best design in iteration number \code{iter} and the sensitivity function will be plotted.
+#' @param sens.control Control Parameters for Calculating the ELB. For details, see the function \code{\link{sens.control}}.
 #' @param calculate_criterion Logical. Re-calculate the Bayesian criterion value (maybe with a set of new tuning parameters to be sure of the accuracy of the integral approximation)? Defaults to \code{FALSE}. See 'Details'.
 #' @param sens.bayes.control Control parameters to verify general equivalence theorem. For details, see \code{\link{sens.bayes.control}}.
 #'  If \code{NULL} (default), it will be set to the  tuning parameters used to create object \code{x}.
@@ -473,14 +512,6 @@ sensbayescomp <- function(formula,
 #' @param plot_3d Which package should be used to plot the sensitivity function for two-dimensional design space. Defaults to \code{plot_3d = "lattice"}.
 #' Only applicable when \code{sensitivity = TRUE}.
 #' @param evolution Plot Evolution? Defaults to \code{FALSE}.
-#' @param crt_method A character denotes which method to be used to approximate the integrals in Bayesian criteria.
-#'  \code{"cubature"} corresponds to the adaptive multivariate integration method using the \code{\link[cubature]{hcubature}} algorithm (default).
-#'  \code{"quadrature"} corresponds the traditional quadrature formulas and calls the function \code{\link[mvQuad]{createNIGrid}}.
-#'  The tuning parameters are adjusted by \code{crt.bayes.control}.
-#'   If \code{NULL} (default), it will use the method already applied to create the object \code{x}.
-#' @param sens_method Similar to \code{crt_method}, but for approximating the integrals in the sensitivity (derivative) function.
-#' The tuning parameters are adjusted by \code{sens.bayes.control}.
-#'  If \code{NULL} (default), it will use the method already applied to create the object \code{x}.
 #' @param ... Argument with no further use.
 #' @seealso \code{\link{bayes}}, \code{\link{bayescomp}}
 #' @details
@@ -495,8 +526,7 @@ sensbayescomp <- function(formula,
 plot.bayes <- function(x, iter = NULL,
                        sensitivity = TRUE,
                        calculate_criterion = FALSE,
-                       crt_method = NULL,
-                       sens_method = NULL,
+                       sens.control = list(),
                        sens.bayes.control = list(),
                        crt.bayes.control = list(),
                        silent = FALSE,
@@ -521,14 +551,14 @@ plot.bayes <- function(x, iter = NULL,
     stop("'iter' is larger than the maximum number of iterations")
 
   #### quadrature and cubature
-  if (is.null(sens_method))
-    sens_method  <- arg$sens_method
-  if (is.null(crt_method))
-    crt_method  <- arg$crt_method
-  if (!crt_method %in% c("cubature", "quadrature"))
-    stop("'crt_method' can only be 'cubature' or 'quadrature'")
-  if (!sens_method %in% c("cubature", "quadrature"))
-    stop("'sens_method' can only be 'cubature' or 'quadrature'")
+  #if (is.null(sens_method))
+  #  sens_method  <- arg$sens_method
+  #if (is.null(crt_method))
+  #  crt_method  <- arg$crt_method
+  #if (!crt_method %in% c("cubature", "quadrature"))
+  #  stop("'crt_method' can only be 'cubature' or 'quadrature'")
+  #if (!sens_method %in% c("cubature", "quadrature"))
+  #  stop("'sens_method' can only be 'cubature' or 'quadrature'")
   ####
 
 
@@ -537,6 +567,10 @@ plot.bayes <- function(x, iter = NULL,
       sens.bayes.control <- arg$sens.bayes.control }else {
         sens.bayes.control <- do.call("sens.bayes.control", sens.bayes.control)
       }
+    if (is.null(sens.control)){
+      sens.control <- arg$sens.control }else {
+        sens.control <- do.call("sens.control", sens.control)
+      }
     if (is.null(crt.bayes.control)){
       crt.bayes.control <- arg$crt.bayes.control
       Psi_x_bayes  <- arg$Psi_funcs$Psi_x_bayes
@@ -544,13 +578,13 @@ plot.bayes <- function(x, iter = NULL,
     } else {
 
       crt.bayes.control <- do.call("crt.bayes.control", crt.bayes.control)
-
       temp_psi <- create_Psi_bayes(type = arg$type, prior = arg$prior, FIM = arg$FIM, lp = arg$prior$lower,
                                    up = arg$prior$upper, npar = arg$npar,
                                    truncated_standard = arg$truncated_standard,
                                    const = arg$const, sens.bayes.control = sens.bayes.control,
                                    compound = arg$compound,
-                                   method =  sens_method[1])
+                                   method =  sens.bayes.control$method,
+                                   user_sensfunc = arg$user_sensfunc)
       Psi_x_bayes  <- temp_psi$Psi_x_bayes
       Psi_xy_bayes  <- temp_psi$Psi_xy_bayes
     }
@@ -569,14 +603,13 @@ plot.bayes <- function(x, iter = NULL,
                                 lx = arg$lx, ux = arg$ux,
                                 fimfunc = arg$FIM,
                                 prior = arg$prior,
+                                sens.control = sens.control,
                                 sens.bayes.control = sens.bayes.control,
                                 crt.bayes.control = crt.bayes.control,
                                 type = arg$type,
                                 plot_3d = plot_3d[1],
                                 plot_sens = TRUE,
                                 const = arg$const,
-                                sens_method = sens_method,
-                                crt_method = crt_method,
                                 compound = arg$compound,### you dont need compund here
                                 varlist = sens_varlist,
                                 calledfrom =  "plot",
@@ -632,11 +665,12 @@ plot.bayes <- function(x, iter = NULL,
 #' Print method for an object of class \code{bayes}.
 #' @param x an object of class \code{bayes}.
 #' @param iter Iteration number. if \code{NULL}, it will be set to the last iteration.
+#' @param all.info Print all the information? Defaults to \code{FALSE}.
 #' @param ... Argument with no further use.
 #' @seealso \code{\link{bayes}}
 #' @export
 
-print.bayes <- function(x, iter = NULL, ...){
+print.bayes <- function(x, iter = NULL, all.info = FALSE, ...){
 
 
   if (any(class(x) != c("list", "bayes")))
@@ -652,19 +686,37 @@ print.bayes <- function(x, iter = NULL, ...){
   #   type <- "robust" else
   type <- x$arg$type
   ### printing, match with cat in iterate functions
-  cat("\n***********************************************************************",
-      "\nICA iter:", totaliter, "\n",
-      print_xw_char(x = object$evol[[totaliter]]$x, w =  object$evol[[totaliter]]$w, npred = length(object$arg$lx), is.only.w = object$arg$is.only.w),
-      "\nCriterion value: ", object$evol[[totaliter]]$min_cost,
-      "\nTotal number of function evaluations:", object$alg$nfeval,
-      "\nTotal number of successful local search moves:", object$alg$nlocal,
-      "\nTotal number of successful revolution moves:", object$alg$nrevol,
-      "\nConvergence:", object$alg$convergence)
-  if (object$arg$ICA.control$only_improve)
-    cat("\nTotal number of successful assimilation moves:", object$alg$nimprove, "\n")
-  cat("***********************************************************************")
+  if (all.info){
+    cat("\n***********************************************************************",
+        "\nICA iter:", totaliter, "\n",
+        print_xw_char(x = object$evol[[totaliter]]$x, w =  object$evol[[totaliter]]$w,
+                      npred = length(object$arg$lx), is.only.w = object$arg$is.only.w,
+                      equal_weight = object$arg$ICA.control$equal_weight),
+        "\nCriterion value: ", object$evol[[totaliter]]$min_cost,
+        "\nTotal number of function evaluations:", object$alg$nfeval,
+        "\nTotal number of successful local search moves:", object$alg$nlocal,
+        "\nTotal number of successful revolution moves:", object$alg$nrevol,
+        "\nConvergence:", object$alg$convergence)
+    if (object$arg$ICA.control$only_improve)
+      cat("\nTotal number of successful assimilation moves:", object$alg$nimprove, "\n")
+    if (is.null(iter))
+      cat("CPU time:", object$arg$time[1], " seconds!\n")
+    cat("***********************************************************************")
+  }else{
+    cat("\n***********************************************************************",
+        "\nICA iter:", totaliter, "\n",
+        print_xw_char(x = object$evol[[totaliter]]$x, w =  object$evol[[totaliter]]$w,
+                      npred = length(object$arg$lx), is.only.w = object$arg$is.only.w,
+                      equal_weight = object$arg$ICA.control$equal_weight),
+        "\nCriterion value: ", object$evol[[totaliter]]$min_cost,
+        "\nConvergence:", object$alg$convergence, "\n")
+    if (is.null(iter))
+      cat("CPU time:", object$arg$time[1], " seconds!\n")
+    cat("***********************************************************************")
+  }
   if (!is.null(object$evol[[totaliter]]$sens))
     print(object$evol[[totaliter]]$sens)
+
   return(invisible(NULL))
 }
 ######################################################################################################*
@@ -699,91 +751,36 @@ print.sensbayes <- function(x,  ...){
 }
 ######################################################################################################*
 ######################################################################################################*
-#' @title Control Parameters for Verifying General Equivalence Theorem for Bayesian Designs
+#' @title Returns Control Parameters for Approximating The Integrals In The Bayesian Sensitivity Functions
 #'
 #' @description
 #' This function returns two lists each corresponds
 #'  to an implemented integration method for approximating the integrals
-#'   in the sensitivity (derivative) functions for Bayesian criteria.
-#' Moreover, it contains a list of \code{\link[nloptr]{nloptr}} control parameters to find maximum of the sensitivity (derivative) function over the design space,
-#'  used to calculate the efficiency lower bound (ELB).
+#'   in the sensitivity (derivative) functions for the Bayesian optimality criteria.
+#' @param method A character denotes which method to be used to approximate the integrals in Bayesian criteria.
+#'  \code{"cubature"} corresponds to the adaptive multivariate integration method using the \code{\link[cubature]{hcubature}} algorithm (default).
+#'  \code{"quadrature"} corresponds the traditional quadrature formulas and calls the function \code{\link[mvQuad]{createNIGrid}}.
+#'  The tuning parameters are adjusted by \code{crt.bayes.control}. Default is set to \code{"cubature"}.
 #' @param cubature A list that will be passed to the arguments of the \code{\link[cubature]{hcubature}} function. See 'Details' of \code{\link{crt.bayes.control}}.
 #' @param quadrature A list that will be passed to the arguments of the \code{\link[mvQuad]{createNIGrid}} function. See 'Details' of \code{\link{crt.bayes.control}}.
-#' @param x0 Vector of starting values for maximizing the sensitivity (derivative) function over the design space \eqn{x}.
-#' It will be passed to the optimization function \code{\link[nloptr]{nloptr}}.
-#' @param optslist A list will be passed to \code{opts} argument of the function \code{\link[nloptr]{nloptr}} to find the maximum of the sensitivity function over the design space. See 'Details'.
-#' @param ... Further arguments will be passed to \code{\link{nl.opts}} from package \code{\link[nloptr]{nloptr}}.
-#' @return A list of three lists each contains the  control parameters for verifying the general equivalence theorem with respect to the Bayesian optimality criteria.
-#' @details
-#' ELB is a measure of  proximity of a design to the optimal design without knowing the latter.
-#' Given a design, let \eqn{\epsilon} be the global maximum
-#'  of the sensitivity (derivative) function with respect the vector of the model predictors \eqn{x} over the design space.
-#' ELB is given by \deqn{ELB = p/(p + \epsilon),}
-#' where \eqn{p} is the number of model parameters. Obviously,
-#' calculating ELB requires finding \eqn{\epsilon} and therefore,
-#' a maximization problem to be solved. The function \code{\link[nloptr]{nloptr}}
-#' is used here to solve this maximization problem. The arguments \code{x0} and \code{optslist}
-#' will be passed to this function as follows:
+#' @return A list of  control parameters for approximating the integrals.
 #'
-#' Argument \code{x0} provides the user initial values for this maximization problem
-#'  and will be passed to the argument with the same name
-#' in the function  \code{\link[nloptr]{nloptr}}.
-#'
-#'
-#' Argument \code{optslist} is a list and it will be passed to the argument \code{opts} of the function \code{\link[nloptr]{nloptr}}.
-#' The most important components of  \code{optslist} are:
-#'  \describe{
-#'   \item{\code{stopval}}{Stop minimization when an objective value <= \code{stopval} is found. Setting \code{stopval} to \code{-Inf} disables this stopping criterion (default).}
-#'   \item{\code{algorithm}}{Defaults to \code{NLOPT_GN_DIRECT_L}. DIRECT-L is a deterministic-search algorithm based on systematic division of the search domain into smaller and smaller hyperrectangles.}
-#'   \item{\code{xtol_rel}}{Stop when an optimization step (or an estimate of the optimum) changes every parameter by less than \code{xtol_rel} multiplied by the absolute value of the parameter. Criterion is disabled if \code{xtol_rel} is non-positive. Defaults to \code{1e-8}.}
-#'   \item{\code{ftol_rel}}{Stop when an optimization step (or an estimate of the optimum) changes the objective function value by less than \code{ftol_rel} multiplied by the absolute value of the function value. Criterion is disabled if \code{ftol_rel} is non-positive. Defaults to \code{1e-10}.}
-#'   \item{\code{maxeval}}{Stop when the number of function evaluations exceeds \code{maxeval}. Criterion is disabled if \code{maxeval} is non-positive. Defaults to \code{6000}. See 'Note' on when to change its value.}
-#' }
-#'  More details are available by the function \code{nloptr.print.options()} in package \code{\link[nloptr]{nloptr}}.
-
-#' @note
-#'  Whenever the value of ELB is computationally larger than 1, it is a sign that  the obtained \eqn{\epsilon} is not global maximum.
-#'  To overcome this issue, please increase  the value of the parameter \code{maxeval} to allow the optimization algorithm to find the global maximum of the sensitivity (derivative) function over the design space.
-#'
-#'
-#' Please note the difference between \code{maxEval} in \code{cubature} and \code{maxeval} in  \code{optslist}. They are quite two types of different tuning parameters.
-#' The earlier is the (approximate) maximum number of function evaluations in the hcubature adaptive integration method and the latter is the maximum number of function evaluations in the maximization problem.
+# Please note the difference between \code{maxEval} in \code{cubature} and \code{maxeval} in  \code{optslist}. They are quite two types of different tuning parameters.
+# The earlier is the (approximate) maximum number of function evaluations in the hcubature adaptive integration method and the latter is the maximum number of function evaluations in the maximization problem.
 #' @export
 #' @examples
 #' sens.bayes.control()
 #' sens.bayes.control(cubature = list(maxEval = 50000))
-#' sens.bayes.control(optslist = list(maxeval = 3000))
 #' sens.bayes.control(quadrature =  list(level = 4))
-sens.bayes.control <- function(cubature = list(tol = 1e-5,
+sens.bayes.control <- function(method = c("cubature", "quadrature"),
+                               cubature = list(tol = 1e-5,
                                                maxEval = 50000,
                                                absError = 0),
-                               quadrature = list(type = NULL,
-                                                 level = NULL,
+                               quadrature = list(type = c("GLe", "GHe"),
+                                                 level = 6,
                                                  ndConstruction = "product",
-                                                 level.trans = FALSE),
-                               x0 = NULL,
-                               optslist = list(stopval = -Inf,
-                                               algorithm = "NLOPT_GN_DIRECT_L",
-                                               xtol_rel = 1e-8,
-                                               ftol_rel = 1e-10,
-                                               maxeval = 2000),
-                               ...){
-  optstlist2 <- do.call(c, list(optslist, list(...)))
-  outlist <- suppressWarnings(nloptr::nl.opts(optstlist2))
-  outlist["algorithm"] <- optslist$algorithm
+                                                 level.trans = FALSE)){
 
-  ## outlist has the defaut values of the nl.opts, when any component is null.
-  # we play with that here
-  if (is.null(optslist$algorithm))
-    outlist$algorithm <- "NLOPT_GN_DIRECT_L"
-  if (is.null(optslist$stopval))
-    outlist$stopval<- -Inf
-  if (is.null(optslist$xtol_rel))
-    outlist$xtol_rel <- 1e-8
-  if (is.null(optslist$ftol_rel))
-    outlist$ftol_rel <- 1e-10
-  if (is.null(optslist$maxeval))
-    outlist$maxeval <- 2000
 
   ### cubature part
   cubature_out <- do.call(control.cubature, cubature)
@@ -795,20 +792,22 @@ sens.bayes.control <- function(cubature = list(tol = 1e-5,
     cubature_out$absError <- 0
 
   quadrature_out <- do.call(control.quadrature, quadrature)
-  if (is.null(quadrature$type))
+  if (is.null(quadrature$type[1]))
     quadrature_out$type <- "GLe"
   if (is.null(quadrature$level))
-    quadrature_out$level <- 8
+    quadrature_out$level <- 6
   if (is.null(quadrature$lndConstruction))
     quadrature_out$ndConstruction <- "product"
   if (is.null(quadrature$level.trans))
     quadrature_out$level.trans <- FALSE
 
-  return(list(x0 = x0, optslist = outlist, cubature = cubature_out, quadrature = quadrature_out))
+  if (!(method[1] %in% c("cubature", "quadrature")))
+    stop("'method' may only be 'cubature' or 'quadrature'")
+  return(list(method = method[1], cubature = cubature_out, quadrature = quadrature_out))
 }
 ######################################################################################################*
 ######################################################################################################*
-#' @title Control Parameters for Approximating Bayesian Criteria
+#' @title Returns Control Parameters for Approximating Bayesian Criteria
 #'
 #' @description
 #'  This function returns two lists each corresponds
@@ -818,10 +817,13 @@ sens.bayes.control <- function(cubature = list(tol = 1e-5,
 #'   control parameters to  approximate the integrals with an adaptive multivariate integration method over hypercubes.
 #'  The second list is named \code{quadrature} and contains the \code{\link[mvQuad]{createNIGrid}}
 #'  tuning parameters to approximate the integrals with the quadrature methods.
+#' @param method A character denotes which method to be used to approximate the integrals in Bayesian criteria.
+#'  \code{"cubature"} corresponds to the adaptive multivariate integration method using the \code{\link[cubature]{hcubature}} algorithm (default).
+#'  \code{"quadrature"} corresponds the traditional quadrature formulas and calls the function \code{\link[mvQuad]{createNIGrid}}.
 #' @param cubature A list that will be passed to the arguments of the function \code{\link[cubature]{hcubature}} for the adaptive multivariate integration.
-#'  It is required and used when \code{crt_method = "cubature"} in the parent function, e.g.  \code{\link{bayes}}. See 'Details'.
+#'  It is required and used when \code{crt.bayes.control$method = "cubature"} in the parent function, e.g.  \code{\link{bayes}}. See 'Details'.
 #' @param quadrature A list that will be passed to the arguments of the function \code{\link[mvQuad]{createNIGrid}} for the quadrature-based integration.
-#' It is required and used when \code{crt_method = "quadrature"} in the parent function, e.g.  \code{\link{bayes}}. See 'Details'.
+#' It is required and used when \code{crt.bayes.control$method = "quadrature"} in the parent function, e.g.  \code{\link{bayes}}. See 'Details'.
 #' @details
 #'
 #' \code{cubature} is a list that its components will be passed to the function \code{\link[cubature]{hcubature}} and they are:
@@ -836,7 +838,7 @@ sens.bayes.control <- function(cubature = list(tol = 1e-5,
 #'   the absolute error requested, or when the estimated error is less than
 #'    \code{tol} times the absolute value of the integral,  or when the maximum number of iterations
 #'     is reached, whichever is earlier.
-#'      \code{cubature} is activated when \code{crt_method = "cubature"} in
+#'      \code{cubature} is activated when \code{crt.bayes.control$method = "cubature"} in
 #'       any of the parent functions (for example, \code{\link{bayes}}).
 #'
 #' \code{quadrature} is a list that its components will be passed to
@@ -851,7 +853,7 @@ sens.bayes.control <- function(cubature = list(tol = 1e-5,
 #'       leads to a regular sparse grid.}
 #'   \item{\code{level.trans}}{Logical variable denotes either to take the levels as number of grid points (FALSE = default) or to transform in that manner that number of grid points = 2^(levels-1) (TRUE). See, code{\link[mvQuad]{createNIGrid}}, for details.}
 #' }
-#'  \code{quadrature} is activated when \code{crt_method = "quadrature"} in
+#'  \code{quadrature} is activated when \code{crt.bayes.control$method = "quadrature"} in
 #'       any of the parent functions (for example, \code{\link{bayes}}).
 #'
 #' @examples
@@ -860,14 +862,15 @@ sens.bayes.control <- function(cubature = list(tol = 1e-5,
 #' crt.bayes.control(quadrature = list(level = 4))
 #' @return A list  of two lists each contains the  control parameters for \code{\link[cubature]{hcubature}} and \code{\link[mvQuad]{createNIGrid}}, respectively.
 #' @export
-crt.bayes.control <- function(cubature = list(tol = 1e-5,
+crt.bayes.control <- function(method = c("cubature", "quadrature"),
+                              cubature = list(tol = 1e-5,
                                               maxEval = 50000,
                                               absError = 0),
-                              quadrature = list(type = "GLe",
+                              quadrature = list(type =  c("GLe", "GHe"),
                                                 level = 6,
                                                 ndConstruction = "product",
                                                 level.trans = FALSE
-                                                )){
+                              )){
   cubature_out <- do.call(control.cubature, cubature)
   if (is.null(cubature$tol))
     cubature_out$tol <- 1e-5
@@ -878,7 +881,7 @@ crt.bayes.control <- function(cubature = list(tol = 1e-5,
 
   ## qudrature part
   quadrature_out <- do.call(control.quadrature, quadrature)
-  if (is.null(quadrature$type))
+  if (is.null(quadrature$type[1]))
     quadrature_out$type <- "GLe"
   if (is.null(quadrature$level))
     quadrature_out$level <- 6
@@ -886,8 +889,9 @@ crt.bayes.control <- function(cubature = list(tol = 1e-5,
     quadrature_out$ndConstruction <- "product"
   if (is.null(quadrature$level.trans))
     quadrature_out$level.trans <- FALSE
-
-  return(list(cubature = cubature_out, quadrature = quadrature_out))
+  if (!(method[1] %in% c("cubature", "quadrature")))
+    stop("'method' may only be 'cubature' or 'quadrature'")
+  return(list(method = method[1], cubature = cubature_out, quadrature = quadrature_out))
 }
 ######################################################################################################*
 ######################################################################################################*
@@ -901,6 +905,7 @@ crt.bayes.control <- function(cubature = list(tol = 1e-5,
 #'
 #' @param object An object of class \code{bayes}.
 #' @param iter Number of iterations.
+#' @param ... An argument of no further use.
 #' @seealso \code{\link{bayes}}
 #' @export
 
@@ -911,7 +916,8 @@ crt.bayes.control <- function(cubature = list(tol = 1e-5,
 #' @importFrom mvQuad quadrature
 ## @importFrom sn dmsn dmst dmsc
 # @importFrom LaplacesDemon dmvl dmvt dmvc dmvpe
-iterate.bayes <- function(object, iter){
+update.bayes <- function(object, iter,...){
+  # ... is an argument of no use. Only to match the generic update
   if (all(class(object) != c("list", "bayes")))
     stop("''object' must be of class 'bayes'")
   if (missing(iter))
@@ -921,6 +927,7 @@ iterate.bayes <- function(object, iter){
   ICA.control <- object$arg$ICA.control
   crt.bayes.control <- object$arg$crt.bayes.control
   sens.bayes.control <-  object$arg$sens.bayes.control
+  sens.control <-  object$arg$sens.control
   evol <- object$evol
   type <- arg$type
   #if (!arg$is.only.w)
@@ -929,8 +936,8 @@ iterate.bayes <- function(object, iter){
   #   npred <- NA
   ## number of parameters
   #npar <- arg$npar
-  if (!(type %in% c("D", "DPA", "DPM", "multiple", "D_LLTM")))
-    stop("bug: 'type' must be  'D' or 'DPM' or 'DPM' or 'multiple' or 'D_LLTM' in 'iterate.ICAB")
+  if (!(type %in% c("D", "DPA", "DPM", "multiple", "D_LLTM", "user")))
+    stop("bug: 'type' must be  'D' or 'DPM' or 'DPM' or 'multiple' or 'D_LLTM' or 'user' in 'update.bayes")
   if (ICA.control$equal_weight)
     w_equal <- rep(1/arg$k, arg$k)
 
@@ -1218,11 +1225,11 @@ iterate.bayes <- function(object, iter){
     ############################################################################*
     # extracing the best emperor and its position
     imp_cost <- round(sapply(Empires, "[[", "ImperialistCost"), 12)
-    if (type %in% c("D", "DPA", "DPM", "multiple", "D_LLTM")){
+    if (type %in% c("D", "DPA", "DPM", "multiple", "D_LLTM", "user")){
       min_cost[totaliter] <-   min(imp_cost)
       mean_cost[totaliter] <-  mean(imp_cost)
     }else
-      stop("Bug: check the type in iterate.bayes")
+      stop("Bug: check the type in update.bayes")
     best_imp_id <- which.min(imp_cost) ## which list contain the best imp
     if (!ICA.control$equal_weight)
       w <- Empires[[best_imp_id]]$ImperialistPosition[, w_id] else
@@ -1251,7 +1258,8 @@ iterate.bayes <- function(object, iter){
 
     if (ICA.control$trace){
       if (!arg$is.only.w)
-        cat("\nIteration:", totaliter, "\nDesign Points:\n", x, "\nWeights: \n", w,
+        cat("\nIteration:", totaliter, "\nDesign Points:\n", x,
+            "\nWeights: \n", w,
             "\nCriterion value: ", min_cost[totaliter],
             "\nTotal number of function evaluations:", total_nfeval, "\nTotal number of successful local search moves:", total_nlocal,
             "\nTotal number of successful revolution moves:", total_nrevol, "\n") else
@@ -1317,6 +1325,7 @@ iterate.bayes <- function(object, iter){
       sens_res <- sensbayes_inner(x = x, w = w, lx = arg$lx, ux = arg$ux,
                                   fimfunc = arg$FIM, prior = arg$prior,
                                   sens.bayes.control = sens.bayes.control,
+                                  sens.control = sens.control,
                                   crt.bayes.control = crt.bayes.control,
                                   type = arg$type,
                                   plot_3d = arg$plot_3d,

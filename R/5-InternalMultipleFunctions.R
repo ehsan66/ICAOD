@@ -1,10 +1,10 @@
 ##################################################################*
 ##################################################################*
-create_multiple_minimax <-function(model, FIM,  multipars){
+create_multiple_minimax <-function(model, FIM,  multipars, is.only.w, only_w_varlist = NULL){
   #sqrt(.Machine$double.xmin)
   ## model: a character denotes the model
-
   ## we should define this because for very small numbers near zero we have NaN, instead we return -Inf
+
   log2 <- function(x){
     out <- suppressWarnings(log(x))
     if (is.na(out))
@@ -17,12 +17,18 @@ create_multiple_minimax <-function(model, FIM,  multipars){
     delta <- multipars$delta
     s <- 4
     crfunc <- function(param, q, npred){
-      lq <- length(q)
-      n_seg <- lq/(npred + 1)
-      x_ind <- 1:(npred * n_seg)
-      w_ind <- (x_ind[length(x_ind)]+1):lq
-      x <- q[x_ind]
-      w <- q[w_ind]
+
+      if (!is.only.w){
+        lq <- length(q)
+        n_seg <- lq/(npred + 1)
+        x_ind <- 1:(npred * n_seg)
+        w_ind <- (x_ind[length(x_ind)]+1):lq
+        x <- q[x_ind]
+        w <- q[w_ind]
+      } else{
+        w <- q
+        x <- only_w_varlist$x
+      }
       ################*
       ## compute the information matrix and determine whether it is exactly singular
       FIM_val <- FIM(x=x, w = w, param = param)

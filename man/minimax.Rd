@@ -6,9 +6,10 @@
 \usage{
 minimax(formula, predvars, parvars, family = gaussian(), lx, ux, lp, up,
   iter, k, n.grid = 0, fimfunc = NULL, ICA.control = list(),
-  sens.minimax.control = list(), crt.minimax.control = list(),
-  standardized = FALSE, initial = NULL, localdes = NULL,
-  npar = length(lp), plot_3d = c("lattice", "rgl"), x = NULL)
+  sens.control = list(), sens.minimax.control = list(),
+  crt.minimax.control = list(), standardized = FALSE, initial = NULL,
+  localdes = NULL, npar = length(lp), plot_3d = c("lattice", "rgl"),
+  x = NULL, crtfunc = NULL, sensfunc = NULL)
 }
 \arguments{
 \item{formula}{A nonlinear model \code{\link[stats]{formula}}.
@@ -55,7 +56,9 @@ The total number of grid points from the parameter space is \code{n.grid^p}.
 
 \item{ICA.control}{ICA control parameters. For details, see \code{\link{ICA.control}}.}
 
-\item{sens.minimax.control}{Control parameters to verify the general equivalence theorem. For details, see the function \code{\link{sens.minimax.control}}.}
+\item{sens.control}{Control Parameters for Calculating the ELB. For details, see \code{\link{sens.control}}.}
+
+\item{sens.minimax.control}{Control parameters to construct the answering set required for verify the general equivalence theorem and calculating the ELB. For details, see the function \code{\link{sens.minimax.control}}.}
 
 \item{crt.minimax.control}{Control parameters to optimize the minimax or standardized maximin criterion at a given design over a \strong{continuous} parameter space (when \code{n.grid = 0}).
 For details, see the function \code{\link{crt.minimax.control}}.}
@@ -80,6 +83,10 @@ When is not set to \code{NULL} (default),
    Should be set when the user has a finite number of candidate design points  and the purpose
    is to find the optimal weight for each of them (when zero, they will be excluded from the design).
 For design points with more than one dimension, see 'Details' of \code{\link{sensminimax}}.}
+
+\item{crtfunc}{(Optional) a function that specifies an arbitrary criterion. It must have especial arguments and output. See 'Details' of \code{\link{minimax}}.}
+
+\item{sensfunc}{(Optional) a function that specifies the sensitivity function for \code{crtfunc}. See 'Details' of \code{\link{minimax}}.}
 }
 \value{
 an object of class \code{minimax} that is a list including three sub-lists:
@@ -121,7 +128,7 @@ and also the last iteration if   \code{ICA.control$checkfreq >= 0}. Otherwise, \
 \description{
 Finds minimax and standardized maximin D-optimal designs for nonlinear models.
  It should be used when the user assumes the unknown parameters belong to a parameter region
- \eqn{\Theta}, which is called ``region of uncertainty'',  where the
+ \eqn{\Theta}, which is called ``region of uncertainty'',  and the
    purpose is to protect the experiment from the worst case scenario
   over \eqn{\Theta}.
 }
@@ -227,6 +234,28 @@ Let \code{x0} and \code{w0} be the vector of initial values with exactly the sam
  to \code{Inf}. In either way, the function \code{\link{sensminimax}} is called for verification.
   Note that  the function \code{\link{sensminimax}} always verifies the optimality of a design assuming a continues parameter space.
 See 'Examples'.
+
+ \code{crtfunc} is a function that is used
+ to specify a new criterion.
+  Its arguments are:
+  \itemize{
+ \item design points \code{x} (as a \code{vector}).
+ \item design weights \code{w} (as a \code{vector}).
+ \item model parameters as follows.
+     \itemize{
+         \item If \code{formula} is specified:
+               they should be the same parameter specified by \code{parvars}.
+         \item If FIM is specified via the argument \code{fimfunc}:
+             \code{param} that is a vector of the parameters in \code{fimfunc}.
+              }
+       \item \code{fimfunc} is a \code{function} that takes the other arguments of \code{crtfunc}
+       and returns the computed Fisher information matrix as a \code{matrix}.
+     }
+   The \code{crtfunc} function must return the criterion value.
+    \code{crtfunc}. It has one more argument than  \code{crtfunc},
+     which is  \code{xi_x}. It denotes the design point of the degenerate design
+     and  must be a vector with the same length as the number of  predictors.
+    For more details, see 'Examples'.
 }
 \note{
 For larger parameter space or model with more number of unknown parameters,
@@ -238,7 +267,7 @@ in practice, they should be applied only
   when  an analytical solution for
   the locally D-optimal designs is available for the model
   of interest.
-   Otherwise, we encounter a three-level nested-optimization algorithm.
+   Otherwise, we encounter a three-level nested-optimization algorithm, which is very slow.
 }
 \examples{
 ########################################
@@ -246,33 +275,35 @@ in practice, they should be applied only
 ########################################
 res1 <- minimax (formula = ~a + exp(-b*x), predvars = "x", parvars = c("a", "b"),
                  lx = 0, ux = 1, lp = c(1, 1), up = c(1, 10),
-                 iter = 1, k = 4, ICA.control= ICA.control(rseed = 100))
-# the optimal design has 3 points, but we set k = 4 for illustration purpose to
-#   show how the algorithm modify the design by assigning weights and locating
-#   the points.
+                 iter = 1, k = 4,
+                 ICA.control= ICA.control(rseed = 100),
+                 crt.minimax.control = list(optslist = list(maxeval = 100)))
+# The optimal design has 3 points, but we set k = 4 for illustration purpose to
+#   show how the algorithm modifies the design by adjusting the weights
+# The value of maxeval is changed to reduce the CPU time
 \dontrun{
-  res1 <- iterate(res1, 150)
+  res1 <- update(res1, 150)
   # iterating the algorithm up to 150 more iterations
 }
 
 res1 # print method
-plot(res1) # veryfying the general equivalence theorem
+plot(res1) # Veryfying the general equivalence theorem
 
 \dontrun{
- ## fixed x
-res1.1 <- minimax (formula = ~a + exp(-b*x), predvars = "x", parvars = c("a", "b"),
-                 lx = 0, ux = 1, lp = c(1, 1), up = c(1, 10),
-                 x = c(0, .5, 1),
-                 iter = 150, k = 3, ICA.control= ICA.control(rseed = 100))
-# not optimal
+  ## fixed x
+  res1.1 <- minimax (formula = ~a + exp(-b*x), predvars = "x", parvars = c("a", "b"),
+                     lx = 0, ux = 1, lp = c(1, 1), up = c(1, 10),
+                     x = c(0, .5, 1),
+                     iter = 150, k = 3, ICA.control= ICA.control(rseed = 100))
+  # not optimal
 }
 
 ########################################
 # Two-parameter logistic model.
 ########################################
-# A little bit tickling with the tuning parameters
-# reducing the value of maxeval to 200 to increase the speed
-cont1 <- crt.minimax.control(optslist = list(maxeval = 500))
+# A little playing with the tuning parameters
+# The value of maxeval is reduced to 200 to increase the speed
+cont1 <- crt.minimax.control(optslist = list(maxeval = 200))
 cont2 <- ICA.control(rseed = 100, checkfreq = Inf, ncount = 60)
 
 \dontrun{
@@ -293,15 +324,15 @@ lower <- c(1, 4, 2, 4)
 upper <- c(1, 5, 3, 5)
 cont <- crt.minimax.control(optslist = list(maxeval = 100)) # to be faster
 \dontrun{
-res3 <- minimax(formula =  ~ V*S/(Km * (1 + I/Kic)+ S * (1 + I/Kiu)),
-                predvars = c("S", "I"),
-                parvars = c("V", "Km", "Kic", "Kiu"),
-                lx = c(0, 0), ux = c(30, 60), k = 4,
-                iter = 100, lp = lower, up = upper,
-                ICA.control= list(rseed = 100),
-                crt.minimax.control = cont)
+  res3 <- minimax(formula =  ~ V*S/(Km * (1 + I/Kic)+ S * (1 + I/Kiu)),
+                  predvars = c("S", "I"),
+                  parvars = c("V", "Km", "Kic", "Kiu"),
+                  lx = c(0, 0), ux = c(30, 60), k = 4,
+                  iter = 100, lp = lower, up = upper,
+                  ICA.control= list(rseed = 100),
+                  crt.minimax.control = cont)
 
-  res3 <- iterate(res3, 100)
+  res3 <- update(res3, 100)
   print(res3)
   plot(res3) # sensitivity plot
   res3$arg$time
@@ -324,9 +355,9 @@ res3 <- minimax(formula =  ~ V*S/(Km * (1 + I/Kic)+ S * (1 + I/Kiu)),
 ############################################
 # Standardized maximin D-optimal designs
 ############################################
-# Now assume the purpose is finding STANDARDIZED designs
-# We know from the literature that the locally D-optimal design (LDOD)
-# for this model has analytical solution.
+# Assume the purpose is finding STANDARDIZED designs
+# We know from literature that the locally D-optimal design (LDOD)
+# for this model has an analytical solution.
 # The follwoing function takes the parameter as input and returns
 # the design points and weights of LDOD.
 # x and w are exactly similar to the arguments of 'fimfunc'.
@@ -425,10 +456,135 @@ formalArgs(LDOD2)
   plot(res6)
 }
 
+###################################
+# user-defined optimality criterion
+##################################
+# When the model is defined by the formula interface
+# A-optimal design for the 2PL model.
+# the criterion function must have argument x, w fimfunc and the parameters defined in 'parvars'.
+# use 'fimfunc' as a function of the design points x,  design weights w and
+#  the 'parvars' parameters whenever needed.
+Aopt <-function(x, w, a, b, fimfunc){
+  sum(diag(solve(fimfunc(x = x, w = w, a = a, b = b))))
+}
+## the sensitivtiy function
+# xi_x is a design that put all its mass on x in the definition of the sensitivity function
+# x is a vector of design points
+Aopt_sens <- function(xi_x, x, w, a, b, fimfunc){
+  fim <- fimfunc(x = x, w = w, a = a, b = b)
+  M_inv <- solve(fim)
+  M_x <- fimfunc(x = xi_x, w = 1, a  = a, b = b)
+  sum(diag(M_inv \%*\% M_x \%*\%  M_inv)) - sum(diag(M_inv))
+}
+\dontrun{
+res7 <- minimax(formula = ~1/(1 + exp(-b * (x-a))), predvars = "x",
+                parvars = c("a", "b"), family = "binomial",
+                lx = -2, ux = 2,
+                lp = c(-2, 1), up = c(2, 1.5),
+                iter = 400, k = 3,
+                crtfunc = Aopt,
+                sensfunc = Aopt_sens,
+                crt.minimax.control = list(optslist = list(maxeval = 200)),
+                ICA.control = list(rseed = 1))
+  plot(res7)
+}
+# with grid points
+res7.1 <- minimax(formula = ~1/(1 + exp(-b * (x-a))), predvars = "x",
+                  parvars = c("a", "b"), family = "binomial",
+                  lx = -2, ux = 2,
+                  lp = c(-2, 1), up = c(2, 1.5),
+                  iter = 1, k = 3,
+                  crtfunc = Aopt,
+                  sensfunc = Aopt_sens,
+                  n.grid = 9,
+                  ICA.control = list(rseed = 1))
+\dontrun{
+  res7.1 <- update(res7.1, 400)
+  plot(res7.1)
+}
+
+# When the FIM of the model is defined directly via the argument 'fimfunc'
+# the criterion function must have argument x, w fimfunc and param.
+# use 'fimfunc' as a function of the design points x,  design weights w and
+#  the 'parvars' parameters whenever needed.
+Aopt2 <-function(x, w, param, fimfunc){
+  sum(diag(solve(fimfunc(x = x, w = w, param = param))))
+}
+## the sensitivtiy function
+# xi_x is a design that put all its mass on x in the definition of the sensitivity function
+# x is a vector of design points
+Aopt_sens2 <- function(xi_x, x, w, param, fimfunc){
+  fim <- fimfunc(x = x, w = w, param = param)
+  M_inv <- solve(fim)
+  M_x <- fimfunc(x = xi_x, w = 1, param = param)
+  sum(diag(M_inv \%*\% M_x \%*\%  M_inv)) - sum(diag(M_inv))
+}
+\dontrun{
+res7.2 <- minimax(fimfunc = FIM_logistic,
+                  lx = -2, ux = 2,
+                  lp = c(-2, 1), up = c(2, 1.5),
+                  iter = 1, k = 3,
+                  crtfunc = Aopt2,
+                  sensfunc = Aopt_sens2,
+                  crt.minimax.control = list(optslist = list(maxeval = 200)),
+                  ICA.control = list(rseed = 1))
+  res7.2 <- update(res7.2, 200)
+  plot(res7.2)
+}
+# with grid points
+res7.3 <- minimax(fimfunc = FIM_logistic,
+                  lx = -2, ux = 2,
+                  lp = c(-2, 1), up = c(2, 1.5),
+                  iter = 1, k = 3,
+                  crtfunc = Aopt2,
+                  sensfunc = Aopt_sens2,
+                  n.grid = 9,
+                  ICA.control = list(rseed = 1))
+\dontrun{
+  res7.3 <- update(res7.2, 200)
+  plot(res7.3)
+}
+
+
+# robust c-optimal design
+# example from Chaloner and Larntz (1989), Figure 3, but robust design
+c_opt <-function(x, w, a, b, fimfunc){
+  gam <- log(.95/(1-.95))
+  M <- fimfunc(x = x, w = w, a = a, b = b)
+  c <- matrix(c(1, -gam * b^(-2)), nrow = 1)
+  B <- t(c) \%*\% c
+  sum(diag(B \%*\% solve(M)))
+}
+
+c_sens <- function(xi_x, x, w, a, b, fimfunc){
+  gam <- log(.95/(1-.95))
+  M <- fimfunc(x = x, w = w, a = a, b = b)
+  M_inv <- solve(M)
+  M_x <- fimfunc(x = xi_x, w = 1, a = a, b = b)
+  c <- matrix(c(1, -gam * b^(-2)), nrow = 1)
+  B <- t(c) \%*\% c
+  sum(diag(B \%*\% M_inv \%*\% M_x \%*\%  M_inv)) - sum(diag(B \%*\% M_inv))
+}
+
+\dontrun{
+res8 <- minimax(formula = ~1/(1 + exp(-b * (x-a))), predvars = "x",
+                parvars = c("a", "b"), family = "binomial",
+                lx = -1, ux = 1,
+                lp = c(-.3, 6), up = c(.3, 8),
+                iter = 500, k = 3,
+                crtfunc = c_opt, sensfunc = c_sens,
+                ICA.control = list(rseed = 1, ncount = 100),
+                n.grid = 12)
+  plot(res8)
+}
+
+
+
 }
 \references{
-Masoudi E, Holling H, Wong W.K. (2017). Application of Imperialist Competitive Algorithm to Find Minimax and Standardized Maximin Optimal Designs. Computational Statistics and Data Analysis, 113, 330-345. \cr
+Atashpaz-Gargari, E, & Lucas, C (2007). Imperialist competitive algorithm: an algorithm for optimization inspired by imperialistic competition. In 2007 IEEE congress on evolutionary computation (pp. 4661-4667). IEEE.\cr
 Dette, H. (1997). Designing experiments with respect to 'standardized' optimality criteria. Journal of the Royal Statistical Society: Series B (Statistical Methodology), 59(1), 97-110. \cr
+Masoudi E, Holling H, Wong WK (2017). Application of Imperialist Competitive Algorithm to Find Minimax and Standardized Maximin Optimal Designs. Computational Statistics and Data Analysis, 113, 330-345. <doi:10.1016/j.csda.2016.06.014>\cr
 }
 \seealso{
 \code{\link{sensminimax}}

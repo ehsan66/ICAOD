@@ -2,74 +2,33 @@
 % Please edit documentation in R/6-UserBayesFunctions.R
 \name{sens.bayes.control}
 \alias{sens.bayes.control}
-\title{Control Parameters for Verifying General Equivalence Theorem for Bayesian Designs}
+\title{Returns Control Parameters for Approximating The Integrals In The Bayesian Sensitivity Functions}
 \usage{
-sens.bayes.control(cubature = list(tol = 1e-05, maxEval = 50000, absError
-  = 0), quadrature = list(type = NULL, level = NULL, ndConstruction =
-  "product", level.trans = FALSE), x0 = NULL, optslist = list(stopval =
-  -Inf, algorithm = "NLOPT_GN_DIRECT_L", xtol_rel = 1e-08, ftol_rel =
-  1e-10, maxeval = 2000), ...)
+sens.bayes.control(method = c("cubature", "quadrature"),
+  cubature = list(tol = 1e-05, maxEval = 50000, absError = 0),
+  quadrature = list(type = c("GLe", "GHe"), level = 6, ndConstruction =
+  "product", level.trans = FALSE))
 }
 \arguments{
+\item{method}{A character denotes which method to be used to approximate the integrals in Bayesian criteria.
+\code{"cubature"} corresponds to the adaptive multivariate integration method using the \code{\link[cubature]{hcubature}} algorithm (default).
+\code{"quadrature"} corresponds the traditional quadrature formulas and calls the function \code{\link[mvQuad]{createNIGrid}}.
+The tuning parameters are adjusted by \code{crt.bayes.control}. Default is set to \code{"cubature"}.}
+
 \item{cubature}{A list that will be passed to the arguments of the \code{\link[cubature]{hcubature}} function. See 'Details' of \code{\link{crt.bayes.control}}.}
 
 \item{quadrature}{A list that will be passed to the arguments of the \code{\link[mvQuad]{createNIGrid}} function. See 'Details' of \code{\link{crt.bayes.control}}.}
-
-\item{x0}{Vector of starting values for maximizing the sensitivity (derivative) function over the design space \eqn{x}.
-It will be passed to the optimization function \code{\link[nloptr]{nloptr}}.}
-
-\item{optslist}{A list will be passed to \code{opts} argument of the function \code{\link[nloptr]{nloptr}} to find the maximum of the sensitivity function over the design space. See 'Details'.}
-
-\item{...}{Further arguments will be passed to \code{\link{nl.opts}} from package \code{\link[nloptr]{nloptr}}.}
 }
 \value{
-A list of three lists each contains the  control parameters for verifying the general equivalence theorem with respect to the Bayesian optimality criteria.
+A list of  control parameters for approximating the integrals.
 }
 \description{
 This function returns two lists each corresponds
  to an implemented integration method for approximating the integrals
-  in the sensitivity (derivative) functions for Bayesian criteria.
-Moreover, it contains a list of \code{\link[nloptr]{nloptr}} control parameters to find maximum of the sensitivity (derivative) function over the design space,
- used to calculate the efficiency lower bound (ELB).
-}
-\details{
-ELB is a measure of  proximity of a design to the optimal design without knowing the latter.
-Given a design, let \eqn{\epsilon} be the global maximum
- of the sensitivity (derivative) function with respect the vector of the model predictors \eqn{x} over the design space.
-ELB is given by \deqn{ELB = p/(p + \epsilon),}
-where \eqn{p} is the number of model parameters. Obviously,
-calculating ELB requires finding \eqn{\epsilon} and therefore,
-a maximization problem to be solved. The function \code{\link[nloptr]{nloptr}}
-is used here to solve this maximization problem. The arguments \code{x0} and \code{optslist}
-will be passed to this function as follows:
-
-Argument \code{x0} provides the user initial values for this maximization problem
- and will be passed to the argument with the same name
-in the function  \code{\link[nloptr]{nloptr}}.
-
-
-Argument \code{optslist} is a list and it will be passed to the argument \code{opts} of the function \code{\link[nloptr]{nloptr}}.
-The most important components of  \code{optslist} are:
- \describe{
-  \item{\code{stopval}}{Stop minimization when an objective value <= \code{stopval} is found. Setting \code{stopval} to \code{-Inf} disables this stopping criterion (default).}
-  \item{\code{algorithm}}{Defaults to \code{NLOPT_GN_DIRECT_L}. DIRECT-L is a deterministic-search algorithm based on systematic division of the search domain into smaller and smaller hyperrectangles.}
-  \item{\code{xtol_rel}}{Stop when an optimization step (or an estimate of the optimum) changes every parameter by less than \code{xtol_rel} multiplied by the absolute value of the parameter. Criterion is disabled if \code{xtol_rel} is non-positive. Defaults to \code{1e-8}.}
-  \item{\code{ftol_rel}}{Stop when an optimization step (or an estimate of the optimum) changes the objective function value by less than \code{ftol_rel} multiplied by the absolute value of the function value. Criterion is disabled if \code{ftol_rel} is non-positive. Defaults to \code{1e-10}.}
-  \item{\code{maxeval}}{Stop when the number of function evaluations exceeds \code{maxeval}. Criterion is disabled if \code{maxeval} is non-positive. Defaults to \code{6000}. See 'Note' on when to change its value.}
-}
- More details are available by the function \code{nloptr.print.options()} in package \code{\link[nloptr]{nloptr}}.
-}
-\note{
-Whenever the value of ELB is computationally larger than 1, it is a sign that  the obtained \eqn{\epsilon} is not global maximum.
- To overcome this issue, please increase  the value of the parameter \code{maxeval} to allow the optimization algorithm to find the global maximum of the sensitivity (derivative) function over the design space.
-
-
-Please note the difference between \code{maxEval} in \code{cubature} and \code{maxeval} in  \code{optslist}. They are quite two types of different tuning parameters.
-The earlier is the (approximate) maximum number of function evaluations in the hcubature adaptive integration method and the latter is the maximum number of function evaluations in the maximization problem.
+  in the sensitivity (derivative) functions for the Bayesian optimality criteria.
 }
 \examples{
 sens.bayes.control()
 sens.bayes.control(cubature = list(maxEval = 50000))
-sens.bayes.control(optslist = list(maxeval = 3000))
 sens.bayes.control(quadrature =  list(level = 4))
 }

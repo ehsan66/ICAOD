@@ -73,7 +73,7 @@ ub <- c(9, 17, 140, 10)
             predvars = c("x"), parvars = c("theta1", "theta2", "theta3", "theta4"),
             x = c(0.78990, 95.66297, 118.42964,147.55809, 500),
             w = c(0.23426, 0.17071, 0.17684, 0.1827, 0.23549),
-            sens_method = "quadrature",
+            sens.bayes.control = list(method = "quadrature"),
             lx = .001, ux = 500,  prior = uniform(lb, ub))
   # 166.519 s
 
@@ -82,8 +82,8 @@ ub <- c(9, 17, 140, 10)
             predvars = c("x"), parvars = c("theta1", "theta2", "theta3", "theta4"),
             x = c(0.78990, 95.66297, 118.42964,147.55809, 500),
             w = c(0.23426, 0.17071, 0.17684, 0.1827, 0.23549),
-            sens_method = "quadrature",
-            sens.bayes.control = list(quadrature = list(level = 3)),
+            sens.bayes.control = list(method = "quadrature",
+                                      quadrature = list(level = 3)),
             lx = .001, ux = 500,  prior = uniform(lb, ub))
   # we don't have an accurate plot
 
@@ -92,8 +92,8 @@ ub <- c(9, 17, 140, 10)
             predvars = c("x"), parvars = c("theta1", "theta2", "theta3", "theta4"),
             x = c(0.78990, 95.66297, 118.42964,147.55809, 500),
             w = c(0.23426, 0.17071, 0.17684, 0.1827, 0.23549),
-            sens_method = "quadrature",
-            sens.bayes.control = list(quadrature = list(level = 4)),
+            sens.bayes.control = list(method = "quadrature",
+                                      quadrature = list(level = 4)),
             lx = .001, ux = 500,  prior = uniform(lb, ub))
 
 }

@@ -5,9 +5,10 @@
 \title{Verifying Optimality of The Locally D-optimal Designs}
 \usage{
 senslocally(formula, predvars, parvars, family = gaussian(), x, w, lx,
-  ux, inipars, fimfunc = NULL, sens.minimax.control = list(),
+  ux, inipars, fimfunc = NULL, sens.control = list(),
   calculate_criterion = TRUE, plot_3d = c("lattice", "rgl"),
-  plot_sens = TRUE, npar = length(inipars), silent = FALSE)
+  plot_sens = TRUE, npar = length(inipars), silent = FALSE,
+  crtfunc = NULL, sensfunc = NULL)
 }
 \arguments{
 \item{formula}{A nonlinear model \code{\link[stats]{formula}}.
@@ -37,7 +38,7 @@ It must match \code{parvars} or the argument \code{param} of the function \code{
 
 \item{fimfunc}{A function. Returns the FIM as a \code{matrix}. Required when \code{formula} is missing. See 'Details' of \code{\link{minimax}}.}
 
-\item{sens.minimax.control}{Control parameters to verify the general equivalence theorem. For details, see the function \code{\link{sens.minimax.control}}.}
+\item{sens.control}{Control Parameters for Calculating the ELB. For details, see \code{\link{sens.control}}.}
 
 \item{calculate_criterion}{Calculate the optimality criterion? See 'Details' of \code{\link{sensminimax}}.}
 
@@ -51,6 +52,10 @@ If not given, the sensitivity plot may be shifted below the y-axis.
 When \code{NULL}, it is set to \code{length(inipars)}.}
 
 \item{silent}{Do not print anything? Defaults to \code{FALSE}.}
+
+\item{crtfunc}{(Optional) a function that specifies an arbitrary criterion. It must have especial arguments and output. See 'Details' of \code{\link{minimax}}.}
+
+\item{sensfunc}{(Optional) a function that specifies the sensitivity function for \code{crtfunc}. See 'Details' of \code{\link{minimax}}.}
 }
 \value{
 an object of class \code{sensminimax} that is a list with the following elements:
@@ -80,7 +85,7 @@ at a given approximate (continuous) design and also
 to the optimality criterion.
 For an approximate (continuous) design, when the design space is one or two-dimensional,
  the user can visually verify the optimality of the design by observing the
-sensitivity plot. Furthermore, the approximity of the design to the optimal design
+sensitivity plot. Furthermore, the proximity of the design to the optimal design
  can be measured by the  ELB without knowing the latter.
  See, for more details, Masoudi et al. (2017).
 }
@@ -136,16 +141,46 @@ senslocally(formula =  ~ V*S/(Km * (1 + I/Kic)+ S * (1 + I/Kiu)),
             lx = c(0, 0), ux = c(30, 60),
             inipars = c(1.5, 5.2, 3.4, 5.6))
 \dontrun{
-# using package rgl for 3d plot:
-res<- senslocally(formula =  ~ V*S/(Km * (1 + I/Kic)+ S * (1 + I/Kiu)),
-                  predvars = c("S", "I"),
-                  parvars = c("V", "Km", "Kic", "Kiu"),
-                  x = x0, w = w0,
-                  lx = c(0, 0), ux = c(30, 60),
-                  inipars = c(1.5, 5.2, 3.4, 5.6),
-                  plot_3d = "rgl")
+  # using package rgl for 3d plot:
+  res<- senslocally(formula =  ~ V*S/(Km * (1 + I/Kic)+ S * (1 + I/Kiu)),
+                    predvars = c("S", "I"),
+                    parvars = c("V", "Km", "Kic", "Kiu"),
+                    x = x0, w = w0,
+                    lx = c(0, 0), ux = c(30, 60),
+                    inipars = c(1.5, 5.2, 3.4, 5.6),
+                    plot_3d = "rgl")
 
 }
+
+###################################
+# user-defined optimality criterion
+##################################
+# When the model is defined by the formula interface
+# Checking the A-optimality  for the 2PL model.
+# the criterion function must have argument x, w fimfunc and the parameters defined in 'parvars'.
+# use 'fimfunc' as a function of the design points x,  design weights w and
+#  the 'parvars' parameters whenever needed.
+Aopt <-function(x, w, a, b, fimfunc){
+  sum(diag(solve(fimfunc(x = x, w = w, a = a, b = b))))
+}
+## the sensitivtiy function
+# xi_x is a design that put all its mass on x in the definition of the sensitivity function
+# x is a vector of design points
+Aopt_sens <- function(xi_x, x, w, a, b, fimfunc){
+  fim <- fimfunc(x = x, w = w, a = a, b = b)
+  M_inv <- solve(fim)
+  M_x <- fimfunc(x = xi_x, w = 1, a  = a, b = b)
+  sum(diag(M_inv \%*\% M_x \%*\%  M_inv)) - sum(diag(M_inv))
+}
+
+senslocally(formula = ~1/(1 + exp(-b * (x-a))), predvars = "x",
+            parvars = c("a", "b"), family = "binomial",
+            inipars = c(0, 1.5),
+            crtfunc = Aopt,
+            lx = -2, ux = 2,
+            sensfunc = Aopt_sens,
+            x = c(-1,  1), w = c(.5, .5))
+# not optimal
 }
 \references{
 Masoudi E, Holling H, Wong W.K. (2017). Application of Imperialist Competitive Algorithm to Find Minimax and Standardized Maximin Optimal Designs. Computational Statistics and Data Analysis, 113, 330-345. \cr

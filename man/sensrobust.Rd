@@ -5,9 +5,10 @@
 \title{Verifying Optimality of The Robust Designs}
 \usage{
 sensrobust(formula, predvars, parvars, family = gaussian(), x, w, lx, ux,
-  prob, parset, fimfunc = NULL, sens.minimax.control = list(),
+  prob, parset, fimfunc = NULL, sens.control = list(),
   calculate_criterion = TRUE, plot_3d = c("lattice", "rgl"),
-  plot_sens = TRUE, npar = dim(parset)[2], silent = FALSE)
+  plot_sens = TRUE, npar = dim(parset)[2], silent = FALSE,
+  crtfunc = NULL, sensfunc = NULL)
 }
 \arguments{
 \item{formula}{A nonlinear model \code{\link[stats]{formula}}.
@@ -39,7 +40,7 @@ Every row is one vector  (\code{nrow(parset) == length(prob)}). See 'Details'.}
 
 \item{fimfunc}{A function. Returns the FIM as a \code{matrix}. Required when \code{formula} is missing. See 'Details' of \code{\link{minimax}}.}
 
-\item{sens.minimax.control}{Control parameters to verify the general equivalence theorem. For details, see the function \code{\link{sens.minimax.control}}.}
+\item{sens.control}{Control Parameters for Calculating the ELB. For details, see \code{\link{sens.control}}.}
 
 \item{calculate_criterion}{Calculate the optimality criterion? See 'Details' of \code{\link{sensminimax}}.}
 
@@ -53,6 +54,10 @@ If not given, the sensitivity plot may be shifted below the y-axis.
 When \code{NULL}, it is set to \code{length(inipars)}.}
 
 \item{silent}{Do not print anything? Defaults to \code{FALSE}.}
+
+\item{crtfunc}{(Optional) a function that specifies an arbitrary criterion. It must have especial arguments and output. See 'Details' of \code{\link{minimax}}.}
+
+\item{sensfunc}{(Optional) a function that specifies the sensitivity function for \code{crtfunc}. See 'Details' of \code{\link{minimax}}.}
 }
 \value{
 an object of class \code{sensminimax} that is a list with the following elements:
@@ -82,7 +87,7 @@ at a given approximate (continuous) design and also
 to the optimality criterion.
 For an approximate (continuous) design, when the design space is one or two-dimensional,
  the user can visually verify the optimality of the design by observing the
-sensitivity plot. Furthermore, the approximity of the design to the optimal design
+sensitivity plot. Furthermore, the proximity of the design to the optimal design
  can be measured by the  ELB without knowing the latter.
  See, for more details, Masoudi et al. (2017).
 }
@@ -125,6 +130,36 @@ sensrobust(formula = ~1/(1 + exp(-b *(x - a))),
            lx = -5, ux = 5)
 
 
+###################################
+# user-defined optimality criterion
+##################################
+# When the model is defined by the formula interface
+# Checking the A-optimality  for the 2PL model.
+# the criterion function must have argument x, w fimfunc and the parameters defined in 'parvars'.
+# use 'fimfunc' as a function of the design points x,  design weights w and
+#  the 'parvars' parameters whenever needed.
+Aopt <-function(x, w, a, b, fimfunc){
+  sum(diag(solve(fimfunc(x = x, w = w, a = a, b = b))))
+}
+## the sensitivtiy function
+# xi_x is a design that put all its mass on x in the definition of the sensitivity function
+# x is a vector of design points
+Aopt_sens <- function(xi_x, x, w, a, b, fimfunc){
+  fim <- fimfunc(x = x, w = w, a = a, b = b)
+  M_inv <- solve(fim)
+  M_x <- fimfunc(x = xi_x, w = 1, a  = a, b = b)
+  sum(diag(M_inv \%*\% M_x \%*\%  M_inv)) - sum(diag(M_inv))
+}
+
+sensrobust(formula = ~1/(1 + exp(-b * (x-a))), predvars = "x",
+           parvars = c("a", "b"), family = "binomial",
+           crtfunc = Aopt,
+           sensfunc = Aopt_sens,
+           lx = -3, ux = 3,
+           prob = c(.25, .5, .25),
+           parset = matrix(c(-2, 0, 2, 1.25, 1.25, 1.25), 3, 2),
+           x = c(-2.469, 0, 2.469), w = c(.317, .365, .317))
+# not optimal. the optimal design has four points. see the last example in ?robust
 }
 \seealso{
 \code{\link{bayes}} \code{\link{sensbayes}} \code{\link{robust}}

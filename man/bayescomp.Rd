@@ -6,10 +6,9 @@
 \usage{
 bayescomp(formula, predvars, parvars, family = binomial(), prior, alpha,
   prob, lx, ux, iter, k, fimfunc = NULL, ICA.control = list(),
-  crt.bayes.control = list(), sens.bayes.control = list(),
-  crt_method = c("cubature", "quadrature"), sens_method = c("cubature",
-  "quadrature"), initial = NULL, npar = NULL, plot_3d = c("lattice",
-  "rgl"))
+  sens.control = list(), crt.bayes.control = list(),
+  sens.bayes.control = list(), initial = NULL, npar = NULL,
+  plot_3d = c("lattice", "rgl"))
 }
 \arguments{
 \item{formula}{A nonlinear model \code{\link[stats]{formula}}.
@@ -49,18 +48,12 @@ See 'Examples'.}
 
 \item{ICA.control}{ICA control parameters. For details, see \code{\link{ICA.control}}.}
 
+\item{sens.control}{Control Parameters for Calculating the ELB. For details, see \code{\link{sens.control}}.}
+
 \item{crt.bayes.control}{A list. Control parameters to approximate the integral in  the Bayesian criterion at a given design over the parameter space.
 For details, see \code{\link{crt.bayes.control}}.}
 
 \item{sens.bayes.control}{A list. Control parameters to verify the general equivalence theorem. For details, see \code{\link{sens.bayes.control}}.}
-
-\item{crt_method}{A character denotes which method to be used to approximate the integrals in Bayesian criteria.
-\code{"cubature"} corresponds to the adaptive multivariate integration method using the \code{\link[cubature]{hcubature}} algorithm (default).
-\code{"quadrature"} corresponds the traditional quadrature formulas and calls the function \code{\link[mvQuad]{createNIGrid}}.
-The tuning parameters are adjusted by \code{crt.bayes.control}. Default is set to \code{"cubature"}.}
-
-\item{sens_method}{Similar to \code{crt_method}, but for approximating the integrals in the sensitivity (derivative) function.
-The tuning parameters are adjusted by \code{sens.bayes.control}. Default is set to \code{"cubature"}.}
 
 \item{initial}{A matrix of the  initial design points and weights that will be inserted into the initial solutions (countries) of the algorithm.
 Every row is a design, i.e.  a concatenation of \code{x} and \code{w}. Will be coerced to a \code{matrix} if necessary.  See 'Details' of \code{\link{minimax}}.}
@@ -131,7 +124,7 @@ To verify the equivalence theorem of the output design,
 use \code{\link{plot}} function or change the value of the \code{checkfreq} in the argument \code{\link{ICA.control}}.
 
 To increase the speed of the algorithm, change the value of the tuning parameters \code{tol} and \code{maxEval} via
-the argument  \code{crt.bayes.control} when \code{crt_method = "cubature"}.
+the argument  \code{crt.bayes.control} when its \code{method} component  is equal to  \code{"cubature"}.
 In general, if the CPU time matters, the user should find an appropriate speed-accuracy trade-off  for her/his own problem.
  See 'Examples' for more details.
 }
@@ -153,10 +146,10 @@ res1 <- bayescomp(formula = myformula1,
 
 
 \dontrun{
-  res1 <- iterate(res1, 1000)
+  res1 <- update(res1, 1000)
   plot(res1, sens.bayes.control = list(cubature = list(tol = 1e-3, maxEval = 1000)))
   # or use quadrature method
-  plot(res1, sens_method = "quadrature")
+  plot(res1, sens.bayes.control= list(method = "quadrature"))
 }
 
 ##########################################################################
@@ -164,6 +157,7 @@ res1 <- bayescomp(formula = myformula1,
 ##########################################################################
 # The function of the Fisher information matrix for this model is 'FIM_logistic_2pred'
 # We should reparameterize it to match the standard of the argument 'fimfunc'
+\dontrun{
 myfim <- function(x, w, param){
   npoint <- length(x)/2
   x1 <- x[1:npoint]
@@ -187,7 +181,7 @@ myprob <- function(x, param){
   out <- 1-1/(1+exp(b0 + b1 * x1 + b2 * x2 + b3 * x1 * x2))
   return(out)
 }
-\dontrun{
+
 res2 <- bayescomp(fimfunc = myfim,
                   lx = c(-1, -1), ux = c(1, 1),
                   prior = myprior, iter = 1000, k = 7,
@@ -195,7 +189,7 @@ res2 <- bayescomp(fimfunc = myfim,
                   ICA.control = list(rseed = 1366))
   plot(res2, sens.bayes.control = list(cubature = list(maxEval = 1000, tol = 1e-4)))
   # quadrature with 6 nodes (default)
-  plot(res2, sens_method = "quadrature")
+  plot(res2, sens.bayes.control= list(method = "quadrature"))
 }
 
 

@@ -4,12 +4,14 @@
 \alias{print.minimax}
 \title{Printing \code{minimax} Objects}
 \usage{
-\method{print}{minimax}(x, iter = NULL, ...)
+\method{print}{minimax}(x, iter = NULL, all.info = FALSE, ...)
 }
 \arguments{
 \item{x}{An object of class \code{minimax}.}
 
 \item{iter}{Iteration number. if \code{NULL}, will be set equal to the last iteration.}
+
+\item{all.info}{Print all the information? Defaults to \code{FALSE}.}
 
 \item{...}{Argument with no further use.}
 }

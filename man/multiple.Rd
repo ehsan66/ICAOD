@@ -4,10 +4,10 @@
 \alias{multiple}
 \title{Locally Multiple Objective Optimal Designs for the 4-Parameter Hill Model}
 \usage{
-multiple(minDose, maxDose, iter, k, inipars, Hill_par = FALSE, delta,
+multiple(minDose, maxDose, iter, k, inipars, Hill_par = TRUE, delta,
   lambda, fimfunc = NULL, ICA.control = list(),
-  sens.minimax.control = list(), initial = NULL,
-  tol = sqrt(.Machine$double.xmin))
+  sens.control = list(), initial = NULL,
+  tol = sqrt(.Machine$double.xmin), x = NULL)
 }
 \arguments{
 \item{minDose}{Minimum dose \eqn{D}. For the 4-parameter logistic model, i.e. when \code{Hill_par = FALSE}, it is the minimum of \eqn{log(D)}.}
@@ -35,12 +35,19 @@ i.e. \eqn{\lambda = (\lambda_1, \lambda_2, \lambda_3)}.
 
 \item{ICA.control}{ICA control parameters. For details, see \code{\link{ICA.control}}.}
 
-\item{sens.minimax.control}{Control parameters to verify the general equivalence theorem. For details, see the function \code{\link{sens.minimax.control}}.}
+\item{sens.control}{Control Parameters for Calculating the ELB. For details, see \code{\link{sens.control}}.}
 
 \item{initial}{A matrix of the  initial design points and weights that will be inserted into the initial solutions (countries) of the algorithm.
 Every row is a design, i.e.  a concatenation of \code{x} and \code{w}. Will be coerced to a \code{matrix} if necessary.  See 'Details' of \code{\link{minimax}}.}
 
 \item{tol}{Tolerance for finding the general inverse of the Fisher information matrix. Defaults to \code{.Machine$double.xmin}.}
+
+\item{x}{A vector of candidate design (support) points.
+When is not set to \code{NULL} (default),
+ the algorithm only finds the optimal weights for the candidate points in  \code{x}.
+   Should be set when the user has a finite number of candidate design points  and the purpose
+   is to find the optimal weight for each of them (when zero, they will be excluded from the design).
+For design points with more than one dimension, see 'Details' of \code{\link{sensminimax}}.}
 }
 \value{
 an object of class \code{minimax} that is a list including three sub-lists:
@@ -118,7 +125,7 @@ This function is NOT appropriate for  finding  c-optimal designs for estimating 
  on the tolerance value (\code{tol}).
 }
 \examples{
-# All th examples here are available in Hyun and Wong (2015)
+# All the examples are available in Hyun and Wong (2015)
 
 #################################
 #  4-parameter logistic model
@@ -130,12 +137,13 @@ lam <- c(0.05, 0.05, .90)
 Theta1 <- c(1.563, 1.790, 8.442, 0.137)
 res1 <- multiple(minDose = log(.001), maxDose = log(1000),
                  inipars = Theta1, k = 4, lambda = lam, delta = -1,
+                 Hill_par = FALSE,
                  iter = 1,
                  ICA.control = list(rseed = 1366, ncount = 100,
                                     stop_rule = "equivalence",
                                     checkfreq = 100, stoptol = .95))
 \dontrun{
-res1 <- iterate(res1, 1000)
+res1 <- update(res1, 1000)
 # stops at iteration 101
 }
 
@@ -162,10 +170,21 @@ res2 <- multiple(minDose = .001, maxDose = 1000,
 
 
 
-
-
-
-
+# use x argument to provide fix number of  dose levels.
+# In this case, the optimization is only over weights
+\dontrun{
+res3 <- multiple(minDose = log(.001), maxDose = log(1000),
+                 inipars = Theta1, k = 4, lambda = lam, delta = -1,
+                 iter = 300,
+                 Hill_par = FALSE,
+                 x = c(-6.90, -4.66, -3.93, 3.61),
+                 ICA.control = list(rseed = 1366))
+res3$evol[[300]]$w
+# if the user provide the desugn points via x, there is no guarantee
+#   that the resulted design is optimal. It only provides the optimal weights given
+#   the x points of the design.
+plot(res3)
+}
 
 }
 \references{

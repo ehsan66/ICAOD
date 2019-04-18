@@ -2,18 +2,23 @@
 % Please edit documentation in R/6-UserBayesFunctions.R
 \name{crt.bayes.control}
 \alias{crt.bayes.control}
-\title{Control Parameters for Approximating Bayesian Criteria}
+\title{Returns Control Parameters for Approximating Bayesian Criteria}
 \usage{
-crt.bayes.control(cubature = list(tol = 1e-05, maxEval = 50000, absError
-  = 0), quadrature = list(type = "GLe", level = 6, ndConstruction =
+crt.bayes.control(method = c("cubature", "quadrature"),
+  cubature = list(tol = 1e-05, maxEval = 50000, absError = 0),
+  quadrature = list(type = c("GLe", "GHe"), level = 6, ndConstruction =
   "product", level.trans = FALSE))
 }
 \arguments{
+\item{method}{A character denotes which method to be used to approximate the integrals in Bayesian criteria.
+\code{"cubature"} corresponds to the adaptive multivariate integration method using the \code{\link[cubature]{hcubature}} algorithm (default).
+\code{"quadrature"} corresponds the traditional quadrature formulas and calls the function \code{\link[mvQuad]{createNIGrid}}.}
+
 \item{cubature}{A list that will be passed to the arguments of the function \code{\link[cubature]{hcubature}} for the adaptive multivariate integration.
-It is required and used when \code{crt_method = "cubature"} in the parent function, e.g.  \code{\link{bayes}}. See 'Details'.}
+It is required and used when \code{crt.bayes.control$method = "cubature"} in the parent function, e.g.  \code{\link{bayes}}. See 'Details'.}
 
 \item{quadrature}{A list that will be passed to the arguments of the function \code{\link[mvQuad]{createNIGrid}} for the quadrature-based integration.
-It is required and used when \code{crt_method = "quadrature"} in the parent function, e.g.  \code{\link{bayes}}. See 'Details'.}
+It is required and used when \code{crt.bayes.control$method = "quadrature"} in the parent function, e.g.  \code{\link{bayes}}. See 'Details'.}
 }
 \value{
 A list  of two lists each contains the  control parameters for \code{\link[cubature]{hcubature}} and \code{\link[mvQuad]{createNIGrid}}, respectively.
@@ -40,7 +45,7 @@ One can specify a maximum number of function evaluations.
   the absolute error requested, or when the estimated error is less than
    \code{tol} times the absolute value of the integral,  or when the maximum number of iterations
     is reached, whichever is earlier.
-     \code{cubature} is activated when \code{crt_method = "cubature"} in
+     \code{cubature} is activated when \code{crt.bayes.control$method = "cubature"} in
       any of the parent functions (for example, \code{\link{bayes}}).
 
 \code{quadrature} is a list that its components will be passed to
@@ -55,7 +60,7 @@ One can specify a maximum number of function evaluations.
       leads to a regular sparse grid.}
   \item{\code{level.trans}}{Logical variable denotes either to take the levels as number of grid points (FALSE = default) or to transform in that manner that number of grid points = 2^(levels-1) (TRUE). See, code{\link[mvQuad]{createNIGrid}}, for details.}
 }
- \code{quadrature} is activated when \code{crt_method = "quadrature"} in
+ \code{quadrature} is activated when \code{crt.bayes.control$method = "quadrature"} in
       any of the parent functions (for example, \code{\link{bayes}}).
 }
 \examples{

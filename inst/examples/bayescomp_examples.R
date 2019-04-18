@@ -15,10 +15,10 @@ res1 <- bayescomp(formula = myformula1,
 
 
 \dontrun{
-  res1 <- iterate(res1, 1000)
+  res1 <- update(res1, 1000)
   plot(res1, sens.bayes.control = list(cubature = list(tol = 1e-3, maxEval = 1000)))
   # or use quadrature method
-  plot(res1, sens_method = "quadrature")
+  plot(res1, sens.bayes.control= list(method = "quadrature"))
 }
 
 ##########################################################################
@@ -26,6 +26,7 @@ res1 <- bayescomp(formula = myformula1,
 ##########################################################################
 # The function of the Fisher information matrix for this model is 'FIM_logistic_2pred'
 # We should reparameterize it to match the standard of the argument 'fimfunc'
+\dontrun{
 myfim <- function(x, w, param){
   npoint <- length(x)/2
   x1 <- x[1:npoint]
@@ -49,7 +50,7 @@ myprob <- function(x, param){
   out <- 1-1/(1+exp(b0 + b1 * x1 + b2 * x2 + b3 * x1 * x2))
   return(out)
 }
-\dontrun{
+
 res2 <- bayescomp(fimfunc = myfim,
                   lx = c(-1, -1), ux = c(1, 1),
                   prior = myprior, iter = 1000, k = 7,
@@ -57,7 +58,7 @@ res2 <- bayescomp(fimfunc = myfim,
                   ICA.control = list(rseed = 1366))
   plot(res2, sens.bayes.control = list(cubature = list(maxEval = 1000, tol = 1e-4)))
   # quadrature with 6 nodes (default)
-  plot(res2, sens_method = "quadrature")
+  plot(res2, sens.bayes.control= list(method = "quadrature"))
 }
 
 
