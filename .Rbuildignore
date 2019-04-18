@@ -1,5 +1,5 @@
-^Meta$
 ^doc$
+^Meta$
 ^CRAN-RELEASE$
 ^.*\.Rproj$
 ^\.Rproj\.user$
@@ -21,6 +21,5 @@ NEWS.Rmd
 ^JSS_code$
 ^JSS_code2$
 ^acebayes$
-^JSS_code2$
 ^Rcodes_JGCS$
 inst/Building_Vignette.R
