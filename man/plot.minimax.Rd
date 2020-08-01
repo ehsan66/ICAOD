@@ -4,11 +4,21 @@
 \alias{plot.minimax}
 \title{Plotting \code{minimax} Objects}
 \usage{
-\method{plot}{minimax}(x, iter = NULL, sensitivity = TRUE,
-  calculate_criterion = FALSE, sens.minimax.control = list(),
-  crt.minimax.control = list(), sens.control = list(),
-  silent = FALSE, plot_3d = c("lattice", "rgl"), evolution = FALSE,
-  ...)
+\method{plot}{minimax}(
+  x,
+  iter = NULL,
+  sensitivity = TRUE,
+  calculate_criterion = FALSE,
+  sens.minimax.control = list(),
+  crt.minimax.control = list(),
+  sens.bayes.control = list(),
+  crt.bayes.control = list(),
+  sens.control = list(),
+  silent = TRUE,
+  plot_3d = c("lattice", "rgl"),
+  evolution = FALSE,
+  ...
+)
 }
 \arguments{
 \item{x}{An object of class \code{minimax}.}
@@ -23,12 +33,16 @@
 If \code{NULL} (default), it will be set to the  tuning parameters used to create object \code{x}.}
 
 \item{crt.minimax.control}{Control parameters to optimize the minimax or standardized maximin criterion at a given design over a \strong{continuous} parameter space.
-For details, see \code{\link{crt.minimax.control}}.
+For details, see \code{\link{crt.minimax.control}}.}
+
+\item{sens.bayes.control}{Control parameters to verify general equivalence theorem for the Bayesian optimal designs. For details, see \code{\link{sens.bayes.control}}. If \code{NULL} (default), it will be set to the  tuning parameters used to create object \code{x}.}
+
+\item{crt.bayes.control}{Control parameters to optimize the integration in the Bayesian criterion at a given design over a \strong{continuous} parameter space. For details, see \code{\link{crt.bayes.control}}. If \code{NULL} (default), it will be set to the  tuning parameters used to create object \code{x}.
 If \code{NULL} (default), it will be set to the  tuning parameters used to create object \code{x}.}
 
 \item{sens.control}{Control Parameters for Calculating the ELB. For details, see the function \code{\link{sens.control}}.}
 
-\item{silent}{Do not print anything? Defaults to \code{FALSE}.}
+\item{silent}{Do not print anything? Defaults to \code{TRUE}.}
 
 \item{plot_3d}{Which package should be used to plot the sensitivity function for two-dimensional design space. Defaults to \code{plot_3d = "lattice"}.
 Only applicable when \code{sensitivity = TRUE}.}

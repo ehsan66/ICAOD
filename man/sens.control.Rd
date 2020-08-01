@@ -4,9 +4,12 @@
 \alias{sens.control}
 \title{Returns Control Parameters To Find Maximum of The Sensitivity (Derivative) Function Over The Design Space}
 \usage{
-sens.control(x0 = NULL, optslist = list(stopval = -Inf, algorithm =
-  "NLOPT_GN_DIRECT_L", xtol_rel = 1e-08, ftol_rel = 1e-08, maxeval = 1000),
-  ...)
+sens.control(
+  x0 = NULL,
+  optslist = list(stopval = -Inf, algorithm = "NLOPT_GN_DIRECT_L", xtol_rel = 1e-08,
+    ftol_rel = 1e-08, maxeval = 1000),
+  ...
+)
 }
 \arguments{
 \item{x0}{Vector of starting values for maximizing the sensitivity (derivative) function over the design space \eqn{x}.

@@ -4,15 +4,31 @@
 \alias{sensbayes}
 \title{Verifying Optimality of Bayesian D-optimal Designs}
 \usage{
-sensbayes(formula, predvars, parvars, family = gaussian(), x, w, lx, ux,
-  fimfunc = NULL, prior = list(), sens.control = list(),
-  sens.bayes.control = list(), crt.bayes.control = list(),
-  plot_3d = c("lattice", "rgl"), plot_sens = TRUE, npar = NULL,
-  calculate_criterion = TRUE, silent = FALSE, crtfunc = NULL,
-  sensfunc = NULL)
+sensbayes(
+  formula,
+  predvars,
+  parvars,
+  family = gaussian(),
+  x,
+  w,
+  lx,
+  ux,
+  fimfunc = NULL,
+  prior = list(),
+  sens.control = list(),
+  sens.bayes.control = list(),
+  crt.bayes.control = list(),
+  plot_3d = c("lattice", "rgl"),
+  plot_sens = TRUE,
+  npar = NULL,
+  calculate_criterion = TRUE,
+  silent = FALSE,
+  crtfunc = NULL,
+  sensfunc = NULL
+)
 }
 \arguments{
-\item{formula}{A nonlinear model \code{\link[stats]{formula}}.
+\item{formula}{A linear or nonlinear model \code{\link[stats]{formula}}.
 A symbolic description of the model consists of predictors and the unknown model parameters.
 Will be coerced to a \code{\link[stats]{formula}} if necessary.}
 

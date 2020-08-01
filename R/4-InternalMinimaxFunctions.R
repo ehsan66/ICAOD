@@ -1492,7 +1492,13 @@ minimax_inner <- function(formula,
                   compound = compound,
                   is.only.w =  is.only.w,
                   only_w_varlist = only_w_varlist,
-                  time_start = time1)
+                  time_start = time1
+                  # SK@03052020
+                  ,family=family
+                  ,grad=funcs_formula$grad
+                  ,mu=funcs_formula$mu
+                  ,paramvectorized=paramvectorized
+                  )
       #lx_sens = lx_sens,
       #ux_sens = ux_sens)
       if (type == "locally")
@@ -1513,10 +1519,12 @@ minimax_inner <- function(formula,
       #############################################################################*
 
       ICA_object <- list(arg = arg, evol = NULL)
-      class(ICA_object) <- c("list", "minimax")
+      #class(ICA_object) <- c("list", "minimax") # 06202020@seongho
+      class(ICA_object) <- c("minimax")
       out <- update.minimax(object = ICA_object, iter = iter)
       return(out)
 
+      #list(out=out,object=ICA_object,arg=arg)
 }
 
 ######################################################################################################*
@@ -1854,7 +1862,8 @@ sensminimax_inner <- function (formula,
   }
   #, "\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n")
   object$time <- time2[3]
-  class(object) <- c("list", "sensminimax")
+  #class(object) <- c("list", "sensminimax") # 06202020@seongho
+  class(object) <- c("sensminimax")
   if (calculate_criterion || calculate_sens) # to avoid error
     return(object)
 }

@@ -810,6 +810,11 @@ is.formula <- function(x){
 check_common_args <- function(fimfunc, formula, predvars, parvars, family,
                               lx, ux, iter, k, paramvectorized, prior, x,
                               user_crtfunc, user_sensfunc){
+
+  # adding to prevent errors @seongho on 06192020
+  mu = NULL
+  grad = NULL
+
   ### it checks the formula, k , lx, ux and iter and returns the fisher information matrix
   if (is.null(fimfunc) & missing(formula))
     stop("either 'fimfunc' or 'formula' must be given")
@@ -834,6 +839,7 @@ check_common_args <- function(fimfunc, formula, predvars, parvars, family,
       stop("'predvars' must be character")
     if (!is.formula(formula))
       stop("'formula' must be of formula type")
+
     ### desvar: from user matrix!
     ## checking the formula and predvars and parvars
     # remove spaces fom predvars
@@ -868,8 +874,10 @@ check_common_args <- function(fimfunc, formula, predvars, parvars, family,
     mu <- create_mu(formula = formula, predvars = predvars, parvars = parvars,  paramvectorized = paramvectorized, fixedpars = fixedpars)
     grad <- create_grad(formula = formula, predvars = predvars, parvars = parvars,  paramvectorized = paramvectorized, fixedpars = fixedpars)
 
+
     mu_sens <- create_mu(formula = formula, predvars = predvars, parvars = parvars,  paramvectorized = FALSE, fixedpars = fixedpars)
     grad_sens <- create_grad(formula = formula, predvars = predvars, parvars = parvars, paramvectorized = FALSE, fixedpars = fixedpars)
+
 
     fimfunc_formula <- function(x, w, param){
       fim(x = x, w =w, param = param, grad = grad, mu = mu, family = family, paramvectorized = paramvectorized)
@@ -883,6 +891,7 @@ check_common_args <- function(fimfunc, formula, predvars, parvars, family,
     }
   }else{
 
+
     if (!is.function(fimfunc))
       stop(" \"fimfunc\" should be a \"function\"")
     if (!all(formalArgs(fimfunc) %in% c("x", "w", "param")))
@@ -890,6 +899,8 @@ check_common_args <- function(fimfunc, formula, predvars, parvars, family,
     fimfunc_formula <- NULL
     fimfunc_sens_formula <- NULL
     num_unknown_param <- NA
+
+
   }
   if (missing(lx))
     stop("\"lx\" is missing")
@@ -928,6 +939,7 @@ check_common_args <- function(fimfunc, formula, predvars, parvars, family,
       if (length(x)/k != length(lx))
         stop("Length of 'lx' is not equal to 'length(x)/k'. Check 'k', 'x', 'lx' and 'ux' to match.")
   }
+
   ###############*
   # user ----
   ###############*
@@ -948,7 +960,10 @@ check_common_args <- function(fimfunc, formula, predvars, parvars, family,
     }
   }else
     user_crtfunc2 <- NULL
+
+
   if (!is.null(user_sensfunc)){
+
     if (is.null(user_crtfunc))
       warning("The sensitivity function for the criterion is already implemented. Forgot to specify your 'crtfunc'?")
     if (!is.function(user_sensfunc))
@@ -966,12 +981,15 @@ check_common_args <- function(fimfunc, formula, predvars, parvars, family,
     }
   }else
     user_sensfunc2 <- NULL
+
   return(list(fimfunc_formula = fimfunc_formula,
               fimfunc_sens_formula = fimfunc_sens_formula,
               num_unknown_param = num_unknown_param,
-              user_crtfunc = user_crtfunc2, user_sensfunc = user_sensfunc2))
-
-
+              user_crtfunc = user_crtfunc2, user_sensfunc = user_sensfunc2
+              # SK@03052020
+              ,mu = mu
+              ,grad = grad
+              ))
 }
 
 ######################################################################################################*

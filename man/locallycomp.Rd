@@ -4,13 +4,28 @@
 \alias{locallycomp}
 \title{Locally DP-Optimal Designs}
 \usage{
-locallycomp(formula, predvars, parvars, family = gaussian(), lx, ux,
-  alpha, prob, iter, k, inipars, fimfunc = NULL, ICA.control = list(),
-  sens.control = list(), initial = NULL, npar = length(inipars),
-  plot_3d = c("lattice", "rgl"))
+locallycomp(
+  formula,
+  predvars,
+  parvars,
+  family = gaussian(),
+  lx,
+  ux,
+  alpha,
+  prob,
+  iter,
+  k,
+  inipars,
+  fimfunc = NULL,
+  ICA.control = list(),
+  sens.control = list(),
+  initial = NULL,
+  npar = length(inipars),
+  plot_3d = c("lattice", "rgl")
+)
 }
 \arguments{
-\item{formula}{A nonlinear model \code{\link[stats]{formula}}.
+\item{formula}{A linear or nonlinear model \code{\link[stats]{formula}}.
 A symbolic description of the model consists of predictors and the unknown model parameters.
 Will be coerced to a \code{\link[stats]{formula}} if necessary.}
 
@@ -83,6 +98,9 @@ an object of class \code{minimax} that is a list including three sub-lists:
       \code{convergence}      \tab      \tab Stopped by \code{'maxiter'} or \code{'equivalence'}?\cr
     }
   }
+  \item{\code{method}}{A type of optimal designs used.}
+  \item{\code{design}}{Design points and weights at the final iteration.}
+  \item{\code{out}}{A data frame of design points, weights, value of the criterion for the best imperialist (min_cost), and Mean of the criterion values of all the imperialistsat each iteration (mean_cost).}
 }
 
 The list \code{sens} contains information about the design verification by the general equivalence theorem. See \code{sensminimax} for more details.

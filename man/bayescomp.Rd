@@ -4,14 +4,30 @@
 \alias{bayescomp}
 \title{Bayesian Compound DP-Optimal Designs}
 \usage{
-bayescomp(formula, predvars, parvars, family = binomial(), prior, alpha,
-  prob, lx, ux, iter, k, fimfunc = NULL, ICA.control = list(),
-  sens.control = list(), crt.bayes.control = list(),
-  sens.bayes.control = list(), initial = NULL, npar = NULL,
-  plot_3d = c("lattice", "rgl"))
+bayescomp(
+  formula,
+  predvars,
+  parvars,
+  family = binomial(),
+  prior,
+  alpha,
+  prob,
+  lx,
+  ux,
+  iter,
+  k,
+  fimfunc = NULL,
+  ICA.control = list(),
+  sens.control = list(),
+  crt.bayes.control = list(),
+  sens.bayes.control = list(),
+  initial = NULL,
+  npar = NULL,
+  plot_3d = c("lattice", "rgl")
+)
 }
 \arguments{
-\item{formula}{A nonlinear model \code{\link[stats]{formula}}.
+\item{formula}{A linear or nonlinear model \code{\link[stats]{formula}}.
 A symbolic description of the model consists of predictors and the unknown model parameters.
 Will be coerced to a \code{\link[stats]{formula}} if necessary.}
 
@@ -66,7 +82,7 @@ When \code{NULL} (default), it will be set to \code{length(parvars)} or
 \item{plot_3d}{Which package should be used to plot the sensitivity (derivative) function for two-dimensional design space. Defaults to \code{"lattice"}.}
 }
 \value{
-an object of class \code{bayes} that is a list including three sub-lists:
+an object of class \code{minimax} that is a list including three sub-lists:
 \describe{
   \item{\code{arg}}{A list of design and algorithm parameters.}
   \item{\code{evol}}{A list of length equal to the number of iterations that stores the information about the best design (design with the minimum criterion value) of each iteration as follows:
@@ -77,7 +93,7 @@ an object of class \code{bayes} that is a list including three sub-lists:
       \code{w}                      \tab      \tab Design weights. \cr
       \code{min_cost}               \tab      \tab Value of the criterion for the best imperialist (design).  \cr
       \code{mean_cost}              \tab      \tab Mean of the criterion values of all the imperialists. \cr
-      \code{sens}                   \tab      \tab An object of class \code{'sensbayes'}. See below.\cr
+      \code{sens}                   \tab      \tab An object of class \code{'sensminimax'}. See below.\cr
     }
   }
 
@@ -91,6 +107,9 @@ an object of class \code{bayes} that is a list including three sub-lists:
       \code{convergence}      \tab      \tab Stopped by \code{'maxiter'} or \code{'equivalence'}?\cr
     }
   }
+  \item{\code{method}}{A type of optimal designs used.}
+  \item{\code{design}}{Design points and weights at the final iteration.}
+  \item{\code{out}}{A data frame of design points, weights, value of the criterion for the best imperialist (min_cost), and Mean of the criterion values of all the imperialistsat each iteration (mean_cost).}
 }
 The list \code{sens}  contains information about the design verification by the general equivalence theorem.
  See \code{sensbayes} for more Details.

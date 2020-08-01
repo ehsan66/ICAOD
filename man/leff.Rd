@@ -4,12 +4,24 @@
 \alias{leff}
 \title{Calculates Relative Efficiency for Locally Optimal Designs}
 \usage{
-leff(formula, predvars, parvars, family = gaussian(), inipars,
-  type = c("D", "PA"), fimfunc = NULL, x2, w2, x1, w1,
-  npar = length(inipars), prob = NULL)
+leff(
+  formula,
+  predvars,
+  parvars,
+  family = gaussian(),
+  inipars,
+  type = c("D", "PA"),
+  fimfunc = NULL,
+  x2,
+  w2,
+  x1,
+  w1,
+  npar = length(inipars),
+  prob = NULL
+)
 }
 \arguments{
-\item{formula}{A nonlinear model \code{\link[stats]{formula}}.
+\item{formula}{A linear or nonlinear model \code{\link[stats]{formula}}.
 A symbolic description of the model consists of predictors and the unknown model parameters.
 Will be coerced to a \code{\link[stats]{formula}} if necessary.}
 
@@ -82,8 +94,8 @@ parvars4.4 <- c("b0", "b1", "b2", "b3")
 # Locally D-optimal design is as follows:
 ## weight and point of D-optimal design
 # Point1     Point2     Point3     Point4
-# /1.00000 \\ /-1.00000\\ /0.06801 \\ /1.00000 \\
-# \\-1.00000/ \\-1.00000/ \\1.00000 / \\1.00000 /
+# /1.00000 \ /-1.00000\ /0.06801 \ /1.00000 \
+# \-1.00000/ \-1.00000/ \1.00000 / \1.00000 /
 #   Weight1    Weight2    Weight3    Weight4
 # 0.250      0.250      0.250      0.250
 

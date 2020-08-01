@@ -4,10 +4,22 @@
 \alias{multiple}
 \title{Locally Multiple Objective Optimal Designs for the 4-Parameter Hill Model}
 \usage{
-multiple(minDose, maxDose, iter, k, inipars, Hill_par = TRUE, delta,
-  lambda, fimfunc = NULL, ICA.control = list(),
-  sens.control = list(), initial = NULL,
-  tol = sqrt(.Machine$double.xmin), x = NULL)
+multiple(
+  minDose,
+  maxDose,
+  iter,
+  k,
+  inipars,
+  Hill_par = TRUE,
+  delta,
+  lambda,
+  fimfunc = NULL,
+  ICA.control = list(),
+  sens.control = list(),
+  initial = NULL,
+  tol = sqrt(.Machine$double.xmin),
+  x = NULL
+)
 }
 \arguments{
 \item{minDose}{Minimum dose \eqn{D}. For the 4-parameter logistic model, i.e. when \code{Hill_par = FALSE}, it is the minimum of \eqn{log(D)}.}
@@ -77,6 +89,9 @@ an object of class \code{minimax} that is a list including three sub-lists:
       \code{convergence}      \tab      \tab Stopped by \code{'maxiter'} or \code{'equivalence'}?\cr
     }
   }
+  \item{\code{method}}{A type of optimal designs used.}
+  \item{\code{design}}{Design points and weights at the final iteration.}
+  \item{\code{out}}{A data frame of design points, weights, value of the criterion for the best imperialist (min_cost), and Mean of the criterion values of all the imperialistsat each iteration (mean_cost).}
 }
 
 The list \code{sens} contains information about the design verification by the general equivalence theorem. See \code{sensminimax} for more details.

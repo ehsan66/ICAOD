@@ -4,9 +4,12 @@
 \alias{crt.minimax.control}
 \title{Returns Control Parameters for Optimizing Minimax Criteria Over The Parameter Space}
 \usage{
-crt.minimax.control(x0 = NULL, optslist = list(stopval = -Inf,
-  algorithm = "NLOPT_GN_DIRECT_L", xtol_rel = 1e-06, ftol_rel = 0, maxeval
-  = 1000), ...)
+crt.minimax.control(
+  x0 = NULL,
+  optslist = list(stopval = -Inf, algorithm = "NLOPT_GN_DIRECT_L", xtol_rel = 1e-06,
+    ftol_rel = 0, maxeval = 1000),
+  ...
+)
 }
 \arguments{
 \item{x0}{Vector of the starting values for the optimization problem (must be from the parameter space).}

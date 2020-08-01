@@ -4,14 +4,30 @@
 \alias{robust}
 \title{Robust D-Optimal Designs}
 \usage{
-robust(formula, predvars, parvars, family = gaussian(), lx, ux, iter, k,
-  prob, parset, fimfunc = NULL, ICA.control = list(),
-  sens.control = list(), initial = NULL, npar = dim(parset)[2],
-  plot_3d = c("lattice", "rgl"), x = NULL, crtfunc = NULL,
-  sensfunc = NULL)
+robust(
+  formula,
+  predvars,
+  parvars,
+  family = gaussian(),
+  lx,
+  ux,
+  iter,
+  k,
+  prob,
+  parset,
+  fimfunc = NULL,
+  ICA.control = list(),
+  sens.control = list(),
+  initial = NULL,
+  npar = dim(parset)[2],
+  plot_3d = c("lattice", "rgl"),
+  x = NULL,
+  crtfunc = NULL,
+  sensfunc = NULL
+)
 }
 \arguments{
-\item{formula}{A nonlinear model \code{\link[stats]{formula}}.
+\item{formula}{A linear or nonlinear model \code{\link[stats]{formula}}.
 A symbolic description of the model consists of predictors and the unknown model parameters.
 Will be coerced to a \code{\link[stats]{formula}} if necessary.}
 
@@ -51,14 +67,10 @@ Every row is a design, i.e.  a concatenation of \code{x} and \code{w}. Will be c
 If not given, the sensitivity plot may be shifted below the y-axis.
  When \code{NULL}, it is set to \code{dim(parset)[2]}.}
 
-\item{plot_3d}{Which package should be used to plot the sensitivity (derivative) function for two-dimensional design space. Defaults to \code{"lattice"}.}
+\item{plot_3d}{Which package should be used to plot the sensitivity (derivative) function for models with two predictors.
+Either \code{"rgl"} or \code{"lattice"} (default).}
 
-\item{x}{A vector of candidate design (support) points.
-When is not set to \code{NULL} (default),
- the algorithm only finds the optimal weights for the candidate points in  \code{x}.
-   Should be set when the user has a finite number of candidate design points  and the purpose
-   is to find the optimal weight for each of them (when zero, they will be excluded from the design).
-For design points with more than one dimension, see 'Details' of \code{\link{sensminimax}}.}
+\item{x}{Vector of the design (support) points. See 'Details' of \code{\link{sensminimax}} for models with more than one predictors.}
 
 \item{crtfunc}{(Optional) a function that specifies an arbitrary criterion. It must have especial arguments and output. See 'Details' of \code{\link{minimax}}.}
 
@@ -92,6 +104,9 @@ an object of class \code{minimax} that is a list including three sub-lists:
       \code{convergence}      \tab      \tab Stopped by \code{'maxiter'} or \code{'equivalence'}?\cr
     }
   }
+  \item{\code{method}}{A type of optimal designs used.}
+  \item{\code{design}}{Design points and weights at the final iteration.}
+  \item{\code{out}}{A data frame of design points, weights, value of the criterion for the best imperialist (min_cost), and Mean of the criterion values of all the imperialistsat each iteration (mean_cost).}
 }
 
 The list \code{sens} contains information about the design verification by the general equivalence theorem. See \code{sensminimax} for more details.
@@ -102,7 +117,7 @@ and also the last iteration if   \code{ICA.control$checkfreq >= 0}. Otherwise, \
   the minimax criterion or the global maximum of the standardized maximin criterion over the parameter space, given  the current \code{x}, \code{w}.
 }
 \description{
-Finds Robust designs or optimal  in-average designs for nonlinear models.
+Finds Robust designs or optimal  in-average designs for linear and nonlinear models.
  It is useful when a set of different vectors of initial estimates
   along with a discrete probability measure
   are available for the unknown model parameters.

@@ -4,10 +4,12 @@
 \alias{crt.bayes.control}
 \title{Returns Control Parameters for Approximating Bayesian Criteria}
 \usage{
-crt.bayes.control(method = c("cubature", "quadrature"),
+crt.bayes.control(
+  method = c("cubature", "quadrature"),
   cubature = list(tol = 1e-05, maxEval = 50000, absError = 0),
-  quadrature = list(type = c("GLe", "GHe"), level = 6, ndConstruction =
-  "product", level.trans = FALSE))
+  quadrature = list(type = c("GLe", "GHe"), level = 6, ndConstruction = "product",
+    level.trans = FALSE)
+)
 }
 \arguments{
 \item{method}{A character denotes which method to be used to approximate the integrals in Bayesian criteria.

@@ -4,15 +4,34 @@
 \alias{sensminimax}
 \title{Verifying Optimality of The Minimax and Standardized maximin D-optimal Designs}
 \usage{
-sensminimax(formula, predvars, parvars, family = gaussian(), x, w, lx,
-  ux, lp, up, fimfunc = NULL, standardized = FALSE, localdes = NULL,
-  sens.control = list(), sens.minimax.control = list(),
-  calculate_criterion = TRUE, crt.minimax.control = list(),
-  plot_3d = c("lattice", "rgl"), plot_sens = TRUE, npar = length(lp),
-  silent = FALSE, crtfunc = NULL, sensfunc = NULL)
+sensminimax(
+  formula,
+  predvars,
+  parvars,
+  family = gaussian(),
+  x,
+  w,
+  lx,
+  ux,
+  lp,
+  up,
+  fimfunc = NULL,
+  standardized = FALSE,
+  localdes = NULL,
+  sens.control = list(),
+  sens.minimax.control = list(),
+  calculate_criterion = TRUE,
+  crt.minimax.control = list(),
+  plot_3d = c("lattice", "rgl"),
+  plot_sens = TRUE,
+  npar = length(lp),
+  silent = FALSE,
+  crtfunc = NULL,
+  sensfunc = NULL
+)
 }
 \arguments{
-\item{formula}{A nonlinear model \code{\link[stats]{formula}}.
+\item{formula}{A linear or nonlinear model \code{\link[stats]{formula}}.
 A symbolic description of the model consists of predictors and the unknown model parameters.
 Will be coerced to a \code{\link[stats]{formula}} if necessary.}
 

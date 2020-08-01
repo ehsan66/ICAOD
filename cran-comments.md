@@ -1,7 +1,7 @@
-# This is a new version (Version 0.9.9)
-* a vignette is added.
-* Few argument are added.
-* spell checking passed
+# This is the first submission (Version 1.0.0)
+# My Email is changed to esn_mud@yahoo.com because I don't have the university email anymore!
+
+
 ##### Test environments
 * local OS X install, R version 3.5.3 
 * Rcmd check: Passed 

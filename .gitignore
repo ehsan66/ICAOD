@@ -29,3 +29,4 @@ src/.DS_Store
 R/.gitignore
 ^inst/dont_upload$
 inst/Building_Vignette.R
+doc

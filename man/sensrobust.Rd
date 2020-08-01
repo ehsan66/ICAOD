@@ -4,14 +4,30 @@
 \alias{sensrobust}
 \title{Verifying Optimality of The Robust Designs}
 \usage{
-sensrobust(formula, predvars, parvars, family = gaussian(), x, w, lx, ux,
-  prob, parset, fimfunc = NULL, sens.control = list(),
-  calculate_criterion = TRUE, plot_3d = c("lattice", "rgl"),
-  plot_sens = TRUE, npar = dim(parset)[2], silent = FALSE,
-  crtfunc = NULL, sensfunc = NULL)
+sensrobust(
+  formula,
+  predvars,
+  parvars,
+  family = gaussian(),
+  x,
+  w,
+  lx,
+  ux,
+  prob,
+  parset,
+  fimfunc = NULL,
+  sens.control = list(),
+  calculate_criterion = TRUE,
+  plot_3d = c("lattice", "rgl"),
+  plot_sens = TRUE,
+  npar = dim(parset)[2],
+  silent = FALSE,
+  crtfunc = NULL,
+  sensfunc = NULL
+)
 }
 \arguments{
-\item{formula}{A nonlinear model \code{\link[stats]{formula}}.
+\item{formula}{A linear or nonlinear model \code{\link[stats]{formula}}.
 A symbolic description of the model consists of predictors and the unknown model parameters.
 Will be coerced to a \code{\link[stats]{formula}} if necessary.}
 
@@ -51,7 +67,7 @@ Either \code{"rgl"} or \code{"lattice"} (default).}
 
 \item{npar}{Number of model parameters.  Used when \code{fimfunc} is given instead of \code{formula} to specify the number of model parameters.
 If not given, the sensitivity plot may be shifted below the y-axis.
-When \code{NULL}, it is set to \code{length(inipars)}.}
+ When \code{NULL}, it is set to \code{dim(parset)[2]}.}
 
 \item{silent}{Do not print anything? Defaults to \code{FALSE}.}
 

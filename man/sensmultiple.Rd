@@ -4,9 +4,21 @@
 \alias{sensmultiple}
 \title{Verifying Optimality of The Multiple Objective Designs for The 4-Parameter Hill Model}
 \usage{
-sensmultiple(dose, w, minDose, maxDose, inipars, lambda, delta,
-  Hill_par = TRUE, sens.control = list(), calculate_criterion = TRUE,
-  plot_sens = TRUE, tol = sqrt(.Machine$double.xmin), silent = FALSE)
+sensmultiple(
+  dose,
+  w,
+  minDose,
+  maxDose,
+  inipars,
+  lambda,
+  delta,
+  Hill_par = TRUE,
+  sens.control = list(),
+  calculate_criterion = TRUE,
+  plot_sens = TRUE,
+  tol = sqrt(.Machine$double.xmin),
+  silent = FALSE
+)
 }
 \arguments{
 \item{dose}{A vector of design points. It is  either dose values or logarithm of dose values when \code{Hill_par = TRUE}.}

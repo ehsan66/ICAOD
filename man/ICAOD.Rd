@@ -3,11 +3,10 @@
 \docType{package}
 \name{ICAOD}
 \alias{ICAOD}
-\alias{ICAOD-package}
 \title{ICAOD: Finding Optimal Designs for Nonlinear Models Using Imperialist Competitive Algorithm}
 \description{
-Different functions are available to find optimal designs for nonlinear models using the imperialist competitive algorithm (ICA).
-Because the optimality criteria for nonlinear models depend on the unknown parameters,
+Different functions are available to find optimal designs for linear and nonlinear models using the imperialist competitive algorithm (ICA).
+Because the optimality criteria for linear and nonlinear models depend on the unknown parameters,
 one should choose on of the following method to deal with the parameter-dependency based on the available information for the unknown parameters:
 \itemize{
  \item{\code{\link{locally}}: }{finds locally optimal designs. A vector of initial estimates or guess is available for the vector of model parameters from a pilot or similar study.}

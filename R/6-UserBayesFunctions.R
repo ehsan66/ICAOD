@@ -3,7 +3,7 @@
 #' @title  Bayesian D-Optimal Designs
 #'
 #' @description
-#'  Finds (pseudo) Bayesian D-optimal designs for nonlinear models.
+#'  Finds (pseudo) Bayesian D-optimal designs for linear and nonlinear models.
 #'  It should be used when the user assumes a (truncated) prior distribution for the unknown model parameters.
 #'  If you have a discrete prior, please use the function \code{\link{robust}}.
 #'
@@ -88,7 +88,7 @@
 #'     For more details, see 'Examples'.
 #'
 #' @return
-#'  an object of class \code{bayes} that is a list including three sub-lists:
+#'  an object of class \code{minimax} that is a list including three sub-lists:
 #' \describe{
 #'   \item{\code{arg}}{A list of design and algorithm parameters.}
 #'   \item{\code{evol}}{A list of length equal to the number of iterations that stores the information about the best design (design with the minimum criterion value) of each iteration as follows:
@@ -99,7 +99,7 @@
 #'       \code{w}                      \tab      \tab Design weights. \cr
 #'       \code{min_cost}               \tab      \tab Value of the criterion for the best imperialist (design).  \cr
 #'       \code{mean_cost}              \tab      \tab Mean of the criterion values of all the imperialists. \cr
-#'       \code{sens}                   \tab      \tab An object of class \code{'sensbayes'}. See below.\cr
+#'       \code{sens}                   \tab      \tab An object of class \code{'sensminimax'}. See below.\cr
 #'     }
 #'   }
 #'
@@ -113,6 +113,9 @@
 #'       \code{convergence}      \tab      \tab Stopped by \code{'maxiter'} or \code{'equivalence'}?\cr
 #'     }
 #'   }
+#'   \item{\code{method}}{A type of optimal designs used.}
+#'   \item{\code{design}}{Design points and weights at the final iteration.}
+#'   \item{\code{out}}{A data frame of design points, weights, value of the criterion for the best imperialist (min_cost), and Mean of the criterion values of all the imperialistsat each iteration (mean_cost).}
 #' }
 #' The list \code{sens}  contains information about the design verification by the general equivalence theorem.
 #'  See \code{sensbayes} for more Details.
@@ -124,6 +127,7 @@
 #' @importFrom cubature hcubature
 #' @importFrom stats gaussian
 #' @importFrom stats binomial
+#' @importFrom utils capture.output
 #' @references
 #' Atashpaz-Gargari, E, & Lucas, C (2007). Imperialist competitive algorithm: an algorithm for optimization inspired by imperialistic competition. In 2007 IEEE congress on evolutionary computation (pp. 4661-4667). IEEE.\cr
 #' Masoudi E, Holling H, Duarte BP, Wong Wk (2019). Metaheuristic Adaptive Cubature Based Algorithm to Find Bayesian Optimal Designs for Nonlinear Models. Journal of Computational and Graphical Statistics. <doi:10.1080/10618600.2019.1601097>
@@ -159,10 +163,12 @@ bayes <- function(formula,
   if (is.null(crtfunc))
     type = "D" else
       type = "user"
-    if (!is.null(x))
-      k <- length(x)/length(lx)
+  if (!is.null(x))
+    k <- length(x)/length(lx)
     # in minimax it is crt_type
-    output <-  bayes_inner(fimfunc = fimfunc,
+
+
+    out <-  bayes_inner(fimfunc = fimfunc,
                            formula = formula,
                            predvars = predvars,
                            parvars = parvars,
@@ -187,7 +193,77 @@ bayes <- function(formula,
                            only_w_varlist = list(x = x),
                            user_crtfunc = crtfunc,
                            user_sensfunc = sensfunc)
-    return(output)
+
+    out$method = 'bayes' # 06202020@seongho
+    if (!missing(formula)){
+      out$call = formula # 06202020@seongho
+    }else{
+      out$call = NULL
+    }
+
+    dout = NULL
+    fout = NULL
+    fiter = length(out$evol)
+    if(fiter>0){
+      tout = c()
+      for(i in 1:fiter){
+        sout = out$evol[[i]]
+        tout = rbind(tout,c(i,sout$x,sout$w,sout$min_cost,sout$mean_cost))
+      }
+      dout = as.data.frame(tout)
+      #dimnames(dout)[[2]] = c("iter",paste("x",1:k,sep=""),paste("w",1:k,sep=""),"min_cost","mean_cost")
+
+      if(length(sout$x)==length(sout$w)){
+        dimnames(dout)[[2]] = c("iter",paste("x",1:k,sep=""),paste("w",1:k,sep=""),"min_cost","mean_cost")
+      }else{
+        tlen = length(sout$x)/length(sout$w)
+        tdimx = c()
+        for(i in 1:tlen){
+          tdimx = c(tdimx,paste(paste("x",i,sep=""),1:k,sep=""))
+        }
+        dimnames(dout)[[2]] = c("iter",tdimx,paste("w",1:k,sep=""),"min_cost","mean_cost")
+      }
+
+      # extract sens outcomes
+      sout = out$evol[[fiter]]
+      tsens = capture.output(sout$sens)
+      tpos.max = grep("Maximum",tsens)
+      tpos.elb = grep("ELB",tsens)
+      tpos.time = grep("Verification",tsens)
+      tmax = NA
+      telb = NA
+      ttime = NA
+      if(length(tpos.max)>0){
+        tmax = as.numeric(strsplit(gsub("\\s+","",tsens[tpos.max]),"is")[[1]][2])
+      }
+      if(length(tpos.elb)>0){
+        telb = as.numeric(strsplit(gsub("\\s+","",tsens[tpos.elb]),"is")[[1]][2])
+      }
+      if(length(tpos.time)>0){
+        ttime = as.numeric(strsplit(gsub("seconds!","",gsub("\\s+","",tsens[tpos.time])),"required")[[1]][2])
+      }
+      t2out = c(fiter,sout$x,sout$w,sout$min_cost,sout$mean_cost,tmax,telb,ttime)
+      fout = as.data.frame(t(t2out))
+      #dimnames(fout)[[2]] = c("iter",paste("x",1:k,sep=""),paste("w",1:k,sep=""),"min_cost","mean_cost","max_sens","elb","time_sec")
+
+      if(length(sout$x)==length(sout$w)){
+        dimnames(fout)[[2]] = c("iter",paste("x",1:k,sep=""),paste("w",1:k,sep=""),"min_cost","mean_cost","max_sens","elb","time_sec")
+      }else{
+        tlen = length(sout$x)/length(sout$w)
+        tdimx2 = c()
+        for(i in 1:tlen){
+          tdimx2 = c(tdimx2,paste(paste("x",i,sep=""),1:k,sep=""))
+        }
+        dimnames(fout)[[2]] = c("iter",tdimx2,paste("w",1:k,sep=""),"min_cost","mean_cost","max_sens","elb","time_sec")
+      }
+
+    }
+
+    out$out = dout
+    #out$out2 = out$evol
+    out$design = fout
+
+    return(out)
 }
 ######################################################################################################*
 ######################################################################################################*
@@ -264,7 +340,9 @@ sensbayes <- function(formula,
   if (is.null(crtfunc))
     type = "D" else
       type = "user"
-  output <- sensbayes_inner (formula = formula,
+
+
+  out <- sensbayes_inner (formula = formula,
                              predvars = predvars, parvars = parvars,
                              family =  family,
                              x = x, w = w,
@@ -286,7 +364,9 @@ sensbayes <- function(formula,
                              silent = silent,
                              user_crtfunc = crtfunc,
                              user_sensfunc = sensfunc)
-  return(output)
+  out$method = "bayes" # 06222020@seongho
+
+  return(out)
 }
 ######################################################################################################*
 ######################################################################################################*
@@ -330,6 +410,7 @@ sensbayes <- function(formula,
 #'  See 'Examples' for more details.
 #'
 #' @references  McGree, J. M., Eccleston, J. A., and Duffull, S. B. (2008). Compound optimal design criteria for nonlinear models. Journal of Biopharmaceutical Statistics, 18(4), 646-661.
+#' @importFrom utils capture.output
 #' @export
 #' @inherit bayes return
 #' @example inst/examples/bayescomp_examples.R
@@ -371,7 +452,8 @@ bayescomp <- function(formula,
       stop("arguments of 'prob' must be 'x' and 'param'")
   }
 
-  output <-  bayes_inner(fimfunc = fimfunc,
+
+  out <-  bayes_inner(fimfunc = fimfunc,
                          formula = formula,
                          predvars = predvars,
                          parvars = parvars,
@@ -392,7 +474,76 @@ bayescomp <- function(formula,
                          initial = initial,
                          const = list(ui = NULL, ci = NULL, coef = NULL),
                          plot_3d = plot_3d[1])
-  return(output)
+
+  #out$method = 'bayes' # 06202020@seongho
+  #out$call = formula
+  out$method = 'bayes' # 06202020@seongho
+
+  if (!missing(formula)){
+    out$call = formula # 06202020@seongho
+  }else{
+    out$call = NULL
+  }
+
+  plen = length(predvars)
+
+  dout = NULL
+  fout = NULL
+  if(!is.null(out$evol)){
+    #if(F){
+    fiter = length(out$evol)
+    if(fiter>0){
+      tout = c()
+      for(i in 1:fiter){
+        sout = out$evol[[i]]
+        tout = rbind(tout,c(i,sout$x,sout$w,sout$min_cost,sout$mean_cost))
+      }
+      dout = as.data.frame(tout)
+      if(plen==1){
+        dimnames(dout)[[2]] = c("iter",paste("x",1:k,sep=""),paste("w",1:k,sep=""),"min_cost","mean_cost")
+      }else{
+        tdimx = c()
+        for(i in 1:plen){
+          tdimx = c(tdimx,paste(paste("x",i,sep=""),1:k,sep=""))
+        }
+        dimnames(dout)[[2]] = c("iter",tdimx,paste("w",1:k,sep=""),"min_cost","mean_cost")
+      }
+      # extract sens outcomes
+      sout = out$evol[[fiter]]
+      tsens = capture.output(sout$sens)
+      tpos.max = grep("Maximum",tsens)
+      tpos.elb = grep("ELB",tsens)
+      tpos.time = grep("Verification",tsens)
+      tmax = NA
+      telb = NA
+      ttime = NA
+      if(length(tpos.max)>0){
+        tmax = as.numeric(strsplit(gsub("\\s+","",tsens[tpos.max]),"is")[[1]][2])
+      }
+      if(length(tpos.elb)>0){
+        telb = as.numeric(strsplit(gsub("\\s+","",tsens[tpos.elb]),"is")[[1]][2])
+      }
+      if(length(tpos.time)>0){
+        ttime = as.numeric(strsplit(gsub("seconds!","",gsub("\\s+","",tsens[tpos.time])),"required")[[1]][2])
+      }
+      t2out = c(fiter,sout$x,sout$w,sout$min_cost,sout$mean_cost,tmax,telb,ttime)
+      fout = as.data.frame(t(t2out))
+      if(plen==1){
+        dimnames(fout)[[2]] = c("iter",paste("x",1:k,sep=""),paste("w",1:k,sep=""),"min_cost","mean_cost","max_sens","elb","time_sec")
+      }else{
+        tdimx = c()
+        for(i in 1:plen){
+          tdimx = c(tdimx,paste(paste("x",i,sep=""),1:k,sep=""))
+        }
+        dimnames(fout)[[2]] = c("iter",tdimx,paste("w",1:k,sep=""),"min_cost","mean_cost","max_sens","elb","time_sec")
+      }
+    }
+  }
+  out$out = dout
+  #out$out2 = out$evol
+  out$design = fout
+
+  return(out)
 }
 
 ######################################################################################################*
@@ -464,7 +615,8 @@ sensbayescomp <- function(formula,
     if (!all(c("x", "param") %in% formalArgs(prob)))
       stop("arguments of 'prob' must be 'x' and 'param'")
   }
-  output <- sensbayes_inner (formula = formula,
+
+  out <- sensbayes_inner (formula = formula,
                              predvars = predvars, parvars = parvars,
                              family =  family,
                              x = x, w = w,
@@ -484,7 +636,9 @@ sensbayescomp <- function(formula,
                              npar = npar,
                              calculate_criterion = calculate_criterion,
                              silent  = silent)
-  return(output)
+  out$method = "bayes" # 06222020@seongho
+
+  return(out)
 }
 ######################################################################################################*
 ######################################################################################################*
@@ -492,263 +646,9 @@ sensbayescomp <- function(formula,
 ######################################################################################################*
 ######################################################################################################*
 
-#  roxygen
-#' Plotting \code{bayes} Objects
-#' @description
-#'  This function plots the evolution of the ICA algorithm (iteration vs the best (minimum) criterion value at each iteration) and also verifies the optimality of the last obtained design
-#'  using  the general equivalence theorem. It plots the sensitivity function and calculates the ELB for the best design generated  at iteration number \code{iter}.
-#'
-#' @param x An object of class \code{bayes}.
-#' @param iter Iteration number. if \code{NULL} (default), it will be set to the last iteration.
-#' @param sensitivity Logical. If \code{TRUE} (default), the general equivalence theorem is used to check the optimality if the best design in iteration number \code{iter} and the sensitivity function will be plotted.
-#' @param sens.control Control Parameters for Calculating the ELB. For details, see the function \code{\link{sens.control}}.
-#' @param calculate_criterion Logical. Re-calculate the Bayesian criterion value (maybe with a set of new tuning parameters to be sure of the accuracy of the integral approximation)? Defaults to \code{FALSE}. See 'Details'.
-#' @param sens.bayes.control Control parameters to verify general equivalence theorem. For details, see \code{\link{sens.bayes.control}}.
-#'  If \code{NULL} (default), it will be set to the  tuning parameters used to create object \code{x}.
-#' @param crt.bayes.control Control parameters to approximate the integration in the Bayesian criterion at a given design.
-#'  For details, see \code{\link{crt.bayes.control}}.
-#' If \code{NULL} (default), it will be set to the  tuning parameters used to create object \code{x}.
-#' @param silent Do not print anything? Defaults to \code{FALSE}.
-#' @param plot_3d Which package should be used to plot the sensitivity function for two-dimensional design space. Defaults to \code{plot_3d = "lattice"}.
-#' Only applicable when \code{sensitivity = TRUE}.
-#' @param evolution Plot Evolution? Defaults to \code{FALSE}.
-#' @param ... Argument with no further use.
-#' @seealso \code{\link{bayes}}, \code{\link{bayescomp}}
-#' @details
-#' In addition to verifying the general equivalence theorem,
-#'  this function makes it possible to  re-calculate the criterion value for the output designs using a new (say, more conservative) set of tuning parameters.
-#'  This is useful for  Bayesian optimal designs to assess the robustness of the
-#'  criterion value with respect to different values of the tuning parameters.
-#'  To put it simple, for Bayesian generated designs, the user can re-calculate the
-#'  criterion value for the output design (best design generated in \code{iter}) with different values for  \code{maxEval} and \code{tol} in \code{\link{crt.bayes.control}}
-#'  to verify  that the function \code{hcubature} approximates the integrals to an user-acceptable accuracy. The same also applies for the quadrature methods using different number of nodes.
-#' @export
-plot.bayes <- function(x, iter = NULL,
-                       sensitivity = TRUE,
-                       calculate_criterion = FALSE,
-                       sens.control = list(),
-                       sens.bayes.control = list(),
-                       crt.bayes.control = list(),
-                       silent = FALSE,
-                       plot_3d = c("lattice", "rgl"),
-                       evolution = FALSE,
-                       ...){
-  if (!evolution & !sensitivity){
-    warning("Both 'sensitivity' and 'evolution' set to be FALSE.\nNo action is done in plot function!")
-    return(invisible(NULL))
-  }
-  if (any(class(x) != c("list", "bayes")))
-    stop("'x' must be of class 'bayes'")
-
-
-  ## to not be confused with design points
-  obj <- x
-  arg <- obj$arg
-  if(is.null(iter))
-    totaliter <- length(obj$evol) else
-      totaliter <- iter
-  if (totaliter > length(x$evol))
-    stop("'iter' is larger than the maximum number of iterations")
-
-  #### quadrature and cubature
-  #if (is.null(sens_method))
-  #  sens_method  <- arg$sens_method
-  #if (is.null(crt_method))
-  #  crt_method  <- arg$crt_method
-  #if (!crt_method %in% c("cubature", "quadrature"))
-  #  stop("'crt_method' can only be 'cubature' or 'quadrature'")
-  #if (!sens_method %in% c("cubature", "quadrature"))
-  #  stop("'sens_method' can only be 'cubature' or 'quadrature'")
-  ####
-
-
-  if (calculate_criterion || sensitivity){
-    if (is.null(sens.bayes.control)){
-      sens.bayes.control <- arg$sens.bayes.control }else {
-        sens.bayes.control <- do.call("sens.bayes.control", sens.bayes.control)
-      }
-    if (is.null(sens.control)){
-      sens.control <- arg$sens.control }else {
-        sens.control <- do.call("sens.control", sens.control)
-      }
-    if (is.null(crt.bayes.control)){
-      crt.bayes.control <- arg$crt.bayes.control
-      Psi_x_bayes  <- arg$Psi_funcs$Psi_x_bayes
-      Psi_xy_bayes  <- arg$Psi_funcs$Psi_xy_bayes
-    } else {
-
-      crt.bayes.control <- do.call("crt.bayes.control", crt.bayes.control)
-      temp_psi <- create_Psi_bayes(type = arg$type, prior = arg$prior, FIM = arg$FIM, lp = arg$prior$lower,
-                                   up = arg$prior$upper, npar = arg$npar,
-                                   truncated_standard = arg$truncated_standard,
-                                   const = arg$const, sens.bayes.control = sens.bayes.control,
-                                   compound = arg$compound,
-                                   method =  sens.bayes.control$method,
-                                   user_sensfunc = arg$user_sensfunc)
-      Psi_x_bayes  <- temp_psi$Psi_x_bayes
-      Psi_xy_bayes  <- temp_psi$Psi_xy_bayes
-    }
-
-    vertices_outer <- make_vertices(lower = arg$lx, upper = arg$ux)
-    sens_varlist <-list(npred = length(arg$lx),
-                        # plot_3d = "lattice",
-                        npar = arg$npar,
-                        fimfunc_sens = arg$FIM_sens,
-                        Psi_x_bayes  = Psi_x_bayes,
-                        Psi_xy_bayes  = Psi_xy_bayes,
-                        crfunc = arg$crfunc,
-                        vertices_outer = vertices_outer)
-
-    sens_res <- sensbayes_inner(x = obj$evol[[totaliter]]$x, w = obj$evol[[totaliter]]$w,
-                                lx = arg$lx, ux = arg$ux,
-                                fimfunc = arg$FIM,
-                                prior = arg$prior,
-                                sens.control = sens.control,
-                                sens.bayes.control = sens.bayes.control,
-                                crt.bayes.control = crt.bayes.control,
-                                type = arg$type,
-                                plot_3d = plot_3d[1],
-                                plot_sens = TRUE,
-                                const = arg$const,
-                                compound = arg$compound,### you dont need compund here
-                                varlist = sens_varlist,
-                                calledfrom =  "plot",
-                                npar = arg$npar,
-                                calculate_criterion = calculate_criterion,
-                                silent = silent,
-                                calculate_sens = sensitivity)
-  }
-  if (evolution){
-    ## extract evolution data from the object
-    mean_cost <- sapply(1:totaliter, FUN = function(j)obj$evol[[j]]$mean_cost)
-    min_cost <- sapply(1:totaliter, FUN = function(j)obj$evol[[j]]$min_cost)
-    if (calculate_criterion)
-      min_cost[totaliter] <- sens_res$crtval
-
-
-    type <- obj$arg$type
-
-    # plot setting
-    legend_place <- "topright"
-    legend_text <- c( "Best Imperialist", "Mean of Imperialists")
-    line_col <- c("firebrick3", "blue4")
-    title1 <- "Bayesian criterion"
-    ylim = switch(type, "bayesian_D" = c(min(min_cost) - .07, max(mean_cost[1:(totaliter)]) + .2))
-
-
-    PlotEffCost(from = 1,
-                to = (totaliter),
-                AllCost = min_cost, ##all criterion up to now (all cost function)
-                UserCost = NULL,
-                DesignType = type,
-                col = line_col[1],
-                xlab = "Iteration",
-                ylim = ylim,
-                lty = 1,
-                title1 = title1,
-                plot_main = TRUE)
-    ICAMean_line <-  mean_cost[1:(totaliter)]
-    lines(x = 1:(totaliter),
-          y = ICAMean_line,
-          col = line_col[2], type = "s", lty = 5)
-    legend(x = legend_place,  legend = legend_text,lty = c(1,5, 3), col = line_col, xpd = TRUE, bty = "n")
-  }
-  if(sensitivity || calculate_criterion)
-    return(sens_res) else
-      return(invisible(NULL))
-}
 ######################################################################################################*
 ######################################################################################################*
-#  roxygen
-#' Printing \code{bayes} Objects
-#'
-#' Print method for an object of class \code{bayes}.
-#' @param x an object of class \code{bayes}.
-#' @param iter Iteration number. if \code{NULL}, it will be set to the last iteration.
-#' @param all.info Print all the information? Defaults to \code{FALSE}.
-#' @param ... Argument with no further use.
-#' @seealso \code{\link{bayes}}
-#' @export
 
-print.bayes <- function(x, iter = NULL, all.info = FALSE, ...){
-
-
-  if (any(class(x) != c("list", "bayes")))
-    stop("'x' must be of class 'bayes'")
-  ## to not get confused with design points
-  object <- x
-  if (is.null(iter))
-    totaliter <- length(object$evol) else
-      totaliter <- iter
-  if (totaliter > length(x$evol))
-    stop("'iter' is larger than the maximum number of iterations")
-  # if( grepl("on_average", x$arg$type))
-  #   type <- "robust" else
-  type <- x$arg$type
-  ### printing, match with cat in iterate functions
-  if (all.info){
-    cat("\n***********************************************************************",
-        "\nICA iter:", totaliter, "\n",
-        print_xw_char(x = object$evol[[totaliter]]$x, w =  object$evol[[totaliter]]$w,
-                      npred = length(object$arg$lx), is.only.w = object$arg$is.only.w,
-                      equal_weight = object$arg$ICA.control$equal_weight),
-        "\nCriterion value: ", object$evol[[totaliter]]$min_cost,
-        "\nTotal number of function evaluations:", object$alg$nfeval,
-        "\nTotal number of successful local search moves:", object$alg$nlocal,
-        "\nTotal number of successful revolution moves:", object$alg$nrevol,
-        "\nConvergence:", object$alg$convergence)
-    if (object$arg$ICA.control$only_improve)
-      cat("\nTotal number of successful assimilation moves:", object$alg$nimprove, "\n")
-    if (is.null(iter))
-      cat("CPU time:", object$arg$time[1], " seconds!\n")
-    cat("***********************************************************************")
-  }else{
-    cat("\n***********************************************************************",
-        "\nICA iter:", totaliter, "\n",
-        print_xw_char(x = object$evol[[totaliter]]$x, w =  object$evol[[totaliter]]$w,
-                      npred = length(object$arg$lx), is.only.w = object$arg$is.only.w,
-                      equal_weight = object$arg$ICA.control$equal_weight),
-        "\nCriterion value: ", object$evol[[totaliter]]$min_cost,
-        "\nConvergence:", object$alg$convergence, "\n")
-    if (is.null(iter))
-      cat("CPU time:", object$arg$time[1], " seconds!\n")
-    cat("***********************************************************************")
-  }
-  if (!is.null(object$evol[[totaliter]]$sens))
-    print(object$evol[[totaliter]]$sens)
-
-  return(invisible(NULL))
-}
-######################################################################################################*
-######################################################################################################*
-#' Printing \code{sensbayes} Objects
-#'
-#' Print method for an object of class \code{sensbayes}.
-#' @param x An object of class \code{sensbayes}.
-#' @param ... Argument with no further use.
-#' @export
-#' @seealso \code{\link{sensbayes}}, \code{\link{sensbayescomp}}
-print.sensbayes <- function(x,  ...){
-  if (any(class(x) != c("list", "sensbayes")))
-    stop("'x' must be of class 'sensbayes'")
-
-  cat("\n***********************************************************************",
-      "\nMaximum of the sensitivity function is ", x$max_deriv, "\nEfficiency lower bound (ELB) is ", x$ELB,
-      "\nVerification required",x$time, "seconds!",
-      "\nAdjust the control parameters in 'sens.bayes.control' for higher speed\n")
-  #   if (x$type == "minimax")
-  #     optimchar <- "\nSet of all maxima over parameter space\n"
-  #   if (x$type == "standardized")
-  #     optimchar <- "\nSet of all minima over parameter space\n"
-  #   cat("\nAnswering set:\n", answer, optimchar, optima, "\n")
-  # }
-  #
-  # if (!is.null(x$crtval))
-  #   cat("Criterion value found by 'nloptr':", x$crtval)
-  cat("***********************************************************************")
-
-  return(invisible(NULL))
-}
 ######################################################################################################*
 ######################################################################################################*
 #' @title Returns Control Parameters for Approximating The Integrals In The Bayesian Sensitivity Functions
@@ -899,11 +799,11 @@ crt.bayes.control <- function(method = c("cubature", "quadrature"),
 ######################################################################################################*
 ######################################################################################################*
 # roxygen
-#' @title Updating an Object of Class \code{bayes}
+#' @title Updating an Object of Class \code{minimax}
 #'
-#' @description  Runs the ICA optimization algorithm on an object of class \code{bayes} for more number of iterations  and updates the results.
+#' @description  Runs the ICA optimization algorithm on an object of class \code{minimax} for more number of iterations  and updates the results.
 #'
-#' @param object An object of class \code{bayes}.
+#' @param object An object of class \code{minimax}.
 #' @param iter Number of iterations.
 #' @param ... An argument of no further use.
 #' @seealso \code{\link{bayes}}
@@ -916,12 +816,16 @@ crt.bayes.control <- function(method = c("cubature", "quadrature"),
 #' @importFrom mvQuad quadrature
 ## @importFrom sn dmsn dmst dmsc
 # @importFrom LaplacesDemon dmvl dmvt dmvc dmvpe
-update.bayes <- function(object, iter,...){
-  # ... is an argument of no use. Only to match the generic update
-  if (all(class(object) != c("list", "bayes")))
-    stop("''object' must be of class 'bayes'")
-  if (missing(iter))
-    stop("'iter' is missing")
+#update.bayes <- function(object, iter,...){
+bayes.update <- function(object, iter,...){ # 06212020@seongho
+    # ... is an argument of no use. Only to match the generic update
+  #if (all(class(object) != c("list", "bayes"))) # 06202020@seongho
+
+  # blocked by 06212020@seongho
+  #if (all(class(object) != c("bayes")))
+  #  stop("''object' must be of class 'bayes'")
+  #if (missing(iter))
+  #  stop("'iter' is missing")
 
   arg <- object$arg
   ICA.control <- object$arg$ICA.control

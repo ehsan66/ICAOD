@@ -901,9 +901,12 @@ bayes_inner <- function(fimfunc = NULL,
 
     ICA_object <- list(arg = arg,
                        evol = NULL)
-    class(ICA_object) <- c("list", "bayes")
+    #class(ICA_object) <- c("list", "bayes") # 06202020@seongho
+    #class(ICA_object) <- c("bayes")
+    class(ICA_object) <- c("minimax") # 06212020@seongho
     #cat("bayes_inner ", get(".Random.seed")[2], "\n")
-    out <- update.bayes(object = ICA_object, iter = iter)
+    #out <- update.bayes(object = ICA_object, iter = iter)
+    out <- update.minimax(object = ICA_object, iter = iter) # 06212020@seongho
     return(out)
 
 }
@@ -1329,7 +1332,9 @@ sensbayes_inner <- function(formula,
       cat("Evaluating the criterion.........................................\n")
     object$crtval <- varlist$crfunc(q = c(x, w), npred = varlist$npred)$val
   }
-  class(object) <- c("list", "sensbayes")
+  #class(object) <- c("list", "sensbayes") # 06202020@seongho
+  #class(object) <- c("sensbayes")
+  class(object) <- c("sensminimax")
   time2 <- proc.time() - time1
   if(!silent)
     cat("Verification is done in",time2[3], "seconds!", "\nAdjust the control parameters in 'sens.bayes.control' for higher speed\n")

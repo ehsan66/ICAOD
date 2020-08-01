@@ -4,14 +4,29 @@
 \alias{senslocally}
 \title{Verifying Optimality of The Locally D-optimal Designs}
 \usage{
-senslocally(formula, predvars, parvars, family = gaussian(), x, w, lx,
-  ux, inipars, fimfunc = NULL, sens.control = list(),
-  calculate_criterion = TRUE, plot_3d = c("lattice", "rgl"),
-  plot_sens = TRUE, npar = length(inipars), silent = FALSE,
-  crtfunc = NULL, sensfunc = NULL)
+senslocally(
+  formula,
+  predvars,
+  parvars,
+  family = gaussian(),
+  x,
+  w,
+  lx,
+  ux,
+  inipars,
+  fimfunc = NULL,
+  sens.control = list(),
+  calculate_criterion = TRUE,
+  plot_3d = c("lattice", "rgl"),
+  plot_sens = TRUE,
+  npar = length(inipars),
+  silent = FALSE,
+  crtfunc = NULL,
+  sensfunc = NULL
+)
 }
 \arguments{
-\item{formula}{A nonlinear model \code{\link[stats]{formula}}.
+\item{formula}{A linear or nonlinear model \code{\link[stats]{formula}}.
 A symbolic description of the model consists of predictors and the unknown model parameters.
 Will be coerced to a \code{\link[stats]{formula}} if necessary.}
 

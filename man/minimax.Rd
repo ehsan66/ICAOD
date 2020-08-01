@@ -4,15 +4,35 @@
 \alias{minimax}
 \title{Minimax and Standardized Maximin D-Optimal Designs}
 \usage{
-minimax(formula, predvars, parvars, family = gaussian(), lx, ux, lp, up,
-  iter, k, n.grid = 0, fimfunc = NULL, ICA.control = list(),
-  sens.control = list(), sens.minimax.control = list(),
-  crt.minimax.control = list(), standardized = FALSE, initial = NULL,
-  localdes = NULL, npar = length(lp), plot_3d = c("lattice", "rgl"),
-  x = NULL, crtfunc = NULL, sensfunc = NULL)
+minimax(
+  formula,
+  predvars,
+  parvars,
+  family = gaussian(),
+  lx,
+  ux,
+  lp,
+  up,
+  iter,
+  k,
+  n.grid = 0,
+  fimfunc = NULL,
+  ICA.control = list(),
+  sens.control = list(),
+  sens.minimax.control = list(),
+  crt.minimax.control = list(),
+  standardized = FALSE,
+  initial = NULL,
+  localdes = NULL,
+  npar = length(lp),
+  plot_3d = c("lattice", "rgl"),
+  x = NULL,
+  crtfunc = NULL,
+  sensfunc = NULL
+)
 }
 \arguments{
-\item{formula}{A nonlinear model \code{\link[stats]{formula}}.
+\item{formula}{A linear or nonlinear model \code{\link[stats]{formula}}.
 A symbolic description of the model consists of predictors and the unknown model parameters.
 Will be coerced to a \code{\link[stats]{formula}} if necessary.}
 
@@ -116,6 +136,9 @@ an object of class \code{minimax} that is a list including three sub-lists:
       \code{convergence}      \tab      \tab Stopped by \code{'maxiter'} or \code{'equivalence'}?\cr
     }
   }
+  \item{\code{method}}{A type of optimal designs used.}
+  \item{\code{design}}{Design points and weights at the final iteration.}
+  \item{\code{out}}{A data frame of design points, weights, value of the criterion for the best imperialist (min_cost), and Mean of the criterion values of all the imperialistsat each iteration (mean_cost).}
 }
 
 The list \code{sens} contains information about the design verification by the general equivalence theorem. See \code{sensminimax} for more details.
@@ -126,7 +149,7 @@ and also the last iteration if   \code{ICA.control$checkfreq >= 0}. Otherwise, \
   the minimax criterion or the global maximum of the standardized maximin criterion over the parameter space, given  the current \code{x}, \code{w}.
 }
 \description{
-Finds minimax and standardized maximin D-optimal designs for nonlinear models.
+Finds minimax and standardized maximin D-optimal designs for linear and nonlinear models.
  It should be used when the user assumes the unknown parameters belong to a parameter region
  \eqn{\Theta}, which is called ``region of uncertainty'',  and the
    purpose is to protect the experiment from the worst case scenario
@@ -169,7 +192,7 @@ over the grid points.
 
 
 The \code{formula} is used to automatically create the Fisher information matrix (FIM)
- for a nonlinear model provided that the distribution of the
+ for a linear or nonlinear model provided that the distribution of the
   response variable belongs to the natural exponential family.
 Function \code{minimax} also provides an
  option to assign a user-defined FIM directly via the argument  \code{fimfunc}.

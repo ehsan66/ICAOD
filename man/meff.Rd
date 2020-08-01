@@ -4,12 +4,26 @@
 \alias{meff}
 \title{Calculates Relative Efficiency for Minimax Optimal Designs}
 \usage{
-meff(formula, predvars, parvars, family = gaussian(), lp, up,
-  fimfunc = NULL, x2, w2, x1, w1, standardized = FALSE,
-  localdes = NULL, crt.minimax.control = list(), npar = length(lp))
+meff(
+  formula,
+  predvars,
+  parvars,
+  family = gaussian(),
+  lp,
+  up,
+  fimfunc = NULL,
+  x2,
+  w2,
+  x1,
+  w1,
+  standardized = FALSE,
+  localdes = NULL,
+  crt.minimax.control = list(),
+  npar = length(lp)
+)
 }
 \arguments{
-\item{formula}{A nonlinear model \code{\link[stats]{formula}}.
+\item{formula}{A linear or nonlinear model \code{\link[stats]{formula}}.
 A symbolic description of the model consists of predictors and the unknown model parameters.
 Will be coerced to a \code{\link[stats]{formula}} if necessary.}
 

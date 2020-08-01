@@ -1,3 +1,8 @@
+# ICAOD 1.0.0 
+* The vignette is updated.
+* The class bayes is removed and replaced by class minimax
+* Dr. Seongho Kim joined us as an author
+
 # ICAOD 0.9.9 
 * a vignette is added.
 * The crt_method and sens_method arguments in bayes are now placed in crt.bayes.control and sens.bayes.control with a new name method.

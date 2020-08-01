@@ -4,14 +4,14 @@
 #' @title Minimax and Standardized Maximin D-Optimal Designs
 #' @description
 #'
-#'  Finds minimax and standardized maximin D-optimal designs for nonlinear models.
+#'  Finds minimax and standardized maximin D-optimal designs for linear and nonlinear models.
 #'  It should be used when the user assumes the unknown parameters belong to a parameter region
 #'  \eqn{\Theta}, which is called ``region of uncertainty'',  and the
 #'    purpose is to protect the experiment from the worst case scenario
 #'   over \eqn{\Theta}.
 #'
 #'
-#'@param formula A nonlinear model \code{\link[stats]{formula}}.
+#'@param formula A linear or nonlinear model \code{\link[stats]{formula}}.
 #' A symbolic description of the model consists of predictors and the unknown model parameters.
 #' Will be coerced to a \code{\link[stats]{formula}} if necessary.
 #'@param predvars A vector of characters. Denotes the predictors in the \code{\link[stats]{formula}}.
@@ -101,7 +101,7 @@
 #'
 #'
 #' The \code{formula} is used to automatically create the Fisher information matrix (FIM)
-#'  for a nonlinear model provided that the distribution of the
+#'  for a linear or nonlinear model provided that the distribution of the
 #'   response variable belongs to the natural exponential family.
 #' Function \code{minimax} also provides an
 #'  option to assign a user-defined FIM directly via the argument  \code{fimfunc}.
@@ -219,6 +219,9 @@
 #'       \code{convergence}      \tab      \tab Stopped by \code{'maxiter'} or \code{'equivalence'}?\cr
 #'     }
 #'   }
+#'   \item{\code{method}}{A type of optimal designs used.}
+#'   \item{\code{design}}{Design points and weights at the final iteration.}
+#'   \item{\code{out}}{A data frame of design points, weights, value of the criterion for the best imperialist (min_cost), and Mean of the criterion values of all the imperialistsat each iteration (mean_cost).}
 #' }
 #'
 #' The list \code{sens} contains information about the design verification by the general equivalence theorem. See \code{sensminimax} for more details.
@@ -245,6 +248,7 @@
 #' Dette, H. (1997). Designing experiments with respect to 'standardized' optimality criteria. Journal of the Royal Statistical Society: Series B (Statistical Methodology), 59(1), 97-110. \cr
 #' Masoudi E, Holling H, Wong WK (2017). Application of Imperialist Competitive Algorithm to Find Minimax and Standardized Maximin Optimal Designs. Computational Statistics and Data Analysis, 113, 330-345. <doi:10.1016/j.csda.2016.06.014>\cr
 #' @example inst/examples/minimax_examples.R
+#' @importFrom utils capture.output
 #' @export
 #' @seealso \code{\link{sensminimax}}
 minimax <- function(formula, predvars, parvars, family = gaussian(),
@@ -292,7 +296,9 @@ minimax <- function(formula, predvars, parvars, family = gaussian(),
         crt_type = "user"
     if (!is.null(x))
       k <- length(x)/length(lx)
-    out <- minimax_inner(formula = formula,
+
+
+        out <- minimax_inner(formula = formula,
                          predvars = predvars, parvars = parvars, family = family,
                          lx = lx, ux = ux, lp = lp, up = up, iter = iter,
                          k = k,
@@ -311,6 +317,75 @@ minimax <- function(formula, predvars, parvars, family = gaussian(),
                          only_w_varlist = list(x = x),
                          user_crtfunc = crtfunc,
                          user_sensfunc = sensfunc)
+
+        out$method = 'minimax' # 06202020@seongho
+        if (!missing(formula)){
+      out$call = formula # 06202020@seongho
+    }else{
+      out$call = NULL
+    }
+
+    dout = NULL
+    fout = NULL
+    fiter = length(out$evol)
+    if(fiter>0){
+      tout = c()
+      for(i in 1:fiter){
+        sout = out$evol[[i]]
+        tout = rbind(tout,c(i,sout$x,sout$w,sout$min_cost,sout$mean_cost))
+      }
+      dout = as.data.frame(tout)
+      #dimnames(dout)[[2]] = c("iter",paste("x",1:k,sep=""),paste("w",1:k,sep=""),"min_cost","mean_cost")
+
+      if(length(sout$x)==length(sout$w)){
+        dimnames(dout)[[2]] = c("iter",paste("x",1:k,sep=""),paste("w",1:k,sep=""),"min_cost","mean_cost")
+      }else{
+        tlen = length(sout$x)/length(sout$w)
+        tdimx = c()
+        for(i in 1:tlen){
+          tdimx = c(tdimx,paste(paste("x",i,sep=""),1:k,sep=""))
+        }
+        dimnames(dout)[[2]] = c("iter",tdimx,paste("w",1:k,sep=""),"min_cost","mean_cost")
+      }
+
+      # extract sens outcomes
+      sout = out$evol[[fiter]]
+      tsens = capture.output(sout$sens)
+      tpos.max = grep("Maximum",tsens)
+      tpos.elb = grep("ELB",tsens)
+      tpos.time = grep("Verification",tsens)
+      tmax = NA
+      telb = NA
+      ttime = NA
+      if(length(tpos.max)>0){
+        tmax = as.numeric(strsplit(gsub("\\s+","",tsens[tpos.max]),"is")[[1]][2])
+      }
+      if(length(tpos.elb)>0){
+        telb = as.numeric(strsplit(gsub("\\s+","",tsens[tpos.elb]),"is")[[1]][2])
+      }
+      if(length(tpos.time)>0){
+        ttime = as.numeric(strsplit(gsub("seconds!","",gsub("\\s+","",tsens[tpos.time])),"required")[[1]][2])
+      }
+      t2out = c(fiter,sout$x,sout$w,sout$min_cost,sout$mean_cost,tmax,telb,ttime)
+      fout = as.data.frame(t(t2out))
+      #dimnames(fout)[[2]] = c("iter",paste("x",1:k,sep=""),paste("w",1:k,sep=""),"min_cost","mean_cost","max_sens","elb","time_sec")
+
+      if(length(sout$x)==length(sout$w)){
+        dimnames(fout)[[2]] = c("iter",paste("x",1:k,sep=""),paste("w",1:k,sep=""),"min_cost","mean_cost","max_sens","elb","time_sec")
+      }else{
+        tlen = length(sout$x)/length(sout$w)
+        tdimx2 = c()
+        for(i in 1:tlen){
+          tdimx2 = c(tdimx2,paste(paste("x",i,sep=""),1:k,sep=""))
+        }
+        dimnames(fout)[[2]] = c("iter",tdimx2,paste("w",1:k,sep=""),"min_cost","mean_cost","max_sens","elb","time_sec")
+      }
+
+    }
+
+    out$out = dout
+    #out$out2 = out$evol
+    out$design = fout
 
     return(out)
 }
@@ -491,13 +566,15 @@ sensminimax <- function (formula, predvars, parvars,
                                silent = silent,
                                user_crtfunc = crtfunc,
                                user_sensfunc = sensfunc)
+      out$method = "minimax" # 06222020@seongho
+
       return(out)
 }
 ######################################################################################################*
 ######################################################################################################*
 #' @title Locally D-Optimal Designs
 #' @description
-#'  Finds locally D-optimal designs for nonlinear models.
+#'  Finds locally D-optimal designs for linear and nonlinear models.
 #'  It should be used when a vector of initial estimates is available for the unknown model parameters.
 #'  Locally optimal designs may not be efficient when the initial estimates are  far away from the true values of the parameters.
 #' @inheritParams minimax
@@ -506,6 +583,7 @@ sensminimax <- function (formula, predvars, parvars,
 #' @param npar Number of model parameters.  Used when \code{fimfunc} is given instead of \code{formula} to specify the number of model parameters.
 #'   If not given, the sensitivity plot may be shifted below the y-axis.
 #'   When \code{NULL}, it is set to \code{length(inipars)}.
+#' @importFrom utils capture.output
 #' @export
 #' @seealso \code{\link{senslocally}}
 #' @details
@@ -566,6 +644,10 @@ locally <- function(formula, predvars, parvars, family = gaussian(),
   if (is.null(crtfunc))
     crt_type = "D" else
       crt_type = "user"
+
+
+    #cat("#### BEFORE OUT ####\n")
+
     out <- minimax_inner(formula = formula,
                          predvars = predvars, parvars = parvars, family = family,
                          lx = lx, ux = ux, lp = inipars, up = inipars, iter = iter, k = k,
@@ -584,6 +666,96 @@ locally <- function(formula, predvars, parvars, family = gaussian(),
                          only_w_varlist = list(x = x),
                          user_crtfunc = crtfunc,
                          user_sensfunc = sensfunc)
+
+    out$method = 'locally' # 06202020@seongho
+    if (!missing(formula)){
+      out$call = formula # 06202020@seongho
+    }else{
+      out$call = NULL
+    }
+
+    #cat("#### AFTER OUT ####\n")
+
+    dout = NULL
+    fout = NULL
+    fiter = length(out$evol)
+    if(fiter>0){
+
+      #cat("############-1-1-1-1-1-1- AT THE END OF OUT ##############\n")
+
+      tout = c()
+      for(i in 1:fiter){
+        sout = out$evol[[i]]
+        tout = rbind(tout,c(i,sout$x,sout$w,sout$min_cost,sout$mean_cost))
+      }
+      dout = as.data.frame(tout)
+      #dimnames(dout)[[2]] = c("iter",paste("x",1:k,sep=""),paste("w",1:k,sep=""),"min_cost","mean_cost")
+
+      #cat("############----------11111111111100000 AT THE END OF OUT ##############\n")
+
+
+      if(length(sout$x)==length(sout$w)){
+        dimnames(dout)[[2]] = c("iter",paste("x",1:k,sep=""),paste("w",1:k,sep=""),"min_cost","mean_cost")
+      }else{
+        tlen = length(sout$x)/length(sout$w)
+        tdimx = c()
+        for(i in 1:tlen){
+          tdimx = c(tdimx,paste(paste("x",i,sep=""),1:k,sep=""))
+        }
+        dimnames(dout)[[2]] = c("iter",tdimx,paste("w",1:k,sep=""),"min_cost","mean_cost")
+      }
+
+      #cat("############----------11111111111122222222222200000 AT THE END OF OUT ##############\n")
+      #cat("############ fiter = ",fiter," ############# -----\n")
+      #print(out$evol[[fiter]])
+
+      # extract sens outcomes
+      sout = out$evol[[fiter]]
+      tsens = capture.output(sout$sens)
+      tpos.max = grep("Maximum",tsens)
+      tpos.elb = grep("ELB",tsens)
+      tpos.time = grep("Verification",tsens)
+      tmax = NA
+      telb = NA
+      ttime = NA
+      if(length(tpos.max)>0){
+        tmax = as.numeric(strsplit(gsub("\\s+","",tsens[tpos.max]),"is")[[1]][2])
+      }
+      if(length(tpos.elb)>0){
+        telb = as.numeric(strsplit(gsub("\\s+","",tsens[tpos.elb]),"is")[[1]][2])
+      }
+      if(length(tpos.time)>0){
+        ttime = as.numeric(strsplit(gsub("seconds!","",gsub("\\s+","",tsens[tpos.time])),"required")[[1]][2])
+      }
+      t2out = c(fiter,sout$x,sout$w,sout$min_cost,sout$mean_cost,tmax,telb,ttime)
+      fout = as.data.frame(t(t2out))
+      #dimnames(fout)[[2]] = c("iter",paste("x",1:k,sep=""),paste("w",1:k,sep=""),"min_cost","mean_cost","max_sens","elb","time_sec")
+
+      #cat("############----------1111111111112222222222223333333333333300000 AT THE END OF OUT ##############\n")
+
+
+      if(length(sout$x)==length(sout$w)){
+        dimnames(fout)[[2]] = c("iter",paste("x",1:k,sep=""),paste("w",1:k,sep=""),"min_cost","mean_cost","max_sens","elb","time_sec")
+      }else{
+        tlen = length(sout$x)/length(sout$w)
+        tdimx2 = c()
+        for(i in 1:tlen){
+          tdimx2 = c(tdimx2,paste(paste("x",i,sep=""),1:k,sep=""))
+        }
+        dimnames(fout)[[2]] = c("iter",tdimx2,paste("w",1:k,sep=""),"min_cost","mean_cost","max_sens","elb","time_sec")
+      }
+
+      #cat("############----------00000 AT THE END OF OUT ##############\n")
+
+    }
+
+    #cat("############00000 AT THE END OF OUT ##############\n")
+
+    out$out = dout
+    #out$out2 = out$evol
+    out$design = fout
+
+    #cat("############ AT THE END OF OUT ##############\n")
 
     return(out)
 }
@@ -670,6 +842,7 @@ senslocally <- function (formula, predvars, parvars,
     crt_type = "D" else
       crt_type = "user"
 
+
     out <- sensminimax_inner(formula = formula, predvars = predvars, parvars = parvars,
                              family = family,
                              x = x, w = w,
@@ -692,6 +865,8 @@ senslocally <- function (formula, predvars, parvars,
                              silent = silent,
                              user_crtfunc = crtfunc,
                              user_sensfunc = sensfunc)
+    out$method = "locally" # 06222020@seongho
+
     return(out)
 }
 
@@ -700,7 +875,7 @@ senslocally <- function (formula, predvars, parvars,
 #' @title Robust D-Optimal Designs
 #'
 #' @description
-#' Finds Robust designs or optimal  in-average designs for nonlinear models.
+#' Finds Robust designs or optimal  in-average designs for linear and nonlinear models.
 #'  It is useful when a set of different vectors of initial estimates
 #'   along with a discrete probability measure
 #'   are available for the unknown model parameters.
@@ -734,6 +909,7 @@ senslocally <- function (formula, predvars, parvars,
 #' One can also adjust the tuning parameters in \code{\link{ICA.control}} to set a stopping rule
 #' based on the general equivalence theorem. See 'Examples' below.
 #'
+#' @importFrom utils capture.output
 #' @export
 #' @note
 #' When a continuous prior distribution for the unknown model parameters is available,  use \code{\link{bayes}}.
@@ -771,7 +947,9 @@ robust <- function(formula, predvars, parvars, family = gaussian(),
     ## you must provide npar
     if (!is.null(x))
       k <- length(x)/length(lx)
-    out <- minimax_inner(formula = formula,
+
+
+        out <- minimax_inner(formula = formula,
                          predvars = predvars, parvars = parvars,
                          family = family,
                          lx = lx, ux = ux, lp = NA, up = NA, iter = iter, k = k,
@@ -790,6 +968,75 @@ robust <- function(formula, predvars, parvars, family = gaussian(),
                          only_w_varlist = list(x = x),
                          user_crtfunc = crtfunc,
                          user_sensfunc = sensfunc)
+
+        out$method = 'robust' # 06202020@seongho
+        if (!missing(formula)){
+      out$call = formula # 06202020@seongho
+    }else{
+      out$call = NULL
+    }
+
+    dout = NULL
+    fout = NULL
+    fiter = length(out$evol)
+    if(fiter>0){
+      tout = c()
+      for(i in 1:fiter){
+        sout = out$evol[[i]]
+        tout = rbind(tout,c(i,sout$x,sout$w,sout$min_cost,sout$mean_cost))
+      }
+      dout = as.data.frame(tout)
+      #dimnames(dout)[[2]] = c("iter",paste("x",1:k,sep=""),paste("w",1:k,sep=""),"min_cost","mean_cost")
+
+      if(length(sout$x)==length(sout$w)){
+        dimnames(dout)[[2]] = c("iter",paste("x",1:k,sep=""),paste("w",1:k,sep=""),"min_cost","mean_cost")
+      }else{
+        tlen = length(sout$x)/length(sout$w)
+        tdimx = c()
+        for(i in 1:tlen){
+          tdimx = c(tdimx,paste(paste("x",i,sep=""),1:k,sep=""))
+        }
+        dimnames(dout)[[2]] = c("iter",tdimx,paste("w",1:k,sep=""),"min_cost","mean_cost")
+      }
+
+      # extract sens outcomes
+      sout = out$evol[[fiter]]
+      tsens = capture.output(sout$sens)
+      tpos.max = grep("Maximum",tsens)
+      tpos.elb = grep("ELB",tsens)
+      tpos.time = grep("Verification",tsens)
+      tmax = NA
+      telb = NA
+      ttime = NA
+      if(length(tpos.max)>0){
+        tmax = as.numeric(strsplit(gsub("\\s+","",tsens[tpos.max]),"is")[[1]][2])
+      }
+      if(length(tpos.elb)>0){
+        telb = as.numeric(strsplit(gsub("\\s+","",tsens[tpos.elb]),"is")[[1]][2])
+      }
+      if(length(tpos.time)>0){
+        ttime = as.numeric(strsplit(gsub("seconds!","",gsub("\\s+","",tsens[tpos.time])),"required")[[1]][2])
+      }
+      t2out = c(fiter,sout$x,sout$w,sout$min_cost,sout$mean_cost,tmax,telb,ttime)
+      fout = as.data.frame(t(t2out))
+      #dimnames(fout)[[2]] = c("iter",paste("x",1:k,sep=""),paste("w",1:k,sep=""),"min_cost","mean_cost","max_sens","elb","time_sec")
+
+      if(length(sout$x)==length(sout$w)){
+        dimnames(fout)[[2]] = c("iter",paste("x",1:k,sep=""),paste("w",1:k,sep=""),"min_cost","mean_cost","max_sens","elb","time_sec")
+      }else{
+        tlen = length(sout$x)/length(sout$w)
+        tdimx2 = c()
+        for(i in 1:tlen){
+          tdimx2 = c(tdimx2,paste(paste("x",i,sep=""),1:k,sep=""))
+        }
+        dimnames(fout)[[2]] = c("iter",tdimx2,paste("w",1:k,sep=""),"min_cost","mean_cost","max_sens","elb","time_sec")
+      }
+
+    }
+
+    out$out = dout
+    #out$out2 = out$evol
+    out$design = fout
 
     return(out)
 }
@@ -870,6 +1117,8 @@ sensrobust <- function (formula, predvars, parvars, family = gaussian(),
     # if (is.null(npar))
     #   npar <- dim(parset)[2]
     ## you must provide npar
+
+
     out <- sensminimax_inner(formula = formula, predvars = predvars, parvars = parvars,
                              family = family,
                              x = x, w = w,
@@ -892,6 +1141,8 @@ sensrobust <- function (formula, predvars, parvars, family = gaussian(),
                              silent = silent,
                              user_crtfunc = crtfunc,
                              user_sensfunc = sensfunc)
+    out$method = "robust" # 06222020@seongho
+
     return(out)
 }
 ######################################################################################################*
@@ -952,6 +1203,7 @@ sensrobust <- function (formula, predvars, parvars, family = gaussian(),
 #'  the generalized inverse of the Fisher information matrix
 #'   is not stable and depends
 #'  on the tolerance value (\code{tol}).
+#' @importFrom utils capture.output
 #' @export
 #' @inherit locally return
 #' @seealso \code{\link{sensmultiple}}
@@ -1015,6 +1267,7 @@ multiple <- function(minDose, maxDose,
     if (!is.null(x)) # we should convert the x to the scale of the 4PL model
       x <- log(x)
   }
+
   ## you must provide npar
   out <- minimax_inner(lx = lx, ux = ux, lp = inipars, up = inipars,
                        iter = iter, k = k,
@@ -1034,7 +1287,74 @@ multiple <- function(minDose, maxDose,
   #if (Hill_par)
   #  for (j in 1:length(out$evol))
   #    out$evol[[j]]$x <- exp(out$evol[[j]]$x)
+  out$method = 'locally' # 06202020@seongho
+  #if (!missing(formula)){
+  #  out$call = formula # 06202020@seongho
+  #}else{
+    out$call = NULL
+  #}
 
+  dout = NULL
+  fout = NULL
+  fiter = length(out$evol)
+  if(fiter>0){
+    tout = c()
+    for(i in 1:fiter){
+      sout = out$evol[[i]]
+      tout = rbind(tout,c(i,sout$x,sout$w,sout$min_cost,sout$mean_cost))
+    }
+    dout = as.data.frame(tout)
+    #dimnames(dout)[[2]] = c("iter",paste("x",1:k,sep=""),paste("w",1:k,sep=""),"min_cost","mean_cost")
+
+    if(length(sout$x)==length(sout$w)){
+      dimnames(dout)[[2]] = c("iter",paste("x",1:k,sep=""),paste("w",1:k,sep=""),"min_cost","mean_cost")
+    }else{
+      tlen = length(sout$x)/length(sout$w)
+      tdimx = c()
+      for(i in 1:tlen){
+        tdimx = c(tdimx,paste(paste("x",i,sep=""),1:k,sep=""))
+      }
+      dimnames(dout)[[2]] = c("iter",tdimx,paste("w",1:k,sep=""),"min_cost","mean_cost")
+    }
+
+    # extract sens outcomes
+    sout = out$evol[[fiter]]
+    tsens = capture.output(sout$sens)
+    tpos.max = grep("Maximum",tsens)
+    tpos.elb = grep("ELB",tsens)
+    tpos.time = grep("Verification",tsens)
+    tmax = NA
+    telb = NA
+    ttime = NA
+    if(length(tpos.max)>0){
+      tmax = as.numeric(strsplit(gsub("\\s+","",tsens[tpos.max]),"is")[[1]][2])
+    }
+    if(length(tpos.elb)>0){
+      telb = as.numeric(strsplit(gsub("\\s+","",tsens[tpos.elb]),"is")[[1]][2])
+    }
+    if(length(tpos.time)>0){
+      ttime = as.numeric(strsplit(gsub("seconds!","",gsub("\\s+","",tsens[tpos.time])),"required")[[1]][2])
+    }
+    t2out = c(fiter,sout$x,sout$w,sout$min_cost,sout$mean_cost,tmax,telb,ttime)
+    fout = as.data.frame(t(t2out))
+    #dimnames(fout)[[2]] = c("iter",paste("x",1:k,sep=""),paste("w",1:k,sep=""),"min_cost","mean_cost","max_sens","elb","time_sec")
+
+    if(length(sout$x)==length(sout$w)){
+      dimnames(fout)[[2]] = c("iter",paste("x",1:k,sep=""),paste("w",1:k,sep=""),"min_cost","mean_cost","max_sens","elb","time_sec")
+    }else{
+      tlen = length(sout$x)/length(sout$w)
+      tdimx2 = c()
+      for(i in 1:tlen){
+        tdimx2 = c(tdimx2,paste(paste("x",i,sep=""),1:k,sep=""))
+      }
+      dimnames(fout)[[2]] = c("iter",tdimx2,paste("w",1:k,sep=""),"min_cost","mean_cost","max_sens","elb","time_sec")
+    }
+
+  }
+
+  out$out = dout
+  #out$out2 = out$evol
+  out$design = fout
 
   return(out)
 }
@@ -1159,6 +1479,8 @@ sensmultiple <- function (dose, w,
                            crt_type = "multiple",
                            multipars = list(delta = delta, lambda = lambda, tol = tol),
                            silent = silent)
+  out$method = "locally" # 06222020@seongho
+
   return(out)
 }
 
@@ -1171,6 +1493,7 @@ sensmultiple <- function (dose, w,
 #' @param k Number of design points. When \code{alpha = 0}, then \code{k} can be less than the number of parameters.
 #' @param npar Number of model parameters.  Used when \code{fimfunc} is given instead of \code{formula} to specify the number of model parameters.
 #'   If not given, the sensitivity plot may be shifted below the y-axis. When \code{NULL}, it will be set here to \code{length(inipars)}.
+#' @importFrom utils capture.output
 #' @export
 #' @inherit locally return
 #' @description
@@ -1231,7 +1554,8 @@ locallycomp <- function(formula, predvars, parvars, family = gaussian(),
     if (!formalArgs(prob) %in% c("x", "param"))
       stop("arguments of 'prob' must be 'x' and 'param'")
   }
-  out <- minimax_inner(formula = formula,
+
+    out <- minimax_inner(formula = formula,
                        predvars = predvars, parvars = parvars, family = family,
                        lx = lx, ux = ux, lp = inipars, up = inipars, iter = iter, k = k,
                        fimfunc = fimfunc,
@@ -1247,6 +1571,73 @@ locallycomp <- function(formula, predvars, parvars, family = gaussian(),
                        multipars = list(),
                        plot_3d = plot_3d[1],
                        compound = list(prob = prob, alpha = alpha, npar = npar))
+
+
+    out$method = 'locally' # 06202020@seongho
+
+    if (!missing(formula)){
+    out$call = formula # 06202020@seongho
+  }else{
+    out$call = NULL
+  }
+
+  plen = length(predvars)
+
+  dout = NULL
+  fout = NULL
+  if(!is.null(out$evol)){
+  #if(F){
+    fiter = length(out$evol)
+    if(fiter>0){
+      tout = c()
+      for(i in 1:fiter){
+        sout = out$evol[[i]]
+        tout = rbind(tout,c(i,sout$x,sout$w,sout$min_cost,sout$mean_cost))
+      }
+      dout = as.data.frame(tout)
+      if(plen==1){
+        dimnames(dout)[[2]] = c("iter",paste("x",1:k,sep=""),paste("w",1:k,sep=""),"min_cost","mean_cost")
+      }else{
+        tdimx = c()
+        for(i in 1:plen){
+          tdimx = c(tdimx,paste(paste("x",i,sep=""),1:k,sep=""))
+        }
+        dimnames(dout)[[2]] = c("iter",tdimx,paste("w",1:k,sep=""),"min_cost","mean_cost")
+      }
+      # extract sens outcomes
+      sout = out$evol[[fiter]]
+      tsens = capture.output(sout$sens)
+      tpos.max = grep("Maximum",tsens)
+      tpos.elb = grep("ELB",tsens)
+      tpos.time = grep("Verification",tsens)
+      tmax = NA
+      telb = NA
+      ttime = NA
+      if(length(tpos.max)>0){
+        tmax = as.numeric(strsplit(gsub("\\s+","",tsens[tpos.max]),"is")[[1]][2])
+      }
+      if(length(tpos.elb)>0){
+        telb = as.numeric(strsplit(gsub("\\s+","",tsens[tpos.elb]),"is")[[1]][2])
+      }
+      if(length(tpos.time)>0){
+        ttime = as.numeric(strsplit(gsub("seconds!","",gsub("\\s+","",tsens[tpos.time])),"required")[[1]][2])
+      }
+      t2out = c(fiter,sout$x,sout$w,sout$min_cost,sout$mean_cost,tmax,telb,ttime)
+      fout = as.data.frame(t(t2out))
+      if(plen==1){
+        dimnames(fout)[[2]] = c("iter",paste("x",1:k,sep=""),paste("w",1:k,sep=""),"min_cost","mean_cost","max_sens","elb","time_sec")
+      }else{
+        tdimx = c()
+        for(i in 1:plen){
+          tdimx = c(tdimx,paste(paste("x",i,sep=""),1:k,sep=""))
+        }
+        dimnames(fout)[[2]] = c("iter",tdimx,paste("w",1:k,sep=""),"min_cost","mean_cost","max_sens","elb","time_sec")
+      }
+    }
+  }
+  out$out = dout
+  #out$out2 = out$evol
+  out$design = fout
 
   return(out)
 }
@@ -1325,6 +1716,9 @@ senslocallycomp <- function (formula, predvars, parvars,
                            multipars = list(),
                            silent = silent,
                            compound = list(prob = prob, alpha = alpha, npar = npar))
+
+  out$method = "locally" # 06222020@seongho
+
   return(out)
 }
 
@@ -1344,8 +1738,10 @@ senslocallycomp <- function (formula, predvars, parvars,
 #' If \code{NULL} (default), it will be set to the  tuning parameters used to create object \code{x}.
 #' @param crt.minimax.control Control parameters to optimize the minimax or standardized maximin criterion at a given design over a \strong{continuous} parameter space.
 #'  For details, see \code{\link{crt.minimax.control}}.
+#' @param sens.bayes.control Control parameters to verify general equivalence theorem for the Bayesian optimal designs. For details, see \code{\link{sens.bayes.control}}. If \code{NULL} (default), it will be set to the  tuning parameters used to create object \code{x}.
+#' @param crt.bayes.control Control parameters to optimize the integration in the Bayesian criterion at a given design over a \strong{continuous} parameter space. For details, see \code{\link{crt.bayes.control}}. If \code{NULL} (default), it will be set to the  tuning parameters used to create object \code{x}.
 #'  If \code{NULL} (default), it will be set to the  tuning parameters used to create object \code{x}.
-#' @param silent Do not print anything? Defaults to \code{FALSE}.
+#' @param silent Do not print anything? Defaults to \code{TRUE}.
 #' @param plot_3d Which package should be used to plot the sensitivity function for two-dimensional design space. Defaults to \code{plot_3d = "lattice"}.
 #' Only applicable when \code{sensitivity = TRUE}.
 #' @param evolution Plot Evolution? Defaults to \code{FALSE}.
@@ -1369,13 +1765,16 @@ senslocallycomp <- function (formula, predvars, parvars,
 #'  If increasing the value of \code{maxeval} returns different criterion values,
 #'  then the results can not be trusted and the algorithm should be repeated with a higher value for \code{maxeval}.
 #' @export
-plot.minimax <- function(x, iter = NULL,
+plot.minimax <- function(x, 
+                         iter = NULL,
                          sensitivity = TRUE,
                          calculate_criterion = FALSE,
                          sens.minimax.control = list(),
                          crt.minimax.control = list(),
+                         sens.bayes.control = list(),
+                         crt.bayes.control = list(),
                          sens.control = list(),
-                         silent = FALSE,
+                         silent = TRUE,
                          plot_3d = c("lattice", "rgl"),
                          evolution = FALSE,
                          ...){
@@ -1383,8 +1782,10 @@ plot.minimax <- function(x, iter = NULL,
     warning("Both 'sensitivity' and 'evolution' set to be FALSE.\nNo action is done in plot function!")
     return(invisible(NULL))
   }
-  if (any(class(x) != c("list", "minimax")))
+  #if (any(class(x) != c("list", "minimax"))) # 062020@seongho
+  if (any(class(x) != c("minimax")))
     stop("'x' must be of class 'minimax'")
+
   ## to not be confused with design points
   obj <- x
   arg <- obj$arg
@@ -1394,118 +1795,225 @@ plot.minimax <- function(x, iter = NULL,
   if (totaliter > length(x$evol))
     stop("'iter' is larger than the maximum number of iterations")
 
+  #cat("#### HERE HERE ####\n")
 
-  if (calculate_criterion || sensitivity){
-    if (is.null(sens.minimax.control)){
-      sens.minimax.control <- arg$sens.minimax.control}
-    else {
-      sens.minimax.control <- do.call("sens.minimax.control", sens.minimax.control)
-    }
-    if (is.null(sens.control)){
-      sens.control <- arg$sens.control}
-    else {
-      sens.control <- do.call("sens.control", sens.control)
-    }
-    if (is.null(crt.minimax.control)){
-      crt.minimax.control <- arg$crt.minimax.control}
-    else {
-      crt.minimax.control <- do.call("crt.minimax.control", crt.minimax.control)
-      if (arg$type == "minimax")
-        crt.minimax.control$inner_space <- "continuous"
+  if(x$method!="bayes"){
+    #sens.minimax.control = sens.minimax.bayes.control
+    #crt.minimax.control = crt.minimax.bayes.control
+    if (calculate_criterion || sensitivity){
+      if (is.null(sens.minimax.control)){
+        sens.minimax.control <- arg$sens.minimax.control}
+      else {
+        sens.minimax.control <- do.call("sens.minimax.control", sens.minimax.control)
+      }
+      if (is.null(sens.control)){
+        sens.control <- arg$sens.control}
+      else {
+        sens.control <- do.call("sens.control", sens.control)
+      }
+      if (is.null(crt.minimax.control)){
+        crt.minimax.control <- arg$crt.minimax.control}
+      else {
+        crt.minimax.control <- do.call("crt.minimax.control", crt.minimax.control)
+        if (arg$type == "minimax")
+          crt.minimax.control$inner_space <- "continuous"
+      }
+
+      optim_starting <- function(fn, lower, upper, w, x, fixedpar, fixedpar_id,  npred){
+        if (!arg$is.only.w)
+          q1 <- c(x, w) else
+            q1 <- w
+          out <- optim2(fn = fn, lower = lower, upper = upper,
+                        n_seg = sens.minimax.control$n_seg,
+                        q = q1,
+                        fixedpar = fixedpar, fixedpar_id = fixedpar_id,
+                        npred= npred)
+          minima <- out$minima
+          counts <- out$counts
+          return(list(minima =minima, counts = counts))
+      }
+      sens_varlist <-list(fixedpar = arg$fixedpar, fixedpar_id = arg$fixedpar_id,
+                          npred = length(arg$lx),
+                          crfunc_sens = arg$crfunc_sens,
+                          lp_nofixed = arg$lp_nofixed,
+                          up_nofixed = arg$up_nofixed,
+                          plot_3d = plot_3d,
+                          npar = arg$npar,
+                          optim_starting = optim_starting,
+                          fimfunc_sens = arg$FIM_sens,
+                          Psi_x_minus_minimax = arg$Psi_funcs$Psi_x_minus_minimax,
+                          Psi_x = arg$Psi_funcs$Psi_x,
+                          Psi_xy = arg$Psi_funcs$Psi_xy, Psi_Mu = arg$Psi_funcs$Psi_Mu)
+
+      sens_res <- sensminimax_inner(x = obj$evol[[totaliter]]$x, w = obj$evol[[totaliter]]$w,
+                                    lx = arg$lx, ux = arg$ux,
+                                    lp = arg$lp_nofixed, up = arg$up_nofixed,
+                                    fimfunc = arg$FIM,
+                                    sens.minimax.control = sens.minimax.control,
+                                    sens.control = sens.control,
+                                    type = arg$type,
+                                    localdes = arg$localdes,
+                                    plot_sens = TRUE,
+                                    varlist = sens_varlist,
+                                    calledfrom = "plot",
+                                    npar = arg$npar,
+                                    calculate_criterion = calculate_criterion,
+                                    crt.minimax.control = crt.minimax.control,
+                                    robpars = arg$robpars,
+                                    plot_3d = plot_3d[1],
+                                    silent = silent,
+                                    calculate_sens = sensitivity)
     }
 
-    optim_starting <- function(fn, lower, upper, w, x, fixedpar, fixedpar_id,  npred){
-      if (!arg$is.only.w)
-        q1 <- c(x, w) else
-          q1 <- w
-        out <- optim2(fn = fn, lower = lower, upper = upper,
-                      n_seg = sens.minimax.control$n_seg,
-                      q = q1,
-                      fixedpar = fixedpar, fixedpar_id = fixedpar_id,
-                      npred= npred)
-        minima <- out$minima
-        counts <- out$counts
-        return(list(minima =minima, counts = counts))
-    }
-    sens_varlist <-list(fixedpar = arg$fixedpar, fixedpar_id = arg$fixedpar_id,
-                        npred = length(arg$lx),
-                        crfunc_sens = arg$crfunc_sens,
-                        lp_nofixed = arg$lp_nofixed,
-                        up_nofixed = arg$up_nofixed,
-                        plot_3d = plot_3d,
-                        npar = arg$npar,
-                        optim_starting = optim_starting,
-                        fimfunc_sens = arg$FIM_sens,
-                        Psi_x_minus_minimax = arg$Psi_funcs$Psi_x_minus_minimax,
-                        Psi_x = arg$Psi_funcs$Psi_x,
-                        Psi_xy = arg$Psi_funcs$Psi_xy, Psi_Mu = arg$Psi_funcs$Psi_Mu)
+    #cat("#### HOWABOUT ####\n")
 
-    sens_res <- sensminimax_inner(x = obj$evol[[totaliter]]$x, w = obj$evol[[totaliter]]$w,
+    if (evolution){
+      ## extract evolution data from the object
+      mean_cost <- sapply(1:totaliter, FUN = function(j)obj$evol[[j]]$mean_cost)
+      min_cost <- sapply(1:totaliter, FUN = function(j)obj$evol[[j]]$min_cost)
+      if (calculate_criterion)
+        min_cost[totaliter] <- sens_res$crtval
+
+
+      type <- obj$arg$type
+
+      # plot setting
+      legend_place <- "topright"
+      legend_text <- c( "Best Imperialist", "Mean of Imperialists")
+      line_col <- c("firebrick3", "blue4")
+      if (type == "minimax")
+        title1 <- "cost value"
+      if (type == "standardized")
+        title1 <- "minimum efficiency"
+      if (type == "locally" || type == "robust")
+        title1 <- "log determinant of inverse of FIM"
+      if (type == "multiple_locally")
+        title1 <- "criterion value"
+
+      ylim = switch(type,
+                    "minimax" = c(min(min_cost) - .07, max(mean_cost[1:totaliter]) + .2),
+                    "standardized" = c(min(mean_cost[1:totaliter]) - .07, max( min_cost) + .2),
+                    "locally" = c(min(min_cost) - .07, max(mean_cost[1:totaliter]) + .2),
+                    "robust" = c(min(min_cost) - .07, max(mean_cost[1:totaliter]) + .2))
+
+      PlotEffCost(from = 1,
+                  to = (totaliter),
+                  AllCost = min_cost, ##all criterion up to now (all cost function)
+                  UserCost = NULL,
+                  DesignType = type,
+                  col = line_col[1],
+                  xlab = "Iteration",
+                  ylim = ylim,
+                  lty = 1,
+                  title1 = title1,
+                  plot_main = TRUE)
+      ICAMean_line <-  mean_cost[1:(totaliter)]
+      lines(x = 1:(totaliter),
+            y = ICAMean_line,
+            col = line_col[2], type = "s", lty = 5)
+      legend(x = legend_place,  legend = legend_text,lty = c(1,5, 3), col = line_col, xpd = TRUE, bty = "n")
+    }
+
+    #cat("####****#### HERE????? #####******#####\n")
+
+  }else{ # bayes
+    #sens.bayes.control = sens.minimax.bayes.control
+    #crt.bayes.control = crt.minimax.bayes.control
+    if (calculate_criterion || sensitivity){
+      if (is.null(sens.bayes.control)){
+        sens.bayes.control <- arg$sens.bayes.control }else {
+          sens.bayes.control <- do.call("sens.bayes.control", sens.bayes.control)
+        }
+      if (is.null(sens.control)){
+        sens.control <- arg$sens.control }else {
+          sens.control <- do.call("sens.control", sens.control)
+        }
+      if (is.null(crt.bayes.control)){
+        crt.bayes.control <- arg$crt.bayes.control
+        Psi_x_bayes  <- arg$Psi_funcs$Psi_x_bayes
+        Psi_xy_bayes  <- arg$Psi_funcs$Psi_xy_bayes
+      } else {
+
+        crt.bayes.control <- do.call("crt.bayes.control", crt.bayes.control)
+        temp_psi <- create_Psi_bayes(type = arg$type, prior = arg$prior, FIM = arg$FIM, lp = arg$prior$lower,
+                                     up = arg$prior$upper, npar = arg$npar,
+                                     truncated_standard = arg$truncated_standard,
+                                     const = arg$const, sens.bayes.control = sens.bayes.control,
+                                     compound = arg$compound,
+                                     method =  sens.bayes.control$method,
+                                     user_sensfunc = arg$user_sensfunc)
+        Psi_x_bayes  <- temp_psi$Psi_x_bayes
+        Psi_xy_bayes  <- temp_psi$Psi_xy_bayes
+      }
+
+      vertices_outer <- make_vertices(lower = arg$lx, upper = arg$ux)
+      sens_varlist <-list(npred = length(arg$lx),
+                          # plot_3d = "lattice",
+                          npar = arg$npar,
+                          fimfunc_sens = arg$FIM_sens,
+                          Psi_x_bayes  = Psi_x_bayes,
+                          Psi_xy_bayes  = Psi_xy_bayes,
+                          crfunc = arg$crfunc,
+                          vertices_outer = vertices_outer)
+
+      sens_res <- sensbayes_inner(x = obj$evol[[totaliter]]$x, w = obj$evol[[totaliter]]$w,
                                   lx = arg$lx, ux = arg$ux,
-                                  lp = arg$lp_nofixed, up = arg$up_nofixed,
                                   fimfunc = arg$FIM,
-                                  sens.minimax.control = sens.minimax.control,
+                                  prior = arg$prior,
                                   sens.control = sens.control,
+                                  sens.bayes.control = sens.bayes.control,
+                                  crt.bayes.control = crt.bayes.control,
                                   type = arg$type,
-                                  localdes = arg$localdes,
+                                  plot_3d = plot_3d[1],
                                   plot_sens = TRUE,
+                                  const = arg$const,
+                                  compound = arg$compound,### you dont need compund here
                                   varlist = sens_varlist,
-                                  calledfrom = "plot",
+                                  calledfrom =  "plot",
                                   npar = arg$npar,
                                   calculate_criterion = calculate_criterion,
-                                  crt.minimax.control = crt.minimax.control,
-                                  robpars = arg$robpars,
-                                  plot_3d = plot_3d[1],
                                   silent = silent,
                                   calculate_sens = sensitivity)
+    }
+    if (evolution){
+      ## extract evolution data from the object
+      mean_cost <- sapply(1:totaliter, FUN = function(j)obj$evol[[j]]$mean_cost)
+      min_cost <- sapply(1:totaliter, FUN = function(j)obj$evol[[j]]$min_cost)
+      if (calculate_criterion)
+        min_cost[totaliter] <- sens_res$crtval
+
+
+      type <- obj$arg$type
+
+      # plot setting
+      legend_place <- "topright"
+      legend_text <- c( "Best Imperialist", "Mean of Imperialists")
+      line_col <- c("firebrick3", "blue4")
+      title1 <- "Bayesian criterion"
+      ylim = switch(type, "bayesian_D" = c(min(min_cost) - .07, max(mean_cost[1:(totaliter)]) + .2))
+
+
+      PlotEffCost(from = 1,
+                  to = (totaliter),
+                  AllCost = min_cost, ##all criterion up to now (all cost function)
+                  UserCost = NULL,
+                  DesignType = type,
+                  col = line_col[1],
+                  xlab = "Iteration",
+                  ylim = ylim,
+                  lty = 1,
+                  title1 = title1,
+                  plot_main = TRUE)
+      ICAMean_line <-  mean_cost[1:(totaliter)]
+      lines(x = 1:(totaliter),
+            y = ICAMean_line,
+            col = line_col[2], type = "s", lty = 5)
+      legend(x = legend_place,  legend = legend_text,lty = c(1,5, 3), col = line_col, xpd = TRUE, bty = "n")
+    }
   }
 
-  if (evolution){
-    ## extract evolution data from the object
-    mean_cost <- sapply(1:totaliter, FUN = function(j)obj$evol[[j]]$mean_cost)
-    min_cost <- sapply(1:totaliter, FUN = function(j)obj$evol[[j]]$min_cost)
-    if (calculate_criterion)
-      min_cost[totaliter] <- sens_res$crtval
+  #cat("#### ************** THERE **************#####\n")
 
-
-    type <- obj$arg$type
-
-    # plot setting
-    legend_place <- "topright"
-    legend_text <- c( "Best Imperialist", "Mean of Imperialists")
-    line_col <- c("firebrick3", "blue4")
-    if (type == "minimax")
-      title1 <- "cost value"
-    if (type == "standardized")
-      title1 <- "minimum efficiency"
-    if (type == "locally" || type == "robust")
-      title1 <- "log determinant of inverse of FIM"
-    if (type == "multiple_locally")
-      title1 <- "criterion value"
-
-    ylim = switch(type,
-                  "minimax" = c(min(min_cost) - .07, max(mean_cost[1:totaliter]) + .2),
-                  "standardized" = c(min(mean_cost[1:totaliter]) - .07, max( min_cost) + .2),
-                  "locally" = c(min(min_cost) - .07, max(mean_cost[1:totaliter]) + .2),
-                  "robust" = c(min(min_cost) - .07, max(mean_cost[1:totaliter]) + .2))
-
-    PlotEffCost(from = 1,
-                to = (totaliter),
-                AllCost = min_cost, ##all criterion up to now (all cost function)
-                UserCost = NULL,
-                DesignType = type,
-                col = line_col[1],
-                xlab = "Iteration",
-                ylim = ylim,
-                lty = 1,
-                title1 = title1,
-                plot_main = TRUE)
-    ICAMean_line <-  mean_cost[1:(totaliter)]
-    lines(x = 1:(totaliter),
-          y = ICAMean_line,
-          col = line_col[2], type = "s", lty = 5)
-    legend(x = legend_place,  legend = legend_text,lty = c(1,5, 3), col = line_col, xpd = TRUE, bty = "n")
-  }
   if(sensitivity || calculate_criterion)
     return(sens_res) else
       return(invisible(NULL))
@@ -1515,68 +2023,75 @@ plot.minimax <- function(x, iter = NULL,
 #' Printing \code{minimax} Objects
 #'
 #' Print method for an object of class \code{minimax}.
+#' 
 #' @param x An object of class \code{minimax}.
-#' @param iter Iteration number. if \code{NULL}, will be set equal to the last iteration.
-#' @param all.info Print all the information? Defaults to \code{FALSE}.
 #' @param ... Argument with no further use.
 #' @export
-#' @seealso \code{\link{minimax}}, \code{\link{locally}}, \code{\link{robust}}
+#' @seealso \code{\link{minimax}}, \code{\link{locally}}, \code{\link{robust}}, \code{\link{bayes}}
+print.minimax <- function(x, ...){
 
-print.minimax <- function(x, iter = NULL, all.info = FALSE, ...){
-
-  if (any(class(x) != c("list", "minimax")))
+  if (any(class(x) != c("minimax")))
     stop("'x' must be of class 'minimax'")
-  ## to not get confused with design points
   object <- x
-  if (is.null(iter))
-    totaliter <- length(object$evol) else
-      totaliter <- iter
-  if (totaliter > length(x$evol))
-    stop("'iter' is larger than the maximum number of iterations")
-  # if( grepl("on_average", x$arg$type))
-  #   type <- "robust" else
+  totaliter <- length(object$evol)
   type <- x$arg$type
-  ### printing, match with cat in update functions
-  if (all.info){
-    cat("\n***********************************************************************",
-        "\nICA iter:", totaliter, "\n",
-        print_xw_char(x = object$evol[[totaliter]]$x, w =  object$evol[[totaliter]]$w,
-                      npred = length(object$arg$lx), is.only.w = object$arg$is.only.w,
-                      equal_weight = object$arg$ICA.control$equal_weight),
-        "\nCriterion value: ", object$evol[[totaliter]]$min_cost,
-        "\nTotal number of function evaluations:", object$alg$nfeval,
-        "\nTotal number of successful local search moves:", object$alg$nlocal,
-        "\nTotal number of successful revolution moves:", object$alg$nrevol,
-        "\nConvergence:", object$alg$convergence)
-    if (object$arg$ICA.control$only_improve)
-      cat("\nTotal number of successful assimilation moves:", object$alg$nimprove, "\n")
-    if (type == "minimax")
-      cat( "Vector of maximum parameter values: ", object$evol[[totaliter]]$param,"\n")
-    if (type == "standardized")
-      cat( "Vector of minimum parameter values: ", object$evol[[totaliter]]$param,"\n")
-    if (is.null(iter))
-      cat("CPU time:", object$arg$time[1], " seconds!\n")
-    cat("***********************************************************************")
-  } else{
-    cat("\n***********************************************************************",
-        "\nICA iter:", totaliter, "\n",
-        print_xw_char(x = object$evol[[totaliter]]$x, w =  object$evol[[totaliter]]$w,
-                      npred = length(object$arg$lx), is.only.w = object$arg$is.only.w,
-                      equal_weight = object$arg$ICA.control$equal_weight),
-        "\nCriterion value: ", object$evol[[totaliter]]$min_cost,
-        "\nConvergence:", object$alg$convergence, "\n")
-    if (is.null(iter))
-      cat("CPU time:", object$arg$time[1], " seconds!\n")
-    # if (type == "minimax")
-    #   cat( "Vector of maximum parameter values: ", object$evol[[totaliter]]$param,"\n")
-    # if (type == "standardized")
-    #   cat( "Vector of minimum parameter values: ", object$evol[[totaliter]]$param,"\n")
-    cat("***********************************************************************")
+
+  # 06202020@seongho
+  flab = ""
+  if(x$method=="locally")
+    flab = "locally optimal designs"
+  else if(x$method=="minimax")
+    flab = "minimax optimal designs"
+  else if(x$method=="robust")
+    flab = "robust or optimum-on-average optimal designs"
+  else if(x$method=="bayes")
+    flab = "Bayesian optimal designs"
+
+  cat("\nFinding ",flab,"\n")
+  #cat("\nCall:\n",
+  #    paste(deparse(x$call), sep = "\n", collapse = "\n"), "\n\n", sep = "")
+
+  if(!is.null(x$call)){
+    cat("\nCall:\n",
+        paste(deparse(x$call), sep = "\n", collapse = "\n"), "\n\n", sep = "")
+  }else{
+    cat("\nCall:\n","FIM defined directly via the argument 'fimfunc'","\n\n",sep = "")
   }
+
+  #cat("Optimal designs' profile:\n")
+  tpos = seq(1,totaliter,length=min(10,totaliter))
+  print(object$out[tpos,])
+  #cat("")
+
+  cat("\nOptimal designs (k=",x$arg$k,"):\n",sep="")
+  cat(" ",print_xw_char(x = object$evol[[totaliter]]$x, w =  object$evol[[totaliter]]$w,
+                       npred = length(object$arg$lx), is.only.w = object$arg$is.only.w,
+                       equal_weight = object$arg$ICA.control$equal_weight)
+      ,sep=""
+  )
+  cat("\n\n ICA iteration:", totaliter)
+  cat("\n Criterion value: ", object$evol[[totaliter]]$min_cost)
+
+  cat("\n Total number of function evaluations:", object$alg$nfeval)
+  cat("\n Total number of successful local search moves:", object$alg$nlocal)
+  cat("\n Total number of successful revolution moves:", object$alg$nrevol)
+
+  cat("\n Convergence:", object$alg$convergence)
+
+  if (object$arg$ICA.control$only_improve)
+    cat("\n Total number of successful assimilation moves:", object$alg$nimprove)
+  if (type == "minimax")
+    cat( "\n Vector of maximum parameter values: ", object$evol[[totaliter]]$param)
+  if (type == "standardized")
+    cat( "\n Vector of minimum parameter values: ", object$evol[[totaliter]]$param)
+  cat("\n CPU time:", object$arg$time[1], " seconds!\n")
+
   if (!is.null(object$evol[[totaliter]]$sens))
     print(object$evol[[totaliter]]$sens)
+
   return(invisible(NULL))
 }
+
 ######################################################################################################*
 ######################################################################################################*
 #' Printing \code{sensminimax} Objects
@@ -1588,18 +2103,46 @@ print.minimax <- function(x, iter = NULL, all.info = FALSE, ...){
 #' @seealso \code{\link{sensminimax}}, \code{\link{senslocally}}, \code{\link{sensrobust}}
 
 print.sensminimax <- function(x,...){
-  if (any(class(x) != c("list", "sensminimax")))
+  #if (any(class(x) != c("list", "sensminimax"))) # 06202020@seongho
+  if (any(class(x) != c("sensminimax")))
     stop("'x' must be of class 'sensminimax'")
-  cat("\n***********************************************************************")
-  if (!is.null(x$max_deriv))
-    cat("\nMaximum of the sensitivity function is ", x$max_deriv, "\nEfficiency lower bound (ELB) is ", x$ELB)
-  if (!is.null(x$crtval))
-    cat("\nCriterion value is ", x$crtval)
-  if (x$type != "locally" & x$type != "robust")
-    cat("\nVerification required",x$time, "seconds!", "\nAdjust the value of 'n_seg' in 'sens.minimax.control' for higher speed.", "\n***********************************************************************")else
-      cat("\nVerification required",x$time, "seconds!", "\n***********************************************************************")
+
+  #cat("#############************** SENSE HERE ################\n")
+  #print(x)
+  #print(names(x))
+  #cat("################################ SENSE END ################################\n")
+
+  #if(x$method!="bayes"){
+    #cat("\n***********************************************************************")
+    if (!is.null(x$max_deriv))
+      cat("\n Maximum of the sensitivity function is ", x$max_deriv, "\n Efficiency lower bound (ELB) is ", x$ELB)
+    if (!is.null(x$crtval))
+      cat("\n Criterion value is ", x$crtval)
+    if (x$type != "locally" & x$type != "robust"){
+      cat("\n Verification required",x$time, "seconds!", "\n Adjust the control parameters in 'sens.minimax.control' ('n_seg') or in 'sens.bayes.control' for higher speed.", "\n\n")
+    }else{
+      cat("\n Verification required",x$time, "seconds!", "\n\n")
+    }
+  #}else{
+  #  #cat( #"\n***********************************************************************")
+  #  cat("\n Maximum of the sensitivity function is ", x$max_deriv, "\n Efficiency lower bound (ELB) is ", x$ELB,
+  #    "\n Verification required",x$time, "seconds!",
+  #    "\n Adjust the control parameters in 'sens.bayes.control' for higher speed\n\n")
+    #   if (x$type == "minimax")
+    #     optimchar <- "\nSet of all maxima over parameter space\n"
+    #   if (x$type == "standardized")
+    #     optimchar <- "\nSet of all minima over parameter space\n"
+    #   cat("\nAnswering set:\n", answer, optimchar, optima, "\n")
+    # }
+    #
+    # if (!is.null(x$crtval))
+    #   cat("Criterion value found by 'nloptr':", x$crtval)
+    #cat("***********************************************************************")
+  #}
+
   return(invisible(NULL))
 }
+
 ######################################################################################################*
 ######################################################################################################*
 #' Returns Control Parameters for Optimizing Minimax Criteria Over The Parameter Space
@@ -1733,20 +2276,41 @@ sens.minimax.control <- function(n_seg = 6, merge_tol = .005){
 #' @param iter Number of iterations.
 #' @param ... An argument of no further use.
 #' @importFrom nloptr directL
+#' @importFrom utils capture.output
 #' @seealso \code{\link{minimax}}
 #' @export
 update.minimax <- function(object, iter, ...){
-  # ... is an argument of no use. Only to match the generic update
-  if (all(class(object) != c("list", "minimax")))
+  if (all(class(object) != c("minimax")))
     stop("''object' must be of class 'minimax'")
   if (missing(iter))
     stop("'iter' is missing")
+
+  #if(object$method!="bayes"){
+  if(any(object$arg$type==c("D", "DPA", "DPM", "multiple", "user"))){
+    bayes.update(object=object,iter=iter,...)
+  }else{
+    minimax.update(object=object,iter=iter,...)
+  }
+}
+
+#' @importFrom utils capture.output
+minimax.update <- function(object, iter, ...){ # 06212020@seongho
+  # ... is an argument of no use. Only to match the generic update
+  #if (all(class(object) != c("list", "minimax"))) # 06202020@seongho
+
+  # blocked by 06212020@seongho
+  #if (all(class(object) != c("minimax")))
+  #    stop("''object' must be of class 'minimax'")
+  #if (missing(iter))
+  #  stop("'iter' is missing")
+
   arg <- object$arg
   ICA.control <- object$arg$ICA.control
   crt.minimax.control <- object$arg$crt.minimax.control
   sens.minimax.control <-  object$arg$sens.minimax.control
   sens.control <-  object$arg$sens.control
   evol <- object$evol
+  evol.flag <- 0 # 1: updating, 0: not updating # 06212020@seongho
   #if (!arg$is.only.w)
   npred <- length(arg$lx) #else
   #    npred <- NA #dim(arg$x)[2]
@@ -1973,6 +2537,7 @@ update.minimax <- function(object, iter, ...){
   # Initialization when evol is NULL
   ############################################################################*
   if (is.null(evol)){
+    evol.flag = 0
     ## set the old seed if call is from minimax
     if (!is.null(ICA.control$rseed))
       set.seed(ICA.control$rseed)
@@ -2032,6 +2597,7 @@ update.minimax <- function(object, iter, ...){
   # when we are updating the object for more number of iterations
   ##########################################################################*
   if (!is.null(evol)){
+    evol.flag = 1
     ## reset the seed!
     if (exists(".Random.seed")){
       GlobalSeed <- get(".Random.seed", envir = .GlobalEnv)
@@ -2385,6 +2951,64 @@ update.minimax <- function(object, iter, ...){
   object$evol <- evol
   object$empires <- Empires
 
+  if(evol.flag==1){
+    dout = NULL
+    fout = NULL
+    fiter = length(object$evol)
+    if(fiter>0){
+      tout = c()
+      for(i in 1:fiter){
+        sout = object$evol[[i]]
+        tout = rbind(tout,c(i,sout$x,sout$w,sout$min_cost,sout$mean_cost))
+      }
+      dout = as.data.frame(tout)
+      if(length(sout$x)==length(sout$w)){
+        dimnames(dout)[[2]] = c("iter",paste("x",1:object$arg$k,sep=""),paste("w",1:object$arg$k,sep=""),"min_cost","mean_cost")
+      }else{
+        tlen = length(sout$x)/length(sout$w)
+        tdimx = c()
+        for(i in 1:tlen){
+          tdimx = c(tdimx,paste(paste("x",i,sep=""),1:object$arg$k,sep=""))
+        }
+        dimnames(dout)[[2]] = c("iter",tdimx,paste("w",1:object$arg$k,sep=""),"min_cost","mean_cost")
+      }
+      # extract sens outcomes
+      sout = object$evol[[fiter]]
+      tsens = capture.output(sout$sens)
+      tpos.max = grep("Maximum",tsens)
+      tpos.elb = grep("ELB",tsens)
+      tpos.time = grep("Verification",tsens)
+      tmax = NA
+      telb = NA
+      ttime = NA
+      if(length(tpos.max)>0){
+        tmax = as.numeric(strsplit(gsub("\\s+","",tsens[tpos.max]),"is")[[1]][2])
+      }
+      if(length(tpos.elb)>0){
+        telb = as.numeric(strsplit(gsub("\\s+","",tsens[tpos.elb]),"is")[[1]][2])
+      }
+      if(length(tpos.time)>0){
+        ttime = as.numeric(strsplit(gsub("seconds!","",gsub("\\s+","",tsens[tpos.time])),"required")[[1]][2])
+      }
+      t2out = c(fiter,sout$x,sout$w,sout$min_cost,sout$mean_cost,tmax,telb,ttime)
+      fout = as.data.frame(t(t2out))
+      #dimnames(fout)[[2]] = c("iter",paste("x",1:object$arg$k,sep=""),paste("w",1:object$arg$k,sep=""),"min_cost","mean_cost","max_sens","elb","time_sec")
+      if(length(sout$x)==length(sout$w)){
+        dimnames(fout)[[2]] = c("iter",paste("x",1:object$arg$k,sep=""),paste("w",1:object$arg$k,sep=""),"min_cost","mean_cost","max_sens","elb","time_sec")
+      }else{
+        tlen = length(sout$x)/length(sout$w)
+        tdimx2 = c()
+        for(i in 1:tlen){
+          tdimx2 = c(tdimx2,paste(paste("x",i,sep=""),1:object$arg$k,sep=""))
+        }
+        dimnames(fout)[[2]] = c("iter",tdimx2,paste("w",1:object$arg$k,sep=""),"min_cost","mean_cost","max_sens","elb","time_sec")
+      }
+    }
+
+    object$out = dout
+    #out$out2 = out$evol
+    object$design = fout
+  }
 
   object$alg <- list(
     nfeval = total_nfeval,
@@ -2400,7 +3024,6 @@ update.minimax <- function(object, iter, ...){
   ##############################################################################*
   object$arg$time <- proc.time() - arg$time_start + prev_time
   return(object)
-
 }
 ######################################################################################################*
 ######################################################################################################*

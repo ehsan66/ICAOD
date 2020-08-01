@@ -4,12 +4,25 @@
 \alias{ICA.control}
 \title{Returns ICA Control Optimization Parameters}
 \usage{
-ICA.control(ncount = 40, nimp = ncount/10, assim_coeff = 4,
-  revol_rate = 0.3, damp = 0.99, uniting_threshold = 0.02,
-  equal_weight = FALSE, sym = FALSE, sym_point = NULL,
-  stop_rule = c("maxiter", "equivalence"), stoptol = 0.99,
-  checkfreq = 0, plot_cost = TRUE, plot_sens = TRUE,
-  plot_3d = c("lattice", "rgl"), trace = TRUE, rseed = NULL)
+ICA.control(
+  ncount = 40,
+  nimp = ncount/10,
+  assim_coeff = 4,
+  revol_rate = 0.3,
+  damp = 0.99,
+  uniting_threshold = 0.02,
+  equal_weight = FALSE,
+  sym = FALSE,
+  sym_point = NULL,
+  stop_rule = c("maxiter", "equivalence"),
+  stoptol = 0.99,
+  checkfreq = 0,
+  plot_cost = TRUE,
+  plot_sens = TRUE,
+  plot_3d = c("lattice", "rgl"),
+  trace = TRUE,
+  rseed = NULL
+)
 }
 \arguments{
 \item{ncount}{Number of countries. Defaults to \code{40}.}
