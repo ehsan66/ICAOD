@@ -163,36 +163,36 @@ bayes <- function(formula,
   if (is.null(crtfunc))
     type = "D" else
       type = "user"
-  if (!is.null(x))
-    k <- length(x)/length(lx)
+    if (!is.null(x))
+      k <- length(x)/length(lx)
     # in minimax it is crt_type
 
 
     out <-  bayes_inner(fimfunc = fimfunc,
-                           formula = formula,
-                           predvars = predvars,
-                           parvars = parvars,
-                           family = family,
-                           lx = lx,
-                           ux = ux,
-                           type = type,
-                           iter = iter,
-                           k = k,
-                           npar = npar,
-                           prior = prior,
-                           compound = list(prob = NULL, alpha = NULL),
-                           multiple.control = list(),
-                           ICA.control =  ICA.control,
-                           crt.bayes.control = crt.bayes.control,
-                           sens.bayes.control = sens.bayes.control,
-                           sens.control = sens.control,
-                           initial = initial,
-                           plot_3d = plot_3d[1],
-                           const = list(ui = NULL, ci = NULL, coef = NULL),
-                           #const = const,
-                           only_w_varlist = list(x = x),
-                           user_crtfunc = crtfunc,
-                           user_sensfunc = sensfunc)
+                        formula = formula,
+                        predvars = predvars,
+                        parvars = parvars,
+                        family = family,
+                        lx = lx,
+                        ux = ux,
+                        type = type,
+                        iter = iter,
+                        k = k,
+                        npar = npar,
+                        prior = prior,
+                        compound = list(prob = NULL, alpha = NULL),
+                        multiple.control = list(),
+                        ICA.control =  ICA.control,
+                        crt.bayes.control = crt.bayes.control,
+                        sens.bayes.control = sens.bayes.control,
+                        sens.control = sens.control,
+                        initial = initial,
+                        plot_3d = plot_3d[1],
+                        const = list(ui = NULL, ci = NULL, coef = NULL),
+                        #const = const,
+                        only_w_varlist = list(x = x),
+                        user_crtfunc = crtfunc,
+                        user_sensfunc = sensfunc)
 
     out$method = 'bayes' # 06202020@seongho
     if (!missing(formula)){
@@ -342,31 +342,31 @@ sensbayes <- function(formula,
       type = "user"
 
 
-  out <- sensbayes_inner (formula = formula,
-                             predvars = predvars, parvars = parvars,
-                             family =  family,
-                             x = x, w = w,
-                             lx = lx, ux = ux,
-                             fimfunc = fimfunc,
-                             prior = prior,
-                             sens.control = sens.control,
-                             sens.bayes.control = sens.bayes.control,
-                             crt.bayes.control = crt.bayes.control,
-                             type = "D",
-                             plot_3d = plot_3d[1],
-                             plot_sens =  plot_sens,
-                             const = list(ui = NULL, ci = NULL, coef = NULL),
-                             compound = list(prob = NULL, alpha = NULL),
-                             varlist = list(),
-                             calledfrom = "sensfuncs",
-                             npar = npar,
-                             calculate_criterion = calculate_criterion,
-                             silent = silent,
-                             user_crtfunc = crtfunc,
-                             user_sensfunc = sensfunc)
-  out$method = "bayes" # 06222020@seongho
+    out <- sensbayes_inner (formula = formula,
+                            predvars = predvars, parvars = parvars,
+                            family =  family,
+                            x = x, w = w,
+                            lx = lx, ux = ux,
+                            fimfunc = fimfunc,
+                            prior = prior,
+                            sens.control = sens.control,
+                            sens.bayes.control = sens.bayes.control,
+                            crt.bayes.control = crt.bayes.control,
+                            type = "D",
+                            plot_3d = plot_3d[1],
+                            plot_sens =  plot_sens,
+                            const = list(ui = NULL, ci = NULL, coef = NULL),
+                            compound = list(prob = NULL, alpha = NULL),
+                            varlist = list(),
+                            calledfrom = "sensfuncs",
+                            npar = npar,
+                            calculate_criterion = calculate_criterion,
+                            silent = silent,
+                            user_crtfunc = crtfunc,
+                            user_sensfunc = sensfunc)
+    out$method = "bayes" # 06222020@seongho
 
-  return(out)
+    return(out)
 }
 ######################################################################################################*
 ######################################################################################################*
@@ -454,26 +454,26 @@ bayescomp <- function(formula,
 
 
   out <-  bayes_inner(fimfunc = fimfunc,
-                         formula = formula,
-                         predvars = predvars,
-                         parvars = parvars,
-                         family = family,
-                         lx = lx,
-                         ux = ux,
-                         type = "DPA",
-                         iter = iter,
-                         k = k,
-                         npar = npar,
-                         prior = prior,
-                         compound = list(prob = prob, alpha = alpha),
-                         multiple.control = list(),
-                         ICA.control =  ICA.control,
-                         sens.control = sens.control,
-                         crt.bayes.control = crt.bayes.control,
-                         sens.bayes.control = sens.bayes.control,
-                         initial = initial,
-                         const = list(ui = NULL, ci = NULL, coef = NULL),
-                         plot_3d = plot_3d[1])
+                      formula = formula,
+                      predvars = predvars,
+                      parvars = parvars,
+                      family = family,
+                      lx = lx,
+                      ux = ux,
+                      type = "DPA",
+                      iter = iter,
+                      k = k,
+                      npar = npar,
+                      prior = prior,
+                      compound = list(prob = prob, alpha = alpha),
+                      multiple.control = list(),
+                      ICA.control =  ICA.control,
+                      sens.control = sens.control,
+                      crt.bayes.control = crt.bayes.control,
+                      sens.bayes.control = sens.bayes.control,
+                      initial = initial,
+                      const = list(ui = NULL, ci = NULL, coef = NULL),
+                      plot_3d = plot_3d[1])
 
   #out$method = 'bayes' # 06202020@seongho
   #out$call = formula
@@ -484,9 +484,9 @@ bayescomp <- function(formula,
   }else{
     out$call = NULL
   }
-
-  plen = length(predvars)
-
+  if (!missing(predvars))
+    plen = length(predvars) else # Ehsan 02082020 produces a bug when fimfunc is given
+      plen = length(lx) # Ehsan 02082020 to solve it, Ehsan added ifelse
   dout = NULL
   fout = NULL
   if(!is.null(out$evol)){
@@ -617,25 +617,25 @@ sensbayescomp <- function(formula,
   }
 
   out <- sensbayes_inner (formula = formula,
-                             predvars = predvars, parvars = parvars,
-                             family =  family,
-                             x = x, w = w,
-                             lx = lx, ux = ux,
-                             fimfunc = fimfunc,
-                             prior = prior,
-                             sens.control = sens.control,
-                             sens.bayes.control = sens.bayes.control,
-                             crt.bayes.control = crt.bayes.control,
-                             type = "DPA",
-                             plot_3d = plot_3d[1],
-                             plot_sens =  plot_sens,
-                             const = list(ui = NULL, ci = NULL, coef = NULL),
-                             compound = list(prob = prob, alpha = alpha),
-                             varlist = list(),
-                             calledfrom = "sensfuncs",
-                             npar = npar,
-                             calculate_criterion = calculate_criterion,
-                             silent  = silent)
+                          predvars = predvars, parvars = parvars,
+                          family =  family,
+                          x = x, w = w,
+                          lx = lx, ux = ux,
+                          fimfunc = fimfunc,
+                          prior = prior,
+                          sens.control = sens.control,
+                          sens.bayes.control = sens.bayes.control,
+                          crt.bayes.control = crt.bayes.control,
+                          type = "DPA",
+                          plot_3d = plot_3d[1],
+                          plot_sens =  plot_sens,
+                          const = list(ui = NULL, ci = NULL, coef = NULL),
+                          compound = list(prob = prob, alpha = alpha),
+                          varlist = list(),
+                          calledfrom = "sensfuncs",
+                          npar = npar,
+                          calculate_criterion = calculate_criterion,
+                          silent  = silent)
   out$method = "bayes" # 06222020@seongho
 
   return(out)
@@ -818,7 +818,7 @@ crt.bayes.control <- function(method = c("cubature", "quadrature"),
 # @importFrom LaplacesDemon dmvl dmvt dmvc dmvpe
 #update.bayes <- function(object, iter,...){
 bayes.update <- function(object, iter,...){ # 06212020@seongho
-    # ... is an argument of no use. Only to match the generic update
+  # ... is an argument of no use. Only to match the generic update
   #if (all(class(object) != c("list", "bayes"))) # 06202020@seongho
 
   # blocked by 06212020@seongho

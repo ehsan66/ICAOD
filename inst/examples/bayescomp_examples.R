@@ -11,7 +11,8 @@ res1 <- bayescomp(formula = myformula1,
                   lx = c(-1, -1), ux = c(1, 1),
                   prior = myprior, iter = 1, k = 7,
                   prob = ~1-1/(1+exp(b0 + b1 * x1 + b2 * x2 + b3 * x1 * x2)),
-                  alpha = .5, ICA.control = list(rseed = 1366))
+                  alpha = .5, ICA.control = list(rseed = 1366),
+                  crt.bayes.control = list(cubature = list(tol = 1e-4, maxEval = 1000)))
 
 
 \dontrun{

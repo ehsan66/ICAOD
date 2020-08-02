@@ -63,6 +63,7 @@ for (i in 1:6)
 # For example the first row represents Bayesian D-efficiencies of different
 # Bayesian optimal design found assuming different priors with respect to
 # the Bayesian D-optimal design found under uniform prior distribution.
+  eff4.1
 }
 
 #############################
