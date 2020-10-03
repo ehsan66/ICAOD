@@ -1,3 +1,6 @@
+# ICAOD 1.0.1
+* Updating the title 
+
 # ICAOD 1.0.0 
 * The vignette is updated.
 * The class bayes is removed and replaced by class minimax
