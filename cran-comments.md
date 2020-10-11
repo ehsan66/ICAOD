@@ -1,4 +1,5 @@
 # This is the first submission (Version 1.0.1)
+# Title is changed to replicate the functionality of the package
 
 
 ##### Test environments
